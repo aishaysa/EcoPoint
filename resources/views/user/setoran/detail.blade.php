@@ -1,79 +1,463 @@
-@extends('layouts.user')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>EcoPoint — Detail Setoran</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f7f2;
+            color: #1a2e24;
+            line-height: 1.6;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
-@section('title', 'Detail Setoran')
+        /* ===== NAVBAR RESPONSIVE ===== */
+        .navbar {
+            background: #0d2b1f;
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .logo {
+            color: #6fcf97;
+            font-size: 26px;
+            font-weight: 800;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+            order: 1;
+        }
+        .logo i { color: #a8e6c1; margin-right: 8px; }
 
-@section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Detail Setoran</h1>
-        <a href="{{ route('user.setoran') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">
+        /* Hamburger (Garis 3) */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            order: 3;
+            z-index: 10;
+        }
+        .hamburger span {
+            display: block;
+            width: 26px;
+            height: 3px;
+            background: #cde8d6;
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+
+        /* Menu Navigasi */
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+            order: 2;
+        }
+        .nav-links a {
+            color: #cde8d6;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .nav-links a:hover { color: #6fcf97; }
+
+        /* Elemen Kanan (Nama User) - Desktop */
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            order: 3;
+        }
+        .nav-right .btn-account {
+            background: transparent;
+            color: #cde8d6;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .nav-right .btn-account:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
+
+        /* Elemen Mobile */
+        .mobile-divider, .mobile-actions { display: none; }
+
+        /* ===== CONTENT DETAIL ===== */
+        .detail-page { padding: 40px 0 60px; min-height: 70vh; }
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .detail-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0d2b1f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-back {
+            background: #fff;
+            border: 1px solid #d4e8db;
+            color: #2d5a43;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-back:hover { background: #e8f5e9; border-color: #6fcf97; }
+
+        .detail-card {
+            background: #ffffff;
+            border: 1px solid #d4e8db;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+            padding: 32px;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .info-group { display: flex; flex-direction: column; }
+        .info-label { font-size: 0.75rem; font-weight: 700; color: #4d7a63; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .info-value { font-size: 1rem; font-weight: 600; color: #0d2b1f; }
+        .info-group.full { grid-column: 1 / -1; }
+
+        .divider { height: 1px; background: #d4e8db; margin: 20px 0; }
+
+        /* Status Badge */
+        .badge-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .badge-pending { background: #fff3cd; color: #856404; }
+        .badge-proses { background: #e3f2fd; color: #1976d2; }
+        .badge-completed { background: #d4edda; color: #155724; }
+        .badge-ditolak { background: #f8d7da; color: #721c24; }
+
+        /* Sampah Table */
+        .sampah-title { font-size: 1.2rem; font-weight: 700; color: #0d2b1f; margin-bottom: 16px; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; min-width: 400px; border-collapse: collapse; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #f0f7f2; }
+        th { background: #f0f7f2; color: #1a2e24; font-weight: 700; font-size: 0.85rem; }
+        td { font-size: 0.9rem; color: #1a2e24; }
+        tfoot td { background: #f0f7f2; font-weight: 700; }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: #071a12;
+            padding: 30px 0;
+            text-align: center;
+            color: #8baa99;
+            font-size: 14px;
+            border-top: 1px solid #1e4533;
+        }
+        .footer a { color: #6fcf97; text-decoration: none; }
+        .footer .social {
+            margin-top: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 22px;
+        }
+        .footer .social a { color: #8baa99; transition: 0.2s; }
+        .footer .social a:hover { color: #6fcf97; }
+
+        /* ===== RESPONSIVE MOBILE ===== */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                gap: 16px;
+                padding: 15px 0;
+                border-top: 1px solid #1e4533;
+                margin-top: 10px;
+                order: 4;
+            }
+            .nav-links.open { display: flex; }
+            .nav-links a { font-size: 16px; width: 100%; text-align: center; padding: 8px 0; }
+            .nav-right { display: none; }
+            .mobile-divider { display: block; height: 1px; background: #1e4533; width: 100%; margin: 8px 0; }
+            .mobile-actions { 
+                display: flex; 
+                flex-direction: column; 
+                width: 100%; 
+                gap: 0; 
+                align-items: stretch; 
+            }
+            .mobile-actions .btn-account-mobile {
+                background: transparent;
+                border: none;
+                color: #cde8d6;
+                font-weight: 600;
+                font-size: 16px;
+                width: 100%;
+                padding: 12px 0;
+                cursor: pointer;
+                transition: 0.2s;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .mobile-actions .btn-account-mobile:hover { color: #6fcf97; }
+
+            .detail-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .btn-back { width: 100%; justify-content: center; }
+            .detail-card { padding: 24px 16px; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR RESPONSIVE ===== -->
+<nav class="navbar">
+    <div class="container">
+        <a href="{{ route('user.dashboard') }}" class="logo">
+            <i class="fas fa-leaf"></i> EcoPoint
+        </a>
+
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+
+        <div class="nav-links" id="navLinks">
+            <a href="{{ route('user.dashboard') }}">Beranda</a>
+            <a href="{{ route('user.setoran') }}">Setoran</a>
+            <a href="{{ route('user.poin') }}">Poin</a>
+            
+            <div class="mobile-divider"></div>
+
+            @auth
+                <div class="mobile-actions">
+                    <form method="POST" action="{{ route('logout') }}" style="width: 100%;">
+                        @csrf
+                        <button type="submit" class="btn-account-mobile">
+                            <i class="fas fa-user"></i> {{ Auth::user()->name }}
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div class="mobile-actions">
+                    <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="{{ route('register') }}" class="btn-nav">Daftar</a>
+                </div>
+            @endauth
+        </div>
+
+        <div class="nav-right">
+            @auth
+                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="btn-account">
+                        <i class="fas fa-user"></i> {{ Auth::user()->name }}
+                    </button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a href="{{ route('register') }}" class="btn-nav">Daftar</a>
+            @endauth
+        </div>
+    </div>
+</nav>
+
+<!-- ===== CONTENT DETAIL ===== -->
+<div class="container detail-page">
+    <div class="detail-header">
+        <h1>
+            <i class="fas fa-file-invoice" style="color:#2e7d5a;"></i> Detail Setoran
+        </h1>
+        <a href="{{ route('user.setoran') }}" class="btn-back">
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>
 
-    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <p class="text-sm text-gray-500">ID Setoran</p>
-                <p class="font-semibold text-gray-800">#{{ $transaksi->id }}</p>
+    <div class="detail-card">
+        <div class="info-grid">
+            <div class="info-group">
+                <p class="info-label">ID Setoran</p>
+                <p class="info-value">#{{ $transaksi->id }}</p>
             </div>
-            <div>
-                <p class="text-sm text-gray-500">Tanggal</p>
-                <p class="font-semibold text-gray-800">{{ $transaksi->created_at->format('d M Y, H:i') }}</p>
+            <div class="info-group">
+                <p class="info-label">Tanggal</p>
+                <p class="info-value">{{ $transaksi->created_at->format('d M Y, H:i') }}</p>
             </div>
-            <div>
-                <p class="text-sm text-gray-500">Nama Pengirim</p>
-                <p class="font-semibold text-gray-800">{{ $transaksi->nama_pengirim }}</p>
+            <div class="info-group">
+                <p class="info-label">Nama Pengirim</p>
+                <p class="info-value">{{ $transaksi->nama_pengirim }}</p>
             </div>
-            <div>
-                <p class="text-sm text-gray-500">No. HP</p>
-                <p class="font-semibold text-gray-800">{{ $transaksi->no_hp }}</p>
+            <div class="info-group">
+                <p class="info-label">No. HP</p>
+                <p class="info-value">{{ $transaksi->no_hp }}</p>
             </div>
-            <div class="md:col-span-2">
-                <p class="text-sm text-gray-500">Alamat Jemput</p>
-                <p class="font-semibold text-gray-800">{{ $transaksi->alamat_jemput }}</p>
+
+            <!-- Tambahkan Metode dan Status -->
+            <div class="info-group">
+                <p class="info-label">Metode</p>
+                <p class="info-value">{{ ucfirst($transaksi->metode) }}</p>
             </div>
-            <div>
-                <p class="text-sm text-gray-500">Latitude</p>
-                <p class="font-semibold text-gray-800">{{ $transaksi->latitude ?? '-' }}</p>
+            <div class="info-group">
+                <p class="info-label">Status</p>
+                <p class="info-value">
+                    <span class="badge-status badge-{{ $transaksi->status }}">
+                        {{ ucfirst($transaksi->status) }}
+                    </span>
+                </p>
             </div>
-            <div>
-                <p class="text-sm text-gray-500">Longitude</p>
-                <p class="font-semibold text-gray-800">{{ $transaksi->longitude ?? '-' }}</p>
+
+            <!-- Perbaikan Alamat Jemput -->
+            <div class="info-group full">
+                <p class="info-label">Alamat</p>
+                <p class="info-value">
+                    @if($transaksi->metode === 'jemput')
+                        {{ $transaksi->alamat_jemput ?? 'Alamat belum diisi' }}
+                    @else
+                        {{ $transaksi->titikKumpul->nama ?? 'Antar ke Titik Kumpul' }} 
+                    @endif
+                </p>
             </div>
+
+            <!-- Tampilkan Lokasi hanya jika ada -->
+            @if($transaksi->latitude)
+            <div class="info-group">
+                <p class="info-label">Latitude</p>
+                <p class="info-value">{{ $transaksi->latitude }}</p>
+            </div>
+            <div class="info-group">
+                <p class="info-label">Longitude</p>
+                <p class="info-value">{{ $transaksi->longitude }}</p>
+            </div>
+            @endif
         </div>
 
-        <hr class="my-6">
+        <hr class="divider">
 
-        <h2 class="text-lg font-semibold text-gray-700 mb-4">Daftar Jenis Sampah</h2>
+        <h2 class="sampah-title">Daftar Jenis Sampah</h2>
         @if($transaksi->jenisSampahs->count())
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-gray-600">
-                    <thead class="bg-gray-50 text-gray-700">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
                         <tr>
-                            <th class="px-4 py-2">Jenis Sampah</th>
-                            <th class="px-4 py-2 text-right">Berat (kg)</th>
+                            <th>Jenis Sampah</th>
+                            <th style="text-align: right;">Berat (kg)</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($transaksi->jenisSampahs as $jenis)
-                            <tr class="border-b border-gray-100">
-                                <td class="px-4 py-2">{{ $jenis->nama }}</td>
-                                <td class="px-4 py-2 text-right">{{ number_format($jenis->pivot->berat, 2) }}</td>
+                            <tr>
+                                <td>{{ $jenis->nama }}</td>
+                                <!-- PERBAIKAN PENTING: Ganti pivot->berat menjadi pivot->berat_estimasi / berat_aktual -->
+                                <td style="text-align: right;">
+                                    {{ number_format($jenis->pivot->berat_estimasi ?? $jenis->pivot->berat_aktual, 2) }}
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
-                    <tfoot class="bg-gray-50 font-semibold">
+                    <tfoot>
                         <tr>
-                            <td class="px-4 py-2">Total</td>
-                            <td class="px-4 py-2 text-right">{{ number_format($transaksi->jenisSampahs->sum('pivot.berat'), 2) }} kg</td>
+                            <td>Total</td>
+                            <!-- PERBAIKAN PENTING: Ganti sum('pivot.berat') menjadi sum('pivot.berat_estimasi') -->
+                            <td style="text-align: right;">
+                                {{ number_format($transaksi->jenisSampahs->sum('pivot.berat_estimasi'), 2) }} kg
+                            </td>
                         </tr>
                     </tfoot>
                 </table>
             </div>
         @else
-            <p class="text-gray-500">Tidak ada jenis sampah yang dicatat.</p>
+            <p style="color: #4d7a63;">Tidak ada jenis sampah yang dicatat.</p>
         @endif
     </div>
 </div>
-@endsection
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+    <div class="container">
+        <p>&copy; {{ date('Y') }} <strong>EcoPoint</strong> — Gerakan Hijau untuk Masa Depan.</p>
+        <div class="social">
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const hamburger = document.getElementById('hamburgerBtn');
+        const navLinks = document.getElementById('navLinks');
+        if (hamburger && navLinks) {
+            hamburger.addEventListener('click', function() {
+                hamburger.classList.toggle('active');
+                navLinks.classList.toggle('open');
+            });
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    navLinks.classList.remove('open');
+                });
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

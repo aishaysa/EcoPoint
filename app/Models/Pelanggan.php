@@ -34,12 +34,11 @@ class Pelanggan extends Model
         );
     }
 
-    public function setorans()
+    public function setorans() 
     {
         return $this->hasMany(
-            Setoran::class,
-            'user_id',
-            'user_id'
+            Transaksi::class,
+            'pelanggan_id'
         );
     }
 

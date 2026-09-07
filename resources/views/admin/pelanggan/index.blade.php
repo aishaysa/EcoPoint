@@ -30,14 +30,16 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{{ $loop->iteration }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{{ $p->nama }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{{ $p->no_hp ?? '-' }}</td>
-                    <td class="px-6 py-4 text-sm text-slate-600 max-w-xs truncate">-</td>
+                    <td class="px-6 py-4 text-sm text-slate-600 max-w-xs truncate">{{ $p->alamat ?? '-' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-emerald-100 text-emerald-800">
                             {{ $p->poin }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">0</td>
-                    
+                    {{-- 🔥 INI PERBAIKAN: Total Setoran --}}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                        {{ $p->setorans_count ?? 0 }}
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         {{-- Detail --}}
                         <a href="{{ route('admin.pelanggan.show', $p->id) }}" 
@@ -129,16 +131,12 @@
             Tindakan ini tidak dapat dibatalkan.
         </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
-            {{-- Tombol Batal --}}
             <button id="modalCancelBtn" 
-                    class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition 
-                           focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2">
+                    class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2">
                 Batal
             </button>
-            {{-- Tombol Ya, Hapus dengan teks dan border merah, tanpa berubah putih --}}
             <button id="modalConfirmBtn" 
-                    class="px-6 py-2.5 bg-white border-2 border-red-600 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition 
-                           focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                    class="px-6 py-2.5 bg-white border-2 border-red-600 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                 Ya, Hapus
             </button>
         </div>

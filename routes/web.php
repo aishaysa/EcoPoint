@@ -227,6 +227,11 @@ Route::prefix('admin')
                 [TransaksiController::class, 'approve']
             )->name('transaksi.approve');
 
+            Route::patch(
+                'transaksi/{id}/reject',
+                [TransaksiController::class, 'reject']
+            )->name('transaksi.reject');
+
 
             /*
             |--------------------------------------------------------------------------

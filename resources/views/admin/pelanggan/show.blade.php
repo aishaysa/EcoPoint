@@ -309,6 +309,51 @@
         color: #991b1b;
         border: 1px solid #fecaca;
     }
+    /* Approval controls */
+    .approval-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+    }
+    .weight-input {
+        width: 80px;
+        padding: 5px 8px;
+        font-size: 0.75rem;
+        border: 1px solid #d1d9e0;
+        border-radius: 6px;
+        background: #fff;
+    }
+    .btn-approve, .btn-reject {
+        padding: 5px 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.15s;
+    }
+    .btn-approve {
+        background: #059669;
+        color: #fff;
+    }
+    .btn-approve:hover {
+        background: #047857;
+    }
+    .btn-reject {
+        background: #dc2626;
+        color: #fff;
+    }
+    .btn-reject:hover {
+        background: #b91c1c;
+    }
+    .badge-processed {
+        font-size: 0.7rem;
+        color: #98a2b3;
+        background: #f1f3f5;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
     @media (max-width: 900px) {
         .profile-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -493,34 +538,23 @@
                                     {{-- KOLOM APPROVAL --}}
                                     <td>
                                         @if($transaksi->status === 'pending')
-                                            <form action="{{ route('admin.transaksi.approve', $transaksi->id) }}" method="POST" style="display:inline-block;">
+                                            <form action="{{ route('admin.transaksi.approve', $transaksi->id) }}" method="POST" class="approval-form">
                                                 @csrf
                                                 @method('PATCH')
-
-                                                <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+                                                <div class="approval-controls">
                                                     <input type="number" 
                                                            name="berat_akhir" 
                                                            step="0.01" 
                                                            value="{{ number_format($berat, 2) }}" 
-                                                           class="form-control" 
-                                                           style="width:80px; padding:4px 6px; font-size:0.75rem; border-radius:6px; border:1px solid #d1d9e0;"
+                                                           class="weight-input"
+                                                           placeholder="Berat"
                                                            required>
-
-                                                    <button type="submit" name="status" value="disetujui" 
-                                                            class="btn btn-success btn-sm" 
-                                                            style="padding:4px 10px; font-size:0.7rem; background:#059669; color:#fff; border:none; border-radius:6px; cursor:pointer;">
-                                                        Setujui
-                                                    </button>
-
-                                                    <button type="submit" name="status" value="ditolak" 
-                                                            class="btn btn-danger btn-sm" 
-                                                            style="padding:4px 10px; font-size:0.7rem; background:#dc2626; color:#fff; border:none; border-radius:6px; cursor:pointer;">
-                                                        Tolak
-                                                    </button>
+                                                    <button type="submit" class="btn-approve">Setujui</button>
+                                                    <button type="submit" class="btn-reject" formaction="{{ route('admin.transaksi.reject', $transaksi->id) }}">Tolak</button>
                                                 </div>
                                             </form>
                                         @else
-                                            <span style="font-size:0.7rem; color:#98a2b3;">Telah diproses</span>
+                                            <span class="badge-processed">Telah diproses</span>
                                         @endif
                                     </td>
                                 </tr>

@@ -45,7 +45,6 @@
         }
         .logo i { color: #a8e6c1; margin-right: 8px; }
 
-        /* Hamburger (Garis 3) */
         .hamburger {
             display: none;
             flex-direction: column;
@@ -69,7 +68,6 @@
         .hamburger.active span:nth-child(2) { opacity: 0; }
         .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
 
-        /* Menu Navigasi */
         .nav-links {
             display: flex;
             gap: 28px;
@@ -84,7 +82,6 @@
         }
         .nav-links a:hover { color: #6fcf97; }
 
-        /* Elemen Kanan (Nama User) - Desktop */
         .nav-right {
             display: flex;
             align-items: center;
@@ -110,10 +107,9 @@
         }
         .nav-right .btn-account:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
 
-        /* Elemen Mobile */
         .mobile-divider, .mobile-actions { display: none; }
 
-        /* ===== CONTENT PAGE ===== */
+        /* ===== CONTENT ===== */
         .riwayat-page { padding: 40px 0 60px; min-height: 70vh; }
         
         .header-section {
@@ -131,7 +127,6 @@
             color: #0d2b1f;
         }
 
-        /* Statistik */
         .stat-box {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -158,7 +153,6 @@
             margin-top: 6px;
         }
 
-        /* Tabel */
         .card {
             background: #ffffff;
             border-radius: 20px;
@@ -197,8 +191,26 @@
         .badge-selesai { background: #d4edda; color: #155724; }
         .badge-proses { background: #fff3cd; color: #856404; }
         .badge-ditolak { background: #f8d7da; color: #721c24; }
+        .badge-pending { background: #fff3cd; color: #856404; }
+        .badge-approved { background: #d4edda; color: #155724; }
+        .badge-completed { background: #d4edda; color: #155724; }
+        .badge-rejected { background: #f8d7da; color: #721c24; }
 
-        /* ===== FOOTER ===== */
+        .btn-detail {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: #6fcf97;
+            color: #0d2b1f;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: 0.15s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-detail:hover { background: #5bbf87; }
+
         .footer {
             background: #071a12;
             padding: 30px 0;
@@ -218,10 +230,8 @@
         .footer .social a { color: #8baa99; transition: 0.2s; }
         .footer .social a:hover { color: #6fcf97; }
 
-        /* ===== RESPONSIVE MOBILE ===== */
         @media (max-width: 768px) {
             .hamburger { display: flex; }
-
             .nav-links {
                 display: none;
                 flex-direction: column;
@@ -234,11 +244,8 @@
             }
             .nav-links.open { display: flex; }
             .nav-links a { font-size: 16px; width: 100%; text-align: center; padding: 8px 0; }
-
             .nav-right { display: none; }
-
             .mobile-divider { display: block; height: 1px; background: #1e4533; width: 100%; margin: 8px 0; }
-            
             .mobile-actions { 
                 display: flex; 
                 flex-direction: column; 
@@ -276,7 +283,6 @@
                 padding: 12px 0;
                 cursor: pointer;
             }
-            
             .header-section {
                 flex-direction: column;
                 align-items: flex-start !important;
@@ -286,7 +292,6 @@
                 width: 100%;
                 text-align: center;
             }
-
             .stat-box {
                 grid-template-columns: 1fr;
                 gap: 10px;
@@ -305,24 +310,20 @@
 </head>
 <body>
 
-<!-- ===== NAVBAR RESPONSIVE ===== -->
+<!-- NAVBAR -->
 <nav class="navbar">
     <div class="container">
         <a href="{{ route('user.dashboard') }}" class="logo">
             <i class="fas fa-leaf"></i> EcoPoint
         </a>
-
         <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
-
         <div class="nav-links" id="navLinks">
             <a href="{{ route('user.dashboard') }}">Beranda</a>
             <a href="{{ route('user.setoran') }}">Setoran</a>
             <a href="{{ route('user.poin') }}">Poin</a>
-            
             <div class="mobile-divider"></div>
-
             @auth
                 <div class="mobile-actions">
                     <a href="{{ route('user.profile') }}" class="btn-account">
@@ -344,7 +345,6 @@
                 </div>
             @endauth
         </div>
-
         <div class="nav-right">
             @auth
                 <a href="{{ route('user.profile') }}" class="btn-account">
@@ -360,7 +360,7 @@
     </div>
 </nav>
 
-<!-- ===== CONTENT RIWAYAT ===== -->
+<!-- CONTENT -->
 <div class="container riwayat-page">
     <div class="header-section">
         <h2>
@@ -414,11 +414,9 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ route('user.transaksiDetail', $trx->id) }}" style="background:#6fcf97; color:#0d2b1f; padding:6px 12px; border-radius:20px; text-decoration:none; font-weight:700; font-size:0.8rem;">
+                                {{-- HANYA TOMBOL DETAIL --}}
+                                <a href="{{ route('user.transaksi.detail', $trx->id) }}" class="btn-detail">
                                     <i class="fas fa-eye"></i> Detail
-                                </a>
-                                <a href="{{ route('user.cetakTransaksi', $trx->id) }}" style="background:transparent; border:1px solid #6fcf97; color:#2e7d5a; padding:6px 12px; border-radius:20px; text-decoration:none; font-weight:700; font-size:0.8rem; margin-top:4px; display:inline-block;">
-                                    <i class="fas fa-print"></i> Cetak
                                 </a>
                             </td>
                         </tr>
@@ -433,7 +431,6 @@
                 </tbody>
             </table>
         </div>
-
         @if ($transaksis->hasPages())
             <div style="margin-top:20px; display:flex; justify-content:center;">
                 {{ $transaksis->links() }}
@@ -442,7 +439,7 @@
     </div>
 </div>
 
-<!-- ===== FOOTER ===== -->
+<!-- FOOTER -->
 <footer class="footer">
     <div class="container">
         <p>&copy; {{ date('Y') }} <strong>EcoPoint</strong> — Gerakan Hijau untuk Masa Depan.</p>
