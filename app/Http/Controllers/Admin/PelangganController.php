@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Pelanggan;
 use App\Models\Transaksi;
+use Illuminate\Http\Request;
 
 class PelangganController extends Controller
 {
@@ -97,4 +98,25 @@ public function show($id)
             'message' => 'Status berhasil diperbarui.'
         ]);
     }
+public function store(Request $request)
+{
+    $request->validate([
+        'nama' => 'required|string|max:255',
+        'no_hp' => 'required|string|max:20',
+    ]);
+
+    return redirect()
+        ->route('admin.pelanggan.index');
+        }
+
+public function destroy($id)
+{
+    $pelanggan = Pelanggan::findOrFail($id);
+
+    $pelanggan->delete();
+
+    return redirect()
+        ->route('admin.pelanggan.index')
+        ->with('success', 'Data pelanggan berhasil dihapus.');
+}
 }

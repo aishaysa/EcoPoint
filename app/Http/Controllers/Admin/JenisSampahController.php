@@ -5,31 +5,33 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\JenisSampah;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class JenisSampahController extends Controller
 {
     public function index()
     {
         $jenisSampahs = JenisSampah::latest()->get();
-
         return view('admin.jenis-sampah.index', compact('jenisSampahs'));
     }
-
 
     public function create()
     {
         return view('admin.jenis-sampah.create');
     }
 
-
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('jenis_sampahs', 'nama'), // <- tambahan unique
+            ],
             'poin_per_kg' => 'required|integer|min:0',
             'deskripsi' => 'nullable|string',
         ]);
-
 
         JenisSampah::create([
             'nama' => $request->nama,
@@ -37,33 +39,28 @@ class JenisSampahController extends Controller
             'deskripsi' => $request->deskripsi,
         ]);
 
-
         return redirect()
             ->route('admin.jenis-sampah.index')
             ->with('success', 'Jenis sampah berhasil ditambahkan.');
     }
 
-
     public function edit(JenisSampah $jenisSampah)
     {
-        return view(
-            'admin.jenis-sampah.edit',
-            compact('jenisSampah')
-        );
+        return view('admin.jenis-sampah.edit', compact('jenisSampah'));
     }
 
-
-    public function update(
-        Request $request,
-        JenisSampah $jenisSampah
-    ) {
-
+    public function update(Request $request, JenisSampah $jenisSampah)
+    {
         $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('jenis_sampahs', 'nama')->ignore($jenisSampah->id), // abaikan record ini
+            ],
             'poin_per_kg' => 'required|integer|min:0',
             'deskripsi' => 'nullable|string',
         ]);
-
 
         $jenisSampah->update([
             'nama' => $request->nama,
@@ -71,17 +68,14 @@ class JenisSampahController extends Controller
             'deskripsi' => $request->deskripsi,
         ]);
 
-
         return redirect()
             ->route('admin.jenis-sampah.index')
             ->with('success', 'Jenis sampah berhasil diperbarui.');
     }
 
-
     public function destroy(JenisSampah $jenisSampah)
     {
         $jenisSampah->delete();
-
         return redirect()
             ->route('admin.jenis-sampah.index')
             ->with('success', 'Jenis sampah berhasil dihapus.');
