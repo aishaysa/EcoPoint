@@ -87,14 +87,15 @@
         }
         .nav-links a:hover { color: #6fcf97; }
 
-        /* Elemen Kanan (Akun) - Desktop */
+        /* Elemen Kanan (Logout) - Desktop */
         .nav-right {
             display: flex;
             align-items: center;
             gap: 20px;
             order: 3;
         }
-        .nav-right .btn-account {
+        /* Tombol Logout disamakan dengan link */
+        .btn-logout {
             background: transparent;
             color: #cde8d6;
             font-weight: 600;
@@ -105,9 +106,12 @@
             gap: 8px;
             padding: 6px 10px;
             border-radius: 8px;
+            border: none;
+            cursor: pointer;
             transition: 0.2s;
+            font-family: inherit;
         }
-        .nav-right .btn-account:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
+        .btn-logout:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
 
         /* Elemen Mobile */
         .mobile-divider, .mobile-actions { display: none; }
@@ -297,10 +301,28 @@
                 gap: 0; 
                 align-items: stretch; 
             }
-            .mobile-actions .btn-account,
+            .mobile-actions .btn-logout,
             .mobile-actions form { width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; }
-            .mobile-actions .btn-account { background: transparent; color: #cde8d6; font-weight: 600; font-size: 16px; text-decoration: none; padding: 12px 0; }
-            .mobile-actions form button { background: transparent; border: none; color: #cde8d6; font-weight: 600; font-size: 16px; width: 100%; padding: 12px 0; cursor: pointer; }
+            
+            .mobile-actions .btn-logout {
+                background: transparent;
+                color: #cde8d6;
+                font-weight: 600;
+                font-size: 16px;
+                text-decoration: none;
+                padding: 12px 0;
+                justify-content: center;
+            }
+            .mobile-actions form button {
+                background: transparent;
+                border: none;
+                color: #cde8d6;
+                font-weight: 600;
+                font-size: 16px;
+                width: 100%;
+                padding: 12px 0;
+                cursor: pointer;
+            }
 
             .profile-avatar { flex-direction: column; text-align: center; gap: 16px; }
             .profile-avatar img, .default-avatar { width: 100px; height: 100px; }
@@ -323,7 +345,7 @@
 </head>
 <body>
 
-<!-- NAVBAR RESPONSIVE (Tanpa Dropdown, Langsung "Akun") -->
+<!-- NAVBAR RESPONSIVE (Logout Langsung) -->
 <nav class="navbar">
     <div class="container navbar-content">
         <a href="{{ route('user.dashboard') }}" class="logo"><i class="fas fa-leaf"></i> EcoPoint</a>
@@ -332,7 +354,7 @@
             <span></span><span></span><span></span>
         </button>
 
-        <!-- Menu Navigasi + Akun + Logout (Mobile) -->
+        <!-- Menu Navigasi + Logout (Mobile) -->
         <div class="nav-links" id="navLinks">
             <a href="{{ route('user.dashboard') }}">Beranda</a>
             <a href="{{ route('user.setoran') }}">Setoran</a>
@@ -342,12 +364,10 @@
 
             @auth
                 <div class="mobile-actions">
-                    <a href="{{ route('user.profile') }}" class="btn-account">
-                        <i class="fas fa-user"></i> Akun
-                    </a>
+                    <!-- Logout di Mobile -->
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit">
+                        <button type="submit" class="btn-logout">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </button>
                     </form>
@@ -362,12 +382,16 @@
             @endauth
         </div>
 
-        <!-- Elemen Kanan (Hanya Link Akun Desktop) -->
+        <!-- Elemen Kanan (Logout Desktop) -->
         <div class="nav-right">
             @auth
-                <a href="{{ route('user.profile') }}" class="btn-account">
-                    <i class="fas fa-user"></i> Akun
-                </a>
+                <!-- Logout di Desktop (Pakai form POST agar aman) -->
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="btn-logout">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
             @else
                 <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
                     <i class="fas fa-sign-in-alt"></i> Login

@@ -84,7 +84,7 @@
         }
         .nav-links a:hover { color: #6fcf97; }
 
-        /* Elemen Kanan (Akun) - Desktop */
+        /* Elemen Kanan (Nama User) - Desktop */
         .nav-right {
             display: flex;
             align-items: center;
@@ -103,6 +103,10 @@
             padding: 6px 10px;
             border-radius: 8px;
             transition: 0.2s;
+            white-space: nowrap;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .nav-right .btn-account:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
 
@@ -235,10 +239,11 @@
                 font-size: 16px;
                 text-decoration: none;
                 padding: 12px 0;
-                transition: 0.2s;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
             }
-            .mobile-actions .btn-account:hover { color: #6fcf97; }
-            
             .mobile-actions form button {
                 background: transparent;
                 border: none;
@@ -248,9 +253,7 @@
                 width: 100%;
                 padding: 12px 0;
                 cursor: pointer;
-                transition: 0.2s;
             }
-            .mobile-actions form button:hover { color: #6fcf97; }
 
             .poin-page { padding: 40px 0; }
             .poin-card { padding: 30px 20px; }
@@ -272,12 +275,10 @@
     <div class="container">
         <a href="{{ route('user.dashboard') }}" class="logo"><i class="fas fa-leaf"></i> EcoPoint</a>
 
-        <!-- Garis 3 untuk Mobile -->
         <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
 
-        <!-- Menu Navigasi (Beranda, Setoran, Poin, Akun, Logout) -->
         <div class="nav-links" id="navLinks">
             <a href="{{ route('user.dashboard') }}">Beranda</a>
             <a href="{{ route('user.setoran') }}">Setoran</a>
@@ -288,7 +289,7 @@
             @auth
                 <div class="mobile-actions">
                     <a href="{{ route('user.profile') }}" class="btn-account">
-                        <i class="fas fa-user"></i> Akun
+                        <i class="fas fa-user"></i> {{ Auth::user()->name }}
                     </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -307,11 +308,10 @@
             @endauth
         </div>
 
-        <!-- Elemen Kanan (Hanya Link Akun Desktop) -->
         <div class="nav-right">
             @auth
                 <a href="{{ route('user.profile') }}" class="btn-account">
-                    <i class="fas fa-user"></i> Akun
+                    <i class="fas fa-user"></i> {{ Auth::user()->name }}
                 </a>
             @else
                 <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
@@ -334,11 +334,11 @@
             <div class="poin-label">Total Poin Anda</div>
 
             <div class="poin-actions">
-                <a href="{{ route('user.transaksi.create') }}" class="btn-poin btn-poin-primary">
-                    <i class="fas fa-exchange-alt me-2"></i> Tukar Poin
-                </a>
+                <button class="btn-poin btn-poin-primary" onclick="alert('Fitur penukaran poin sedang dalam pengembangan!')">
+                    <i class="fas fa-hourglass-half"></i> Segera Hadir
+                </button>
                 <a href="{{ route('user.setoran') }}" class="btn-poin btn-poin-secondary">
-                    <i class="fas fa-recycle me-2"></i> Lihat Setoran
+                    <i class="fas fa-recycle"></i> Lihat Setoran
                 </a>
             </div>
         </div>
@@ -360,7 +360,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Hamburger toggle (Garis 3)
         const hamburger = document.getElementById('hamburgerBtn');
         const navLinks = document.getElementById('navLinks');
         if (hamburger && navLinks) {
@@ -368,7 +367,6 @@
                 hamburger.classList.toggle('active');
                 navLinks.classList.toggle('open');
             });
-            // Tutup menu saat link diklik
             navLinks.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', () => {
                     hamburger.classList.remove('active');

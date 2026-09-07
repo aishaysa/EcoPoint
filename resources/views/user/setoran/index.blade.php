@@ -84,7 +84,7 @@
         }
         .nav-links a:hover { color: #6fcf97; }
 
-        /* Elemen Kanan (Akun) - Desktop */
+        /* Elemen Kanan (Nama User) - Desktop */
         .nav-right {
             display: flex;
             align-items: center;
@@ -103,6 +103,10 @@
             padding: 6px 10px;
             border-radius: 8px;
             transition: 0.2s;
+            white-space: nowrap;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .nav-right .btn-account:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
 
@@ -257,6 +261,10 @@
                 font-size: 16px;
                 text-decoration: none;
                 padding: 12px 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
             }
             .mobile-actions form button {
                 background: transparent;
@@ -318,7 +326,7 @@
             @auth
                 <div class="mobile-actions">
                     <a href="{{ route('user.profile') }}" class="btn-account">
-                        <i class="fas fa-user"></i> Akun
+                        <i class="fas fa-user"></i> {{ Auth::user()->name }}
                     </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -340,7 +348,7 @@
         <div class="nav-right">
             @auth
                 <a href="{{ route('user.profile') }}" class="btn-account">
-                    <i class="fas fa-user"></i> Akun
+                    <i class="fas fa-user"></i> {{ Auth::user()->name }}
                 </a>
             @else
                 <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
@@ -358,7 +366,7 @@
         <h2>
             <i class="fas fa-history" style="color:#2e7d5a;"></i> Riwayat Setoran
         </h2>
-        <a href="{{ route('user.transaksi.create') }}" class="btn-primary btn-success" style="background:#2e7d5a; color:white; padding:10px 20px; border-radius:40px; text-decoration:none; font-weight:700; font-size:0.9rem;">
+        <a href="{{ route('user.transaksi.create') }}" style="background:#2e7d5a; color:white; padding:10px 20px; border-radius:40px; text-decoration:none; font-weight:700; font-size:0.9rem;">
             <i class="fas fa-plus"></i> Setor Baru
         </a>
     </div>
@@ -406,10 +414,10 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ route('user.transaksiDetail', $trx->id) }}" class="btn-primary btn-sm" style="background:#6fcf97; color:#0d2b1f; padding:6px 12px; border-radius:20px; text-decoration:none; font-weight:700; font-size:0.8rem;">
+                                <a href="{{ route('user.transaksiDetail', $trx->id) }}" style="background:#6fcf97; color:#0d2b1f; padding:6px 12px; border-radius:20px; text-decoration:none; font-weight:700; font-size:0.8rem;">
                                     <i class="fas fa-eye"></i> Detail
                                 </a>
-                                <a href="{{ route('user.cetakTransaksi', $trx->id) }}" class="btn-primary btn-sm btn-outline" style="background:transparent; border:1px solid #6fcf97; color:#2e7d5a; padding:6px 12px; border-radius:20px; text-decoration:none; font-weight:700; font-size:0.8rem; margin-top:4px; display:inline-block;">
+                                <a href="{{ route('user.cetakTransaksi', $trx->id) }}" style="background:transparent; border:1px solid #6fcf97; color:#2e7d5a; padding:6px 12px; border-radius:20px; text-decoration:none; font-weight:700; font-size:0.8rem; margin-top:4px; display:inline-block;">
                                     <i class="fas fa-print"></i> Cetak
                                 </a>
                             </td>
@@ -449,7 +457,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Hamburger toggle (Menu Mobile)
         const hamburger = document.getElementById('hamburgerBtn');
         const navLinks = document.getElementById('navLinks');
         if (hamburger && navLinks) {
@@ -457,7 +464,6 @@
                 hamburger.classList.toggle('active');
                 navLinks.classList.toggle('open');
             });
-            // Tutup menu saat link diklik
             navLinks.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', () => {
                     hamburger.classList.remove('active');

@@ -88,7 +88,7 @@
         }
         .nav-links a:hover { color: #6fcf97; }
 
-        /* Elemen Kanan (Akun) - Desktop */
+        /* Elemen Kanan (Nama User) - Desktop */
         .nav-right {
             display: flex;
             align-items: center;
@@ -107,6 +107,10 @@
             padding: 6px 10px;
             border-radius: 8px;
             transition: 0.2s;
+            white-space: nowrap;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .nav-right .btn-account:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
 
@@ -442,8 +446,28 @@
             }
             .mobile-actions .btn-account,
             .mobile-actions form { width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; }
-            .mobile-actions .btn-account { background: transparent; color: #cde8d6; font-weight: 600; font-size: 16px; text-decoration: none; padding: 12px 0; }
-            .mobile-actions form button { background: transparent; border: none; color: #cde8d6; font-weight: 600; font-size: 16px; width: 100%; padding: 12px 0; cursor: pointer; }
+            .mobile-actions .btn-account {
+                background: transparent;
+                color: #cde8d6;
+                font-weight: 600;
+                font-size: 16px;
+                text-decoration: none;
+                padding: 12px 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
+            }
+            .mobile-actions form button {
+                background: transparent;
+                border: none;
+                color: #cde8d6;
+                font-weight: 600;
+                font-size: 16px;
+                width: 100%;
+                padding: 12px 0;
+                cursor: pointer;
+            }
 
             /* Penyesuaian Form di Mobile */
             .grid-2, .method-grid, .sampah-grid { grid-template-columns: 1fr; }
@@ -480,7 +504,7 @@
             @auth
                 <div class="mobile-actions">
                     <a href="{{ route('user.profile') }}" class="btn-account">
-                        <i class="fas fa-user"></i> Akun
+                        <i class="fas fa-user"></i> {{ Auth::user()->name }}
                     </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -502,7 +526,7 @@
         <div class="nav-right">
             @auth
                 <a href="{{ route('user.profile') }}" class="btn-account">
-                    <i class="fas fa-user"></i> Akun
+                    <i class="fas fa-user"></i> {{ Auth::user()->name }}
                 </a>
             @else
                 <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
@@ -516,10 +540,7 @@
 
 <!-- ===== CONTENT FORM SETORAN ===== -->
 <div class="setoran-page">
-
     <div class="setoran-container">
-
-        <!-- HEADER -->
         <div class="setoran-header">
             <div>
                 <h1 class="setoran-title">
@@ -535,28 +556,16 @@
             </a>
         </div>
 
-        <!-- CARD -->
         <div class="setoran-card">
-
             <form action="{{ route('user.transaksi.store') }}" method="POST">
-
                 @csrf
-
                 <div class="setoran-body">
-
-                    <!-- ALERT -->
                     @if(session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
+                        <div class="alert alert-success">{{ session('success') }}</div>
                     @endif
-
                     @if(session('error'))
-                        <div class="alert alert-danger">
-                            {{ session('error') }}
-                        </div>
+                        <div class="alert alert-danger">{{ session('error') }}</div>
                     @endif
-
                     @if($errors->any())
                         <div class="alert alert-danger">
                             <strong>Data belum lengkap.</strong>
@@ -568,49 +577,32 @@
                         </div>
                     @endif
 
-                    <!-- 01. DATA PENGIRIM -->
                     <div class="section">
-                        <div class="section-title">
-                            01. Data Pengirim
-                        </div>
+                        <div class="section-title">01. Data Pengirim</div>
                         <div class="grid-2">
                             <div class="field">
                                 <label>Nama Pengirim</label>
-                                <input type="text" name="nama_pengirim"
-                                       class="input readonly"
-                                       value="{{ auth()->user()->name }}"
-                                       readonly>
+                                <input type="text" name="nama_pengirim" class="input readonly" value="{{ auth()->user()->name }}" readonly>
                             </div>
                             <div class="field">
                                 <label>Nomor HP</label>
-                                <input type="text" name="no_hp"
-                                       class="input"
-                                       value="{{ old('no_hp', auth()->user()->pelanggan->no_hp ?? '') }}"
-                                       placeholder="08xxxxxxxxxx"
-                                       required>
+                                <input type="text" name="no_hp" class="input" value="{{ old('no_hp', auth()->user()->pelanggan->no_hp ?? '') }}" placeholder="08xxxxxxxxxx" required>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 02. METODE SETORAN -->
                     <div class="section">
-                        <div class="section-title">
-                            02. Metode Setoran
-                        </div>
+                        <div class="section-title">02. Metode Setoran</div>
                         <div class="method-grid">
                             <div>
-                                <input type="radio" name="metode" value="jemput"
-                                       id="metodeJemput" class="method-input"
-                                       {{ old('metode','jemput') === 'jemput' ? 'checked' : '' }}>
+                                <input type="radio" name="metode" value="jemput" id="metodeJemput" class="method-input" {{ old('metode','jemput') === 'jemput' ? 'checked' : '' }}>
                                 <label for="metodeJemput" class="method-label">
                                     <strong>Jemput Sampah</strong>
                                     <span>Petugas datang ke lokasi Anda</span>
                                 </label>
                             </div>
                             <div>
-                                <input type="radio" name="metode" value="antar"
-                                       id="metodeAntar" class="method-input"
-                                       {{ old('metode') === 'antar' ? 'checked' : '' }}>
+                                <input type="radio" name="metode" value="antar" id="metodeAntar" class="method-input" {{ old('metode') === 'antar' ? 'checked' : '' }}>
                                 <label for="metodeAntar" class="method-label">
                                     <strong>Antar ke Titik Kumpul</strong>
                                     <span>Anda mengantar langsung</span>
@@ -619,35 +611,19 @@
                         </div>
                     </div>
 
-                    <!-- 03. LOKASI -->
                     <div class="section">
-                        <div class="section-title">
-                            03. Lokasi
-                        </div>
-
-                        <!-- Status -->
-                        <div id="locationStatus" class="location-status">
-                            Meminta izin lokasi...
-                        </div>
-
-                        <!-- Tombol -->
+                        <div class="section-title">03. Lokasi</div>
+                        <div id="locationStatus" class="location-status">Meminta izin lokasi...</div>
                         <div class="location-actions">
-                            <button type="button" id="btnLocation" class="location-button">
-                                <i class="fas fa-location-dot"></i> Gunakan Lokasi Saya
-                            </button>
-                            <button type="button" id="btnRefreshLocation" class="location-button">
-                                <i class="fas fa-rotate"></i> Perbarui Lokasi
-                            </button>
+                            <button type="button" id="btnLocation" class="location-button"><i class="fas fa-location-dot"></i> Gunakan Lokasi Saya</button>
+                            <button type="button" id="btnRefreshLocation" class="location-button"><i class="fas fa-rotate"></i> Perbarui Lokasi</button>
                         </div>
 
-                        <!-- AREA JEMPUT -->
                         <div id="jemputArea">
                             <div class="field">
                                 <label>Alamat Jemput <span style="color:red;">*</span></label>
-                                <textarea name="alamat_jemput" id="alamat_jemput"
-                                          class="textarea" placeholder="Alamat akan otomatis terisi dari lokasi Anda...">{{ old('alamat_jemput') }}</textarea>
+                                <textarea name="alamat_jemput" id="alamat_jemput" class="textarea" placeholder="Alamat akan otomatis terisi dari lokasi Anda...">{{ old('alamat_jemput') }}</textarea>
                             </div>
-                            <!-- Cabang terdekat -->
                             <div id="cabangInfo" class="branch-info">
                                 <strong>Cabang terdekat</strong>
                                 <small id="cabangNama">-</small>
@@ -655,18 +631,13 @@
                             </div>
                         </div>
 
-                        <!-- AREA ANTAR -->
                         <div id="antarArea" style="display:none;">
                             <div class="field">
                                 <label>Titik Kumpul <span style="color:red;">*</span></label>
                                 <select name="titik_kumpul_id" id="titikKumpulSelect" class="select">
                                     <option value="">Memuat titik kumpul...</option>
                                     @foreach($titikKumpuls as $item)
-                                        <option value="{{ $item->id }}"
-                                                data-lat="{{ $item->latitude }}"
-                                                data-lng="{{ $item->longitude }}"
-                                                data-alamat="{{ $item->alamat }}"
-                                                {{ old('titik_kumpul_id') == $item->id ? 'selected' : '' }}>
+                                        <option value="{{ $item->id }}" data-lat="{{ $item->latitude }}" data-lng="{{ $item->longitude }}" data-alamat="{{ $item->alamat }}" {{ old('titik_kumpul_id') == $item->id ? 'selected' : '' }}>
                                             {{ $item->nama }}
                                         </option>
                                     @endforeach
@@ -682,68 +653,39 @@
                             </div>
                         </div>
 
-                        <!-- MAP -->
                         <div style="margin-top:15px;">
                             <div id="map"></div>
                         </div>
-
-                        <!-- Koordinat -->
-                        <div class="coordinate-text">
-                            Koordinat: <span id="coordinateText">-</span>
-                        </div>
-
+                        <div class="coordinate-text">Koordinat: <span id="coordinateText">-</span></div>
                         <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
                         <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
-
                     </div>
 
-                    <!-- 04. JENIS SAMPAH -->
                     <div class="section">
-                        <div class="section-title">
-                            04. Jenis Sampah
-                        </div>
+                        <div class="section-title">04. Jenis Sampah</div>
                         <div class="sampah-grid">
                             @forelse($jenisSampahs as $js)
                                 <div class="sampah-item">
-                                    <input type="checkbox" class="sampah-check"
-                                           id="check_{{ $js->id }}" data-id="{{ $js->id }}">
-                                    <label for="check_{{ $js->id }}" class="sampah-name">
-                                        {{ $js->nama }}
-                                    </label>
-                                    <input type="number" name="jenis_sampah_data[{{ $js->id }}]"
-                                           id="berat_{{ $js->id }}" class="weight"
-                                           min="0.1" step="0.1"
-                                           value="{{ old('jenis_sampah_data.' . $js->id, 0) }}"
-                                           disabled>
+                                    <input type="checkbox" class="sampah-check" id="check_{{ $js->id }}" data-id="{{ $js->id }}">
+                                    <label for="check_{{ $js->id }}" class="sampah-name">{{ $js->nama }}</label>
+                                    <input type="number" name="jenis_sampah_data[{{ $js->id }}]" id="berat_{{ $js->id }}" class="weight" min="0.1" step="0.1" value="{{ old('jenis_sampah_data.' . $js->id, 0) }}" disabled>
                                     <span style="font-size:0.65rem;color:#4d7a63;">kg</span>
                                 </div>
                             @empty
-                                <div style="grid-column:1/-1; color:#4d7a63; font-size:0.75rem;">
-                                    Belum ada jenis sampah.
-                                </div>
+                                <div style="grid-column:1/-1; color:#4d7a63; font-size:0.75rem;">Belum ada jenis sampah.</div>
                             @endforelse
                         </div>
                     </div>
-
-                </div> <!-- end .setoran-body -->
-
-                <!-- FOOTER -->
-                <div class="footer-actions">
-                    <a href="{{ route('user.setoran') }}" class="button button-cancel">
-                        <i class="fas fa-times"></i> Batal
-                    </a>
-                    <button type="submit" class="button button-submit">
-                        <i class="fas fa-paper-plane"></i> Ajukan Setoran
-                    </button>
                 </div>
 
+                <div class="footer-actions">
+                    <a href="{{ route('user.setoran') }}" class="button button-cancel"><i class="fas fa-times"></i> Batal</a>
+                    <button type="submit" class="button button-submit"><i class="fas fa-paper-plane"></i> Ajukan Setoran</button>
+                </div>
             </form>
-
-        </div> <!-- end .setoran-card -->
-
-    </div> <!-- end .container -->
-
-</div> <!-- end .setoran-page -->
+        </div>
+    </div>
+</div>
 
 <!-- ===== FOOTER ===== -->
 <footer class="footer">
@@ -760,10 +702,8 @@
 
 <!-- ===== SCRIPTS ===== -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Hamburger toggle (Menu Mobile)
         const hamburger = document.getElementById('hamburgerBtn');
         const navLinks = document.getElementById('navLinks');
         if (hamburger && navLinks) {
@@ -780,15 +720,11 @@
         }
     });
 
-    // ============================================================
-    // DATA DARI DATABASE
-    // ============================================================
+    // Data dari database
     const cabangs = @json($cabangs->values());
     const titikKumpuls = @json($titikKumpuls->values());
 
-    // ============================================================
-    // ELEMENT
-    // ============================================================
+    // Element
     const metodeJemput = document.getElementById('metodeJemput');
     const metodeAntar  = document.getElementById('metodeAntar');
     const jemputArea   = document.getElementById('jemputArea');
@@ -800,27 +736,19 @@
     const lngInput     = document.getElementById('longitude');
     const coordText    = document.getElementById('coordinateText');
 
-    // ============================================================
-    // MAP
-    // ============================================================
+    // Map
     const defaultLat = {{ $centerLat }};
     const defaultLng = {{ $centerLng }};
-
     let currentLat = parseFloat(latInput.value) || defaultLat;
     let currentLng = parseFloat(lngInput.value) || defaultLng;
-
     const map = L.map('map').setView([currentLat, currentLng], 13);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap'
     }).addTo(map);
-
     let marker = L.marker([currentLat, currentLng], { draggable: true }).addTo(map);
 
-    // ============================================================
-    // FUNGSI JARAK (Haversine)
-    // ============================================================
+    // Fungsi Jarak (Haversine)
     function distanceKm(lat1, lng1, lat2, lng2) {
         const R = 6371;
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -832,9 +760,7 @@
         return R * c;
     }
 
-    // ============================================================
-    // UPDATE LOKASI
-    // ============================================================
+    // Update Lokasi
     function updateLocation(lat, lng) {
         currentLat = parseFloat(lat);
         currentLng = parseFloat(lng);
@@ -847,20 +773,12 @@
         cariTitikKumpulTerdekat();
     }
 
-    // ============================================================
-    // REVERSE GEOCODE (ALAMAT OTOMATIS)
-    // ============================================================
+    // Reverse Geocode
     async function getAddress(lat, lng) {
         try {
             const response = await fetch(
                 'https://nominatim.openstreetmap.org/reverse?' +
-                new URLSearchParams({
-                    format: 'json',
-                    lat: lat,
-                    lon: lng,
-                    zoom: 18,
-                    addressdetails: 1
-                })
+                new URLSearchParams({ format: 'json', lat: lat, lon: lng, zoom: 18, addressdetails: 1 })
             );
             if (!response.ok) throw new Error();
             const data = await response.json();
@@ -870,13 +788,10 @@
         }
     }
 
-    // ============================================================
-    // CABANG TERDEKAT
-    // ============================================================
+    // Cabang Terdekat
     function cariCabangTerdekat() {
         const info = document.getElementById('cabangInfo');
         if (!cabangs.length) { info.style.display = 'none'; return; }
-
         let terdekat = null;
         cabangs.forEach(cabang => {
             const lat = parseFloat(cabang.latitude);
@@ -887,21 +802,15 @@
                 terdekat = { nama: cabang.nama, jarak };
             }
         });
-
         if (!terdekat) { info.style.display = 'none'; return; }
-
         info.style.display = 'block';
         document.getElementById('cabangNama').textContent = terdekat.nama;
-        document.getElementById('cabangJarak').textContent =
-            terdekat.jarak.toFixed(2) + ' km dari lokasi Anda';
+        document.getElementById('cabangJarak').textContent = terdekat.jarak.toFixed(2) + ' km dari lokasi Anda';
     }
 
-    // ============================================================
-    // TITIK KUMPUL TERDEKAT (AUTO SELECT)
-    // ============================================================
+    // Titik Kumpul Terdekat
     function cariTitikKumpulTerdekat() {
         if (!titikKumpuls.length) return;
-
         let terdekat = null;
         titikKumpuls.forEach(titik => {
             const lat = parseFloat(titik.latitude);
@@ -909,58 +818,37 @@
             if (isNaN(lat) || isNaN(lng)) return;
             const jarak = distanceKm(currentLat, currentLng, lat, lng);
             if (!terdekat || jarak < terdekat.jarak) {
-                terdekat = {
-                    id: titik.id,
-                    nama: titik.nama,
-                    alamat: titik.alamat,
-                    latitude: lat,
-                    longitude: lng,
-                    jarak
-                };
+                terdekat = { id: titik.id, nama: titik.nama, alamat: titik.alamat, latitude: lat, longitude: lng, jarak };
             }
         });
-
         if (!terdekat) return;
-
         if (!titikSelect.dataset.userSelected) {
             titikSelect.value = terdekat.id;
         }
         updateTitikInfo();
     }
 
-    // ============================================================
-    // INFO TITIK KUMPUL
-    // ============================================================
+    // Info Titik Kumpul
     function updateTitikInfo() {
         const option = titikSelect.options[titikSelect.selectedIndex];
         if (!option || !option.value) {
             document.getElementById('titikInfo').style.display = 'none';
             return;
         }
-
         const lat = parseFloat(option.dataset.lat);
         const lng = parseFloat(option.dataset.lng);
         const alamat = option.dataset.alamat || '';
         const nama = option.textContent.trim();
-
         if (isNaN(lat) || isNaN(lng)) return;
-
         const jarak = distanceKm(currentLat, currentLng, lat, lng);
-
         document.getElementById('titikInfo').style.display = 'block';
         document.getElementById('titikNama').textContent = nama;
         document.getElementById('titikAlamat').textContent = alamat;
-        document.getElementById('titikJarak').textContent =
-            jarak.toFixed(2) + ' km dari lokasi Anda';
-        document.getElementById('mapsLink').href =
-            'https://www.google.com/maps/dir/?api=1' +
-            '&origin=' + currentLat + ',' + currentLng +
-            '&destination=' + lat + ',' + lng;
+        document.getElementById('titikJarak').textContent = jarak.toFixed(2) + ' km dari lokasi Anda';
+        document.getElementById('mapsLink').href = 'https://www.google.com/maps/dir/?api=1&origin=' + currentLat + ',' + currentLng + '&destination=' + lat + ',' + lng;
     }
 
-    // ============================================================
-    // METODE TOGGLE
-    // ============================================================
+    // Metode Toggle
     function updateMetode() {
         if (metodeJemput.checked) {
             jemputArea.style.display = 'block';
@@ -976,21 +864,16 @@
         }
         setTimeout(() => map.invalidateSize(), 200);
     }
-
     metodeJemput.addEventListener('change', updateMetode);
     metodeAntar.addEventListener('change', updateMetode);
 
-    // ============================================================
-    // PILIH TITIK MANUAL
-    // ============================================================
+    // Pilih Titik Manual
     titikSelect.addEventListener('change', function () {
         this.dataset.userSelected = '1';
         updateTitikInfo();
     });
 
-    // ============================================================
-    // DRAG MARKER
-    // ============================================================
+    // Drag Marker
     marker.on('dragend', async function () {
         const pos = marker.getLatLng();
         updateLocation(pos.lat, pos.lng);
@@ -1000,9 +883,7 @@
         }
     });
 
-    // ============================================================
-    // KLIK PETA
-    // ============================================================
+    // Klik Peta
     map.on('click', async function (e) {
         updateLocation(e.latlng.lat, e.latlng.lng);
         const alamat = await getAddress(e.latlng.lat, e.latlng.lng);
@@ -1011,9 +892,7 @@
         }
     });
 
-    // ============================================================
-    // LOKASI USER (GEOLOCATION)
-    // ============================================================
+    // Lokasi User
     function ambilLokasi() {
         if (!navigator.geolocation) {
             locationStatus.textContent = 'Browser tidak mendukung lokasi.';
@@ -1041,13 +920,10 @@
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     }
-
     document.getElementById('btnLocation').addEventListener('click', ambilLokasi);
     document.getElementById('btnRefreshLocation').addEventListener('click', ambilLokasi);
 
-    // ============================================================
-    // CHECKBOX JENIS SAMPAH (enable/disable berat)
-    // ============================================================
+    // Checkbox Jenis Sampah
     document.querySelectorAll('.sampah-check').forEach(function (checkbox) {
         checkbox.addEventListener('change', function () {
             const id = this.dataset.id;
@@ -1061,9 +937,7 @@
         });
     });
 
-    // ============================================================
-    // INISIALISASI
-    // ============================================================
+    // Inisialisasi
     updateMetode();
     ambilLokasi();
 </script>

@@ -84,7 +84,7 @@
         }
         .nav-links a:hover { color: #6fcf97; }
 
-        /* Elemen Kanan (Hanya Link Akun) - Desktop */
+        /* Elemen Kanan (Nama User) - Desktop */
         .nav-right {
             display: flex;
             align-items: center;
@@ -103,6 +103,10 @@
             padding: 6px 10px;
             border-radius: 8px;
             transition: 0.2s;
+            white-space: nowrap;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .nav-right .btn-account:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
 
@@ -110,23 +114,142 @@
         .mobile-divider, .mobile-actions { display: none; }
 
         /* ===== HERO ===== */
-        .hero { padding: 80px 0 60px; background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%); text-align: center; border-bottom: 4px solid #6fcf97; }
-        .hero .badge { display: inline-block; background: #0d2b1f; color: #6fcf97; padding: 6px 20px; border-radius: 40px; font-size: 14px; font-weight: 700; margin-bottom: 20px; }
-        .hero h1 { font-size: 52px; font-weight: 800; line-height: 1.2; color: #0d2b1f; margin-bottom: 16px; }
+        .hero {
+            padding: 80px 0 60px;
+            background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%);
+            text-align: center;
+            border-bottom: 4px solid #6fcf97;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50px; left: -50px;
+            width: 200px; height: 200px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -50px; right: -50px;
+            width: 250px; height: 250px;
+            background: rgba(46,125,90,0.1);
+            border-radius: 50%;
+        }
+        .hero .container { position: relative; z-index: 1; }
+        .hero .badge {
+            display: inline-block;
+            background: #0d2b1f;
+            color: #6fcf97;
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(13,43,31,0.2);
+        }
+        .hero h1 {
+            font-size: 50px;
+            font-weight: 800;
+            line-height: 1.2;
+            color: #0d2b1f;
+            margin-bottom: 16px;
+        }
         .hero h1 i { color: #2e7d5a; }
-        .hero p { font-size: 20px; color: #1f4232; max-width: 600px; margin: 0 auto 30px; }
-        .hero .btn-hero { background: #0d2b1f; color: white; border: none; padding: 16px 48px; border-radius: 60px; font-weight: 700; font-size: 18px; cursor: pointer; transition: 0.25s; box-shadow: 0 8px 28px rgba(13,43,31,0.3); text-decoration: none; display: inline-block; }
-        .hero .btn-hero:hover { background: #1a4532; transform: translateY(-4px); }
+        .hero p {
+            font-size: 20px;
+            color: #1f4232;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        .hero .btn-hero {
+            background: #0d2b1f;
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 8px 28px rgba(13,43,31,0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+        .hero .btn-hero:hover {
+            background: #1a4532;
+            transform: translateY(-4px);
+        }
+        .hero .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        .hero .stat-box { text-align: center; }
+        .hero .stat-box strong { display: block; font-size: 2rem; color: #0d2b1f; }
+        .hero .stat-box span { font-size: 0.85rem; color: #2d5a43; }
 
         /* ===== FITUR ===== */
         .features { padding: 60px 0; }
         .section-title { text-align: center; font-size: 34px; font-weight: 800; color: #0d2b1f; margin-bottom: 8px; }
         .section-sub { text-align: center; font-size: 18px; color: #2d5a43; margin-bottom: 40px; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; }
-        .feature-item { background: white; padding: 40px 20px; border-radius: 24px; text-align: center; box-shadow: 0 6px 24px rgba(0,30,10,0.06); border: 1px solid #d4e8db; transition: 0.3s; text-decoration: none; color: inherit; display: block; }
-        .feature-item:hover { transform: translateY(-6px); box-shadow: 0 12px 36px rgba(0,30,10,0.12); }
-        .feature-item .icon-box { font-size: 48px; color: #2e7d5a; margin-bottom: 16px; }
-        .feature-item h3 { font-size: 22px; color: #0d2b1f; font-weight: 700; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 30px; }
+        .feature-item {
+            background: white;
+            padding: 40px 25px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 6px 24px rgba(0,30,10,0.06);
+            border: 1px solid #d4e8db;
+            transition: 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .feature-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 36px rgba(0,30,10,0.12);
+            border-color: #6fcf97;
+        }
+        .feature-item .icon-box {
+            font-size: 48px;
+            color: #2e7d5a;
+            margin-bottom: 16px;
+            background: #e8f5e9;
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .feature-item h3 { font-size: 22px; color: #0d2b1f; font-weight: 700; margin-bottom: 8px; }
+        .feature-item p { font-size: 0.9rem; color: #4d7a63; }
+
+        /* ===== CARA KERJA ===== */
+        .how-it-works { padding: 60px 0; background: #ffffff; border-top: 1px solid #e0ece5; border-bottom: 1px solid #e0ece5; }
+        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; text-align: center; }
+        .step-item { position: relative; padding: 0 20px; }
+        .step-number {
+            background: #0d2b1f;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin: 0 auto 16px;
+        }
+        .step-item h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+        .step-item p { font-size: 0.9rem; color: #4d7a63; }
 
         /* ===== FOOTER ===== */
         .footer { background: #071a12; padding: 30px 0; text-align: center; color: #8baa99; font-size: 14px; border-top: 1px solid #1e4533; }
@@ -156,7 +279,6 @@
 
             .mobile-divider { display: block; height: 1px; background: #1e4533; width: 100%; margin: 8px 0; }
             
-            /* PERBAIKAN UTAMA DI SINI */
             .mobile-actions { 
                 display: flex; 
                 flex-direction: column; 
@@ -165,13 +287,7 @@
                 align-items: stretch; 
             }
             .mobile-actions .btn-account,
-            .mobile-actions form {
-                width: 100%;
-                margin: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
+            .mobile-actions form { width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; }
             .mobile-actions .btn-account {
                 background: transparent;
                 color: #cde8d6;
@@ -179,10 +295,7 @@
                 font-size: 16px;
                 text-decoration: none;
                 padding: 12px 0;
-                transition: 0.2s;
             }
-            .mobile-actions .btn-account:hover { color: #6fcf97; }
-            
             .mobile-actions form button {
                 background: transparent;
                 border: none;
@@ -192,21 +305,19 @@
                 width: 100%;
                 padding: 12px 0;
                 cursor: pointer;
-                transition: 0.2s;
             }
-            .mobile-actions form button:hover { color: #6fcf97; }
 
             .hero { padding: 50px 0 40px; }
             .hero h1 { font-size: 32px; }
             .hero p { font-size: 16px; padding: 0 15px; }
             .hero .btn-hero { padding: 14px 32px; font-size: 16px; }
+            .hero .hero-stats { gap: 20px; margin-top: 30px; }
+            
             .section-title { font-size: 28px; }
             .features-grid { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 480px) {
-            .container { padding: 0 12px; }
-            .logo { font-size: 22px; }
+            
+            .steps-grid { grid-template-columns: 1fr; gap: 40px; }
+            .step-item { padding: 0; }
         }
     </style>
 </head>
@@ -219,12 +330,10 @@
             <i class="fas fa-leaf"></i> EcoPoint
         </a>
 
-        <!-- Garis 3 untuk Mobile -->
         <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
 
-        <!-- Menu Navigasi (Beranda, Setoran, Poin, Akun, Logout) -->
         <div class="nav-links" id="navLinks">
             <a href="{{ route('user.dashboard') }}">Beranda</a>
             <a href="{{ route('user.setoran') }}">Setoran</a>
@@ -235,7 +344,7 @@
             @auth
                 <div class="mobile-actions">
                     <a href="{{ route('user.profile') }}" class="btn-account">
-                        <i class="fas fa-user"></i> Akun
+                        <i class="fas fa-user"></i> {{ Auth::user()->name }}
                     </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -254,11 +363,10 @@
             @endauth
         </div>
 
-        <!-- Elemen Kanan (Hanya Link Akun Desktop) -->
         <div class="nav-right">
             @auth
                 <a href="{{ route('user.profile') }}" class="btn-account">
-                    <i class="fas fa-user"></i> Akun
+                    <i class="fas fa-user"></i> {{ Auth::user()->name }}
                 </a>
             @else
                 <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
@@ -275,7 +383,7 @@
     <div class="container">
         <div class="badge">
             @auth
-                <i class="fas fa-hand-peace"></i> Selamat datang, {{ Auth::user()->first_name ?? 'Pecinta Bumi' }}!
+                <i class="fas fa-hand-peace"></i> Selamat datang, {{ Auth::user()->name }}!
             @else
                 <i class="fas fa-recycle"></i> #HidupBerkelanjutan
             @endauth
@@ -287,13 +395,30 @@
             Mulai langkah kecilmu sekarang.
         </p>
         @auth
-            <a href="{{ route('user.setoran') }}" class="btn-hero">
-                <i class="fas fa-recycle"></i> Setor Sekarang
+            <a href="{{ route('user.transaksi.create') }}" class="btn-hero">
+                <i class="fas fa-recycle"></i> Mulai Setor Sekarang
             </a>
         @else
             <a href="{{ route('register') }}" class="btn-hero">
                 <i class="fas fa-user-plus"></i> Daftar Sekarang
             </a>
+        @endauth
+
+        @auth
+        <div class="hero-stats">
+            <div class="stat-box">
+                <strong>{{ number_format($totalPoin ?? 0) }}</strong>
+                <span>Total Poin Kamu</span>
+            </div>
+            <div class="stat-box">
+                <strong>{{ number_format($totalSetoran ?? 0) }}</strong>
+                <span>Total Setoran</span>
+            </div>
+            <div class="stat-box">
+                <strong>{{ number_format($totalBerat ?? 0, 1) }} kg</strong>
+                <span>Sampah Terkumpul</span>
+            </div>
+        </div>
         @endauth
     </div>
 </section>
@@ -304,18 +429,47 @@
         <h2 class="section-title">Fitur Unggulan</h2>
         <p class="section-sub">Semua kemudahan ada di sini</p>
         <div class="features-grid">
-            <a href="{{ route('user.poin') }}" class="feature-item">
-                <div class="icon-box"><i class="fas fa-coins"></i></div>
-                <h3>Tukar Poin Jadi Uang</h3>
+            <a href="{{ route('user.transaksi.create') }}" class="feature-item">
+                <div class="icon-box"><i class="fas fa-recycle"></i></div>
+                <h3>Setor Sampah</h3>
+                <p>Ajukan setoran sampah daur ulang dengan metode jemput atau antar ke titik kumpul.</p>
             </a>
             <a href="{{ route('user.setoran') }}" class="feature-item">
-                <div class="icon-box"><i class="fas fa-truck-fast"></i></div>
-                <h3>Jemput Sampah</h3>
+                <div class="icon-box"><i class="fas fa-history"></i></div>
+                <h3>Riwayat Setoran</h3>
+                <p>Lihat semua transaksi setoran, status, dan total sampah yang sudah kamu kumpulkan.</p>
             </a>
-            <a href="#" class="feature-item">
-                <div class="icon-box"><i class="fas fa-chart-line"></i></div>
-                <h3>Pantau Dampak</h3>
+            <a href="{{ route('user.poin') }}" class="feature-item">
+                <div class="icon-box"><i class="fas fa-coins"></i></div>
+                <h3>Poin Saya</h3>
+                <p>Pantau saldo poin kamu. Fitur penukaran uang akan segera hadir.</p>
             </a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CARA KERJA ===== -->
+<section class="how-it-works">
+    <div class="container">
+        <h2 class="section-title">Cara Kerjanya</h2>
+        <p class="section-sub">Hanya 3 langkah mudah untuk mulai berkontribusi!</p>
+        
+        <div class="steps-grid">
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <h3>Pilih Metode</h3>
+                <p>Pilih apakah ingin sampah dijemput atau diantar ke titik kumpul terdekat.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <h3>Timbang & Setor</h3>
+                <p>Petugas menimbang sampahmu atau kamu menimbang sendiri di titik kumpul.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <h3>Raih Poin</h3>
+                <p>Poin otomatis masuk ke akunmu dan bisa langsung ditukar dengan uang!</p>
+            </div>
         </div>
     </div>
 </section>
