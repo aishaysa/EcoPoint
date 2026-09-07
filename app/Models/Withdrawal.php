@@ -9,22 +9,25 @@ class Withdrawal extends Model
 {
     use HasFactory;
 
+    protected $table = 'withdrawals';
+
     protected $fillable = [
         'user_id',
         'package_id',
         'points',
         'amount',
         'payment_method',
-        'bank_name',
         'account_number',
-        'phone',
+        'account_name',
+        'bank_name',
         'status',
-        'notes',
+        'admin_note',
+        'processed_at',
     ];
 
     protected $casts = [
-        'points' => 'integer',
-        'amount' => 'integer',
+        'processed_at' => 'datetime',
+        'amount' => 'decimal:2',
     ];
 
     public function user()
@@ -32,8 +35,8 @@ class Withdrawal extends Model
         return $this->belongsTo(User::class);
     }
 
-public function package()
-{
-    return $this->belongsTo(ExchangePackage::class, 'package_id');
-}
+    public function package()
+    {
+        return $this->belongsTo(WithdrawPackage::class);
+    }
 }

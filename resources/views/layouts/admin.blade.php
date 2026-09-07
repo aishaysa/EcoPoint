@@ -77,8 +77,8 @@
                     Titik Kumpul
                 </a>
 
-                <a href="{{ route('admin.exchange-packages.index') }}"
-                   class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.exchange-packages*') ? 'bg-green-50 text-green-600 font-medium' : 'text-gray-700 hover:bg-green-50 hover:text-green-600' }}">
+                <a href="{{ route('admin.exchange-package.index') }}"
+                   class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.exchange-package*') ? 'bg-green-50 text-green-600 font-medium' : 'text-gray-700 hover:bg-green-50 hover:text-green-600' }}">
                     <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6m16 0h-4m4 0h-4m4 0H8m12 0H8"/>
                     </svg>

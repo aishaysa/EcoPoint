@@ -22,7 +22,7 @@
         }
         .container { max-width:1200px; margin:0 auto; padding:0 24px; }
 
-        /* ===== NAVBAR (tetap) ===== */
+        /* ===== NAVBAR ===== */
         .navbar {
             background: #0d2b1f;
             padding: 14px 0;
@@ -123,7 +123,7 @@
 
         .mobile-divider, .mobile-actions { display: none; }
 
-        /* ===== HERO (GELAP) ===== */
+        /* ===== HERO ===== */
         .hero {
             background: linear-gradient(145deg, #0d2b1f, #1a4532);
             padding: 60px 0 70px;
@@ -207,7 +207,7 @@
             box-shadow: 0 12px 36px rgba(111,207,151,0.4);
         }
 
-        /* ===== STATISTIK MINIMALIS ===== */
+        /* ===== STATISTIK ===== */
         .stats-wrapper {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -455,7 +455,6 @@
             .hero h1 { font-size: 30px; }
             .hero p { font-size: 16px; padding: 0 10px; }
 
-            /* Statistik tetap 3 kolom, diperkecil */
             .stats-wrapper {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 10px;
@@ -570,7 +569,7 @@
     </div>
 </nav>
 
-<!-- ===== HERO (GELAP) ===== -->
+<!-- ===== HERO ===== -->
 <section class="hero">
     <div class="container">
         <div class="badge">
@@ -581,10 +580,10 @@
             @endauth
         </div>
 
-        <h1></i> EcoPoint</h1>
+        <h1><i class="fas fa-leaf"></i> EcoPoint</h1>
         <p>Setor sampah daur ulang, kumpulkan poin, dan tukarkan dengan uang tunai. Mulai langkah kecilmu sekarang.</p>
         @auth
-            <a href="{{ route('user.transaksi.create') }}" class="btn-hero">
+            <a href="{{ route('user.setoran.create') }}" class="btn-hero">
                 <i class="fas fa-recycle"></i> Mulai Setor Sekarang
             </a>
         @else
@@ -595,19 +594,33 @@
     </div>
 </section>
 
-<!-- ===== STATISTIK (MINIMALIS, 3 KOLOM SATU BARIS) ===== -->
+<!-- ===== STATISTIK ===== -->
 @auth
     @php
-        $pelangganId = optional(Auth::user()->pelanggan)->id ?? 0;
+        $user = Auth::user();
+        $pelangganId = optional($user->pelanggan)->id ?? 0;
+
+        // Total setoran (semua status)
         $totalSetoran = \App\Models\Setoran::where('pelanggan_id', $pelangganId)->count();
-        $totalBerat = \App\Models\Setoran::where('pelanggan_id', $pelangganId)->sum('berat');
-        $totalPoin = Auth::user()->points ?? 0;
+
+        // Total berat aktual (semua status)
+        $totalBerat = \App\Models\Setoran::where('pelanggan_id', $pelangganId)->sum('berat_aktual');
+
+        // ===== PERBAIKAN: Ambil poin dari kolom users.points =====
+        // Pastikan kolom 'points' ada di tabel users dan sudah diisi oleh admin saat ACC setoran
+        $totalPoin = $user->points ?? 0;
+
+        // === ALTERNATIF (jika tidak pakai users.points):
+        // Hitung langsung dari setoran yang sudah approved/completed (1 kg = 100 poin, sesuaikan)
+        // $totalPoin = \App\Models\Setoran::where('pelanggan_id', $pelangganId)
+        //               ->whereIn('status', ['approved', 'completed'])
+        //               ->sum('berat_aktual') * 100;
     @endphp
 
     <div class="stats-wrapper">
         <div class="stat-card">
             <div class="info">
-                <div class="number">{{ $totalPoin }}</div>
+                <div class="number">{{ number_format($totalPoin) }}</div>
                 <div class="label">Total Poin</div>
             </div>
         </div>
@@ -642,7 +655,7 @@
         <h2 class="section-title">Fitur Unggulan</h2>
         <p class="section-sub">Semua kemudahan ada di sini</p>
         <div class="features-grid">
-            <a href="{{ route('user.transaksi.create') }}" class="feature-item">
+            <a href="{{ route('user.setoran.create') }}" class="feature-item">
                 <div class="icon-box"><i class="fas fa-recycle"></i></div>
                 <h3>Setor Sampah</h3>
                 <p>Ajukan setoran sampah daur ulang dengan metode jemput atau antar ke titik kumpul.</p>

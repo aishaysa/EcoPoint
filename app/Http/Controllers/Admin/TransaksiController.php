@@ -3,193 +3,228 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pelanggan;
-use App\Models\JenisSampah;
-use App\Models\Transaksi;
+use App\Models\Setoran;
+use App\Models\Withdrawal;
+use GlennRaya\Xendivel\Xendivel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan semua transaksi (setoran + penarikan) dengan filter
      */
     public function index(Request $request)
     {
-        $query = Transaksi::with(['pelanggan', 'jenisSampah']);
+        // 1. Query untuk SETORAN
+        $setoran = Setoran::select(
+            'id',
+            'user_id',
+            'tanggal',
+            'metode',
+            DB::raw('berat_aktual as berat'),
+            DB::raw('0 as total'),
+            'status',
+            DB::raw("'setoran' as type"),
+            DB::raw("NULL as account_number"),
+            DB::raw("NULL as payment_method"),
+            DB::raw("0 as amount"),
+            DB::raw("NULL as admin_note")
+        );
 
-        if ($request->has('pelanggan_id') && $request->pelanggan_id != '') {
-            $query->where('pelanggan_id', $request->pelanggan_id);
+        // 2. Query untuk WITHDRAW
+        $withdraw = Withdrawal::select(
+            'id',
+            'user_id',
+            DB::raw('created_at as tanggal'),
+            DB::raw("'withdraw' as metode"),
+            DB::raw('0 as berat'),
+            'amount as total',
+            'status',
+            DB::raw("'withdraw' as type"),
+            'account_number',
+            'payment_method',
+            'amount',
+            'admin_note'
+        );
+
+        // 3. Filter
+        $filter = $request->filter ?? 'all';
+        
+        if ($filter == 'setoran') {
+            $allTransactions = $setoran->orderBy('tanggal', 'desc')->paginate(20);
+        } elseif ($filter == 'withdraw') {
+            $allTransactions = $withdraw->orderBy('tanggal', 'desc')->paginate(20);
+        } else {
+            $allTransactions = $setoran->union($withdraw)
+                ->orderBy('tanggal', 'desc')
+                ->paginate(20);
         }
 
-        $transaksis = $query->orderBy('id', 'desc')->paginate(15);
-        $transaksis->appends($request->query());
-
-        return view('admin.transaksi.index', compact('transaksis'));
+        return view('admin.transaksi.index', compact('allTransactions', 'filter'));
     }
 
-    public function create()
+    /**
+     * Detail transaksi (setoran atau withdraw)
+     */
+    public function show(Request $request, $id)
     {
-        $pelanggans = Pelanggan::all();
-        $jenisSampahs = JenisSampah::all();
-        return view('admin.transaksi.create', compact('pelanggans', 'jenisSampahs'));
+        $type = $request->query('type', 'setoran');
+
+        if ($type == 'withdraw') {
+            $data = Withdrawal::with('user')->findOrFail($id);
+            return view('admin.transaksi.show', compact('data'))->with('type', 'withdraw');
+        } else {
+            $data = Setoran::with('user.pelanggan')->findOrFail($id);
+            return view('admin.transaksi.show', compact('data'))->with('type', 'setoran');
+        }
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'pelanggan_id' => 'required|exists:pelanggans,id',
-            'jenis_sampah_id' => 'required|exists:jenis_sampahs,id',
-            'berat' => 'required|numeric|min:0.01',
-            'alamat' => 'nullable|string',
-            'tanggal' => 'nullable|date',
-        ]);
-
-        $jenisSampah = JenisSampah::findOrFail($request->jenis_sampah_id);
-        $totalHarga = $request->berat * $jenisSampah->harga_per_kg;
-
-        $transaksi = Transaksi::create([
-            'pelanggan_id' => $request->pelanggan_id,
-            'jenis_sampah_id' => $request->jenis_sampah_id,
-            'berat' => $request->berat,
-            'total_harga' => $totalHarga,
-            'alamat' => $request->alamat,
-            'tanggal' => $request->tanggal ?? now(),
-            'status' => 'pending',
-        ]);
-
-        return redirect()->route('admin.transaksi.index')->with('success', 'Transaksi berhasil ditambahkan!');
-    }
-
-    public function show($id)
-    {
-        $transaksi = Transaksi::with(['pelanggan', 'jenisSampah'])->findOrFail($id);
-        return view('admin.pelanggan.show', compact('transaksi'));
-    }
-
+    /**
+     * Edit transaksi (khusus setoran)
+     */
     public function edit($id)
     {
-        $transaksi = Transaksi::findOrFail($id);
-        $pelanggans = Pelanggan::all();
-        $jenisSampahs = JenisSampah::all();
-        return view('admin.transaksi.edit', compact('transaksi', 'pelanggans', 'jenisSampahs'));
+        $setoran = Setoran::with('user.pelanggan')->findOrFail($id);
+        return view('admin.transaksi.edit', compact('setoran'));
     }
 
+    /**
+     * Update transaksi (setoran)
+     */
     public function update(Request $request, $id)
     {
-        $transaksi = Transaksi::findOrFail($id);
-
-        $request->validate([
-            'pelanggan_id' => 'required|exists:pelanggans,id',
-            'jenis_sampah_id' => 'required|exists:jenis_sampahs,id',
-            'berat' => 'required|numeric|min:0.01',
-            'alamat' => 'nullable|string',
-            'tanggal' => 'nullable|date',
-            'status' => 'nullable|in:pending,approved,rejected,completed,cancelled',
-        ]);
-
-        $jenisSampah = JenisSampah::findOrFail($request->jenis_sampah_id);
-        $totalHarga = $request->berat * $jenisSampah->harga_per_kg;
-
-        // Update poin jika berat berubah
-        if ($transaksi->berat != $request->berat) {
-            $pelanggan = Pelanggan::find($transaksi->pelanggan_id);
-            $pelanggan->decrement('poin', (int) $transaksi->berat * 10);
-            $pelanggan->increment('poin', (int) $request->berat * 10);
-        }
-
-        $transaksi->update([
-            'pelanggan_id' => $request->pelanggan_id,
-            'jenis_sampah_id' => $request->jenis_sampah_id,
-            'berat' => $request->berat,
-            'total_harga' => $totalHarga,
-            'alamat' => $request->alamat,
-            'tanggal' => $request->tanggal ?? $transaksi->tanggal,
-            'status' => $request->status ?? $transaksi->status,
-        ]);
-
-        return redirect()->route('admin.transaksi.index')->with('success', 'Transaksi berhasil diperbarui!');
+        $setoran = Setoran::findOrFail($id);
+        $setoran->update($request->all());
+        return redirect()->route('admin.transaksi.index')->with('success', 'Setoran berhasil diupdate.');
     }
 
+    /**
+     * Hapus transaksi (setoran)
+     */
     public function destroy($id)
     {
-        $transaksi = Transaksi::findOrFail($id);
-        // Kurangi poin jika transaksi dihapus
-        if (in_array($transaksi->status, ['approved', 'completed'])) {
-            $pelanggan = Pelanggan::find($transaksi->pelanggan_id);
-            $pelanggan->decrement('poin', (int) ($transaksi->berat * 10));
-        }
-        $transaksi->delete();
-        return redirect()->route('admin.transaksi.index')->with('success', 'Transaksi berhasil dihapus!');
+        $setoran = Setoran::findOrFail($id);
+        $setoran->delete();
+        return redirect()->route('admin.transaksi.index')->with('success', 'Setoran berhasil dihapus.');
     }
 
-    public function verify($id)
-    {
-        $transaksi = Transaksi::findOrFail($id);
-        $transaksi->update(['status' => 'completed']);
-        return redirect()->route('admin.transaksi.index')->with('success', 'Transaksi berhasil diverifikasi!');
-    }
+    // ============================================================
+    // FUNGSI APPROVE / REJECT WITHDRAW (LANGSUNG DI SINI)
+    // ============================================================
 
     /**
-     * Approve a transaksi (setujui setoran) - menggunakan berat akhir dari input admin
+     * Admin approve penarikan (kirim uang via Xendit)
      */
-    public function approve(Request $request, $id)
+    public function approveWithdraw($id)
     {
-        $transaksi = Transaksi::findOrFail($id);
+        $withdrawal = Withdrawal::with('user')->findOrFail($id);
 
-        // Cegah double approve
-        if (!in_array($transaksi->status, ['pending', 'waiting'])) {
-            return back()->with('error', 'Transaksi sudah diproses sebelumnya.');
+        if ($withdrawal->status !== 'pending') {
+            return redirect()->back()->with('error', 'Penarikan sudah diproses.');
         }
 
-        $request->validate([
-            'berat_akhir' => 'required|numeric|min:0.01',
-        ]);
-
-        DB::beginTransaction();
         try {
-            // Update berat akhir sesuai input admin
-            $beratAkhir = (float) $request->berat_akhir;
-            $transaksi->berat = $beratAkhir;
-            $transaksi->berat_aktual = $beratAkhir;
+            $xendit = new Xendivel();
 
-            // Ubah status menjadi 'completed' agar poin terhitung di dashboard user
-            $transaksi->status = 'completed';
-            $transaksi->save();
+            $channelMap = [
+                'dana' => 'DANA',
+                'ovo' => 'OVO',
+                'gopay' => 'GOPAY',
+                'qris' => 'DANA',
+                'bank' => 'BANK_TRANSFER',
+            ];
+            $channel = $channelMap[$withdrawal->payment_method] ?? 'DANA';
 
-            // Tambah poin ke pelanggan (1 kg = 10 poin)
-            $pelanggan = $transaksi->pelanggan;
-            if ($pelanggan) {
-                $poin = (int) floor($beratAkhir * 10);
-                $pelanggan->poin += $poin;
-                $pelanggan->save();
+            $payload = [
+                'reference_id' => 'wd_' . $withdrawal->id . '_' . time(),
+                'currency' => 'IDR',
+                'amount' => (int) $withdrawal->amount,
+                'channel_code' => $channel,
+                'channel_properties' => [
+                    'mobile_number' => $withdrawal->account_number,
+                ],
+            ];
+
+            if ($withdrawal->payment_method === 'bank') {
+                $payload['channel_properties'] = [
+                    'account_holder_name' => $withdrawal->account_name ?? $withdrawal->user->name,
+                    'account_number' => $withdrawal->account_number,
+                    'bank_code' => $this->getBankCode($withdrawal->bank_name),
+                ];
             }
 
-            DB::commit();
+            $response = $xendit->ewallet()->createEWalletCharge($payload);
 
-            return redirect()->route('admin.pelanggan.show', $transaksi->pelanggan_id)
-                             ->with('success', 'Setoran berhasil disetujui! Berat akhir: ' . number_format($beratAkhir, 2) . ' kg, Poin: ' . $poin);
+            if ($response['status'] == 'SUCCEEDED') {
+                $withdrawal->status = 'success';
+                $withdrawal->processed_at = now();
+                $withdrawal->admin_note = 'Sukses via Xendit';
+                $withdrawal->save();
+
+                return redirect()->back()->with('success', '💰 Penarikan berhasil dikirim ke e-wallet user!');
+            } elseif ($response['status'] == 'PENDING') {
+                $withdrawal->status = 'processing';
+                $withdrawal->save();
+                return redirect()->back()->with('info', '⏳ Penarikan sedang diproses oleh sistem pembayaran.');
+            } else {
+                throw new \Exception('Status dari Xendit: ' . ($response['status'] ?? 'unknown'));
+            }
         } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Gagal menyetujui setoran: ' . $e->getMessage());
+            // Gagal -> kembalikan poin
+            $user = $withdrawal->user;
+            $user->points += $withdrawal->points;
+            $user->save();
+
+            $withdrawal->status = 'failed';
+            $withdrawal->admin_note = 'Error: ' . $e->getMessage();
+            $withdrawal->save();
+
+            return redirect()->back()->with('error', '❌ Gagal kirim uang: ' . $e->getMessage());
         }
     }
 
     /**
-     * Reject a transaksi (tolak setoran)
+     * Admin tolak penarikan (kembalikan poin)
      */
-    public function reject(Request $request, $id)
+    public function rejectWithdraw(Request $request, $id)
     {
-        $transaksi = Transaksi::findOrFail($id);
+        $withdrawal = Withdrawal::findOrFail($id);
 
-        if (!in_array($transaksi->status, ['pending', 'waiting'])) {
-            return back()->with('error', 'Transaksi sudah diproses sebelumnya.');
+        if ($withdrawal->status !== 'pending') {
+            return redirect()->back()->with('error', 'Penarikan sudah diproses.');
         }
 
-        $transaksi->status = 'rejected';
-        $transaksi->save();
+        $user = $withdrawal->user;
+        $user->points += $withdrawal->points;
+        $user->save();
 
-        return redirect()->route('admin.pelanggan.show', $transaksi->pelanggan_id)
-                         ->with('success', 'Setoran ditolak.');
+        $withdrawal->status = 'failed';
+        $withdrawal->admin_note = $request->note ?? 'Ditolak oleh admin';
+        $withdrawal->save();
+
+        return redirect()->back()->with('success', 'Penarikan ditolak. Poin dikembalikan.');
+    }
+
+    /**
+     * Helper: mapping bank ke kode Xendit
+     */
+    private function getBankCode($bankName)
+    {
+        $banks = [
+            'bca' => 'BCA',
+            'bni' => 'BNI',
+            'bri' => 'BRI',
+            'mandiri' => 'MANDIRI',
+            'cimb' => 'CIMB',
+            'danamon' => 'DANAMON',
+            'permata' => 'PERMATA',
+            'btn' => 'BTN',
+            'maybank' => 'MAYBANK',
+            'bsi' => 'BSI',
+            'mega' => 'MEGA',
+            'sinarmas' => 'SINARMAS',
+        ];
+        return $banks[strtolower($bankName)] ?? strtoupper($bankName);
     }
 }

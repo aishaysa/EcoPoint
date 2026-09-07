@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ExchangePackage;
+use App\Models\WithdrawPackage;
 use Illuminate\Http\Request;
 
 class ExchangePackageController extends Controller
 {
     public function index()
     {
-        $packages = ExchangePackage::latest()->get();
-        return view('admin.exchange-packages.index', compact('packages'));
+        $packages = WithdrawPackage::orderBy('points', 'asc')->get();
+        return view('admin.exchange-package.index', compact('packages'));
     }
 
     public function create()
     {
-        return view('admin.exchange-packages.create');
+        return view('admin.exchange-package.create');
     }
 
     public function store(Request $request)
@@ -25,55 +25,43 @@ class ExchangePackageController extends Controller
             'points' => 'required|integer|min:1',
             'amount' => 'required|integer|min:1',
             'description' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
+            'is_active' => 'required|boolean',
         ]);
 
-        ExchangePackage::create([
-            'points' => $request->points,
-            'amount' => $request->amount,
-            'description' => $request->description ?? $request->points . ' Poin',
-            'is_active' => $request->has('is_active'),
-        ]);
+        WithdrawPackage::create($request->all());
 
-        return redirect()->route('admin.exchange-packages.index')
+        return redirect()->route('admin.exchange-package.index')
             ->with('success', 'Paket berhasil ditambahkan!');
     }
 
-    public function edit(ExchangePackage $exchangePackage)
+    public function edit($id)
     {
-        return view('admin.exchange-packages.edit', compact('exchangePackage'));
+        $package = WithdrawPackage::findOrFail($id);
+        return view('admin.exchange-package.edit', compact('package'));
     }
 
-    public function update(Request $request, ExchangePackage $exchangePackage)
+    public function update(Request $request, $id)
     {
         $request->validate([
             'points' => 'required|integer|min:1',
             'amount' => 'required|integer|min:1',
             'description' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
+            'is_active' => 'required|boolean',
         ]);
 
-        $exchangePackage->update([
-            'points' => $request->points,
-            'amount' => $request->amount,
-            'description' => $request->description ?? $request->points . ' Poin',
-            'is_active' => $request->has('is_active'),
-        ]);
+        $package = WithdrawPackage::findOrFail($id);
+        $package->update($request->all());
 
-        return redirect()->route('admin.exchange-packages.index')
-            ->with('success', 'Paket berhasil diperbarui!');
+        return redirect()->route('admin.exchange-package.index')
+            ->with('success', 'Paket berhasil diupdate!');
     }
 
-    public function destroy(ExchangePackage $exchangePackage)
+    public function destroy($id)
     {
-        // Cek apakah paket sudah dipakai di penarikan
-        if ($exchangePackage->withdrawals()->count() > 0) {
-            return back()->with('error', 'Paket tidak bisa dihapus karena sudah digunakan dalam penarikan.');
-        }
+        $package = WithdrawPackage::findOrFail($id);
+        $package->delete();
 
-        $exchangePackage->delete();
-        return redirect()->route('admin.exchange-packages.index')
+        return redirect()->route('admin.exchange-package.index')
             ->with('success', 'Paket berhasil dihapus!');
     }
-
 }

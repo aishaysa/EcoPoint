@@ -8,18 +8,23 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('withdrawals', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->integer('points');
-            $table->integer('amount');
-            $table->string('bank_name')->nullable();
-            $table->string('account_number')->nullable();
-            $table->string('e_wallet')->nullable();
-            $table->string('phone')->nullable();
-            $table->enum('status', ['pending', 'completed', 'failed'])->default('pending');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('withdrawals')) {
+            Schema::create('withdrawals', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->foreignId('package_id')->nullable()->constrained('withdraw_packages')->onDelete('set null');
+                $table->integer('points');
+                $table->decimal('amount', 12, 2);
+                $table->string('payment_method');
+                $table->string('account_number')->nullable();
+                $table->string('account_name')->nullable();
+                $table->string('bank_name')->nullable();
+                $table->enum('status', ['pending', 'processing', 'success', 'failed'])->default('pending');
+                $table->text('admin_note')->nullable();
+                $table->timestamp('processed_at')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     public function down()
