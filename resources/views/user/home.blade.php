@@ -520,7 +520,7 @@
 <nav class="navbar">
     <div class="container">
         <a href="{{ route('home') }}" class="logo">
-            <i class="fas fa-leaf"></i> EcoPoint
+            <i class="fas fa-recycle"></i> EcoPoint
         </a>
         <div class="nav-links">
             <a href="{{ route('home') }}">Beranda</a>

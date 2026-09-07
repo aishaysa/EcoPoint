@@ -7,19 +7,22 @@
     <title>EcoPoint — Riwayat Setoran</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: 'Inter', sans-serif;
             background: #f0f7f2;
             color: #1a2e24;
-            line-height: 1.6;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        .container { max-width:1200px; margin:0 auto; padding:0 24px; }
 
-        /* ===== NAVBAR RESPONSIVE ===== */
+        /* ===== NAVBAR ===== */
         .navbar {
             background: #0d2b1f;
             padding: 14px 0;
@@ -40,10 +43,11 @@
             font-size: 26px;
             font-weight: 800;
             text-decoration: none;
-            letter-spacing: -0.5px;
-            order: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .logo i { color: #a8e6c1; margin-right: 8px; }
+        .logo i { color: #a8e6c1; }
 
         .hamburger {
             display: none;
@@ -53,7 +57,6 @@
             border: none;
             cursor: pointer;
             padding: 4px;
-            order: 3;
             z-index: 10;
         }
         .hamburger span {
@@ -64,29 +67,40 @@
             border-radius: 4px;
             transition: 0.3s;
         }
-        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px,6px); }
         .hamburger.active span:nth-child(2) { opacity: 0; }
-        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px,-6px); }
 
         .nav-links {
             display: flex;
             gap: 28px;
             align-items: center;
-            order: 2;
         }
         .nav-links a {
             color: #cde8d6;
             text-decoration: none;
             font-weight: 600;
             font-size: 15px;
+            transition: 0.2s;
+            position: relative;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #6fcf97;
+            transition: 0.3s;
         }
         .nav-links a:hover { color: #6fcf97; }
+        .nav-links a:hover::after { width: 100%; }
 
         .nav-right {
             display: flex;
             align-items: center;
             gap: 20px;
-            order: 3;
         }
         .nav-right .btn-account {
             background: transparent;
@@ -109,56 +123,153 @@
 
         .mobile-divider, .mobile-actions { display: none; }
 
-        /* ===== CONTENT ===== */
-        .riwayat-page { padding: 40px 0 60px; min-height: 70vh; }
-        
-        .header-section {
+        /* ===== HERO ===== */
+        .page-hero {
+            background: linear-gradient(145deg, #0d2b1f, #1a4532);
+            padding: 40px 0 56px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0 0 40px 40px;
+            margin-bottom: 0;
+        }
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -10%;
+            width: 350px;
+            height: 350px;
+            background: rgba(111,207,151,0.06);
+            border-radius: 50%;
+        }
+        .page-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: -5%;
+            width: 250px;
+            height: 250px;
+            background: rgba(111,207,151,0.04);
+            border-radius: 50%;
+        }
+        .page-hero .container { position: relative; z-index: 1; text-align: center; }
+        .page-hero h1 {
+            color: #fff;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+        .page-hero h1 i { color: #6fcf97; font-size: 36px; }
+        .page-hero p {
+            color: rgba(255,255,255,0.7);
+            font-size: 16px;
+            margin-top: 6px;
+        }
+
+        /* ===== STATISTIK ===== */
+        .stats-wrapper {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: -28px auto 32px;
+            max-width: 820px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 20px 18px;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 8px 32px rgba(13,43,31,0.08);
+            text-align: center;
+            transition: 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(13,43,31,0.12);
+        }
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1a4532;
+            line-height: 1.2;
+        }
+        .stat-card .number small {
+            font-size: 16px;
+            font-weight: 600;
+            color: #6c7d74;
+        }
+        .stat-card .label {
+            font-size: 14px;
+            color: #5a7f6e;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        .stat-card .icon {
+            font-size: 24px;
+            color: #2e7d5a;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        /* ===== TOMBOL AKSI ===== */
+        .action-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            margin-bottom: 20px;
-            gap: 12px;
-        }
-        .header-section h2 {
-            font-size: 28px;
-            font-weight: 800;
-            margin: 0;
-            color: #0d2b1f;
-        }
-
-        .stat-box {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
+            gap: 14px;
             margin-bottom: 24px;
+            max-width: 820px;
+            margin-left: auto;
+            margin-right: auto;
         }
-        .stat-item {
-            background: #fff;
-            border: 1px solid #d4e8db;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        .action-bar .title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a4532;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .stat-item .number {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #2e7d5a;
-            line-height: 1.2;
+        .action-bar .title i { color: #2e7d5a; }
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #2e7d5a, #1a4532);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            transition: 0.25s ease;
+            box-shadow: 0 4px 16px rgba(46,125,90,0.25);
         }
-        .stat-item .label {
-            font-size: 0.85rem;
-            color: #4d7a63;
-            margin-top: 6px;
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px rgba(46,125,90,0.35);
         }
 
-        .card {
-            background: #ffffff;
-            border-radius: 20px;
-            border: 1px solid #d4e8db;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            padding: 20px;
+        /* ===== TABEL ===== */
+        .table-card {
+            background: white;
+            border-radius: 28px;
+            border: 1px solid #eaf1ed;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            padding: 20px 0 4px;
+            max-width: 820px;
+            margin: 0 auto;
+            overflow: hidden;
+            animation: fadeUp 0.5s ease 0.15s both;
         }
         .table-wrapper {
             overflow-x: auto;
@@ -166,51 +277,80 @@
         }
         table {
             width: 100%;
-            min-width: 700px;
             border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #e0ece5;
-            font-size: 0.9rem;
+            font-size: 14px;
+            min-width: 640px;
         }
         th {
-            background: #f0f7f2;
-            color: #1a2e24;
+            text-align: left;
+            padding: 14px 20px;
+            background: #f6faf8;
+            color: #2d5a43;
             font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e8f0ec;
         }
-        
+        td {
+            padding: 14px 20px;
+            border-bottom: 1px solid #edf3ef;
+            color: #1a2e24;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f9fcfb; }
+
         .badge-status {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            padding: 4px 14px;
+            border-radius: 40px;
             font-weight: 600;
+            font-size: 12px;
         }
-        .badge-selesai { background: #d4edda; color: #155724; }
-        .badge-proses { background: #fff3cd; color: #856404; }
-        .badge-ditolak { background: #f8d7da; color: #721c24; }
-        .badge-pending { background: #fff3cd; color: #856404; }
-        .badge-approved { background: #d4edda; color: #155724; }
-        .badge-completed { background: #d4edda; color: #155724; }
-        .badge-rejected { background: #f8d7da; color: #721c24; }
+        .badge-selesai, .badge-approved, .badge-completed { background: #def5e6; color: #155724; }
+        .badge-proses, .badge-pending { background: #fff3cd; color: #856404; }
+        .badge-ditolak, .badge-rejected { background: #fde8e8; color: #721c24; }
 
         .btn-detail {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 20px;
-            background: #6fcf97;
-            color: #0d2b1f;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            border-radius: 40px;
+            background: #e8f0ec;
+            color: #2d5a43;
             text-decoration: none;
-            font-weight: 700;
-            font-size: 0.8rem;
-            transition: 0.15s;
+            font-weight: 600;
+            font-size: 12px;
+            transition: 0.2s;
             border: none;
             cursor: pointer;
         }
-        .btn-detail:hover { background: #5bbf87; }
+        .btn-detail:hover {
+            background: #6fcf97;
+            color: #0d2b1f;
+        }
 
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #6c7d74;
+        }
+        .empty-state i {
+            font-size: 48px;
+            color: #cde0d6;
+            display: block;
+            margin-bottom: 12px;
+        }
+        .empty-state p { font-size: 15px; }
+
+        .pagination-wrapper {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* ===== FOOTER ===== */
         .footer {
             background: #071a12;
             padding: 30px 0;
@@ -218,6 +358,7 @@
             color: #8baa99;
             font-size: 14px;
             border-top: 1px solid #1e4533;
+            margin-top: auto;
         }
         .footer a { color: #6fcf97; text-decoration: none; }
         .footer .social {
@@ -230,6 +371,7 @@
         .footer .social a { color: #8baa99; transition: 0.2s; }
         .footer .social a:hover { color: #6fcf97; }
 
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .hamburger { display: flex; }
             .nav-links {
@@ -240,18 +382,24 @@
                 padding: 15px 0;
                 border-top: 1px solid #1e4533;
                 margin-top: 10px;
-                order: 4;
             }
             .nav-links.open { display: flex; }
             .nav-links a { font-size: 16px; width: 100%; text-align: center; padding: 8px 0; }
+            .nav-links a::after { display: none; }
             .nav-right { display: none; }
-            .mobile-divider { display: block; height: 1px; background: #1e4533; width: 100%; margin: 8px 0; }
-            .mobile-actions { 
-                display: flex; 
-                flex-direction: column; 
-                width: 100%; 
-                gap: 0; 
-                align-items: stretch; 
+            .mobile-divider {
+                display: block;
+                height: 1px;
+                background: #1e4533;
+                width: 100%;
+                margin: 8px 0;
+            }
+            .mobile-actions {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                gap: 0;
+                align-items: stretch;
             }
             .mobile-actions .btn-account,
             .mobile-actions form {
@@ -283,47 +431,75 @@
                 padding: 12px 0;
                 cursor: pointer;
             }
-            .header-section {
-                flex-direction: column;
-                align-items: flex-start !important;
-                gap: 12px;
-            }
-            .header-section a {
-                width: 100%;
-                text-align: center;
-            }
-            .stat-box {
+
+            .page-hero { padding: 28px 0 44px; border-radius: 0 0 28px 28px; }
+            .page-hero h1 { font-size: 26px; }
+            .page-hero p { font-size: 14px; }
+
+            .stats-wrapper {
                 grid-template-columns: 1fr;
                 gap: 10px;
+                margin-top: -20px;
+                max-width: 400px;
             }
-            .stat-item {
+            .stat-card {
                 display: flex;
-                justify-content: space-between;
                 align-items: center;
+                justify-content: space-between;
+                padding: 14px 18px;
                 text-align: left;
-                padding: 14px 16px;
             }
-            .stat-item .number { font-size: 1.5rem; }
-            .stat-item .label { margin-top: 0; font-size: 0.8rem; }
+            .stat-card .icon { margin-bottom: 0; font-size: 20px; }
+            .stat-card .number { font-size: 24px; }
+            .stat-card .label { margin-top: 0; font-size: 13px; }
+
+            .action-bar { flex-direction: column; align-items: stretch; text-align: center; }
+            .btn-primary { justify-content: center; }
+
+            .table-card { border-radius: 20px; padding: 12px 0 0; }
+            th, td { padding: 10px 14px; font-size: 13px; }
         }
+
+        @media (max-width: 480px) {
+            .container { padding: 0 12px; }
+            .logo { font-size: 22px; }
+            .page-hero h1 { font-size: 22px; }
+            th, td { padding: 8px 10px; font-size: 12px; }
+            .btn-detail { font-size: 11px; padding: 4px 12px; }
+        }
+
+        /* ===== ANIMASI ===== */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stat-card { animation: fadeUp 0.5s ease both; }
+        .stat-card:nth-child(1) { animation-delay: 0.05s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.15s; }
+        .action-bar { animation: fadeUp 0.5s ease 0.1s both; }
     </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
+<!-- ===== NAVBAR ===== -->
 <nav class="navbar">
     <div class="container">
         <a href="{{ route('user.dashboard') }}" class="logo">
             <i class="fas fa-leaf"></i> EcoPoint
         </a>
+
         <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
+
         <div class="nav-links" id="navLinks">
             <a href="{{ route('user.dashboard') }}">Beranda</a>
             <a href="{{ route('user.setoran') }}">Setoran</a>
             <a href="{{ route('user.poin') }}">Poin</a>
+
             <div class="mobile-divider"></div>
+
             @auth
                 <div class="mobile-actions">
                     <a href="{{ route('user.profile') }}" class="btn-account">
@@ -345,6 +521,7 @@
                 </div>
             @endauth
         </div>
+
         <div class="nav-right">
             @auth
                 <a href="{{ route('user.profile') }}" class="btn-account">
@@ -360,86 +537,109 @@
     </div>
 </nav>
 
-<!-- CONTENT -->
-<div class="container riwayat-page">
-    <div class="header-section">
-        <h2>
-            <i class="fas fa-history" style="color:#2e7d5a;"></i> Riwayat Setoran
-        </h2>
-        <a href="{{ route('user.transaksi.create') }}" style="background:#2e7d5a; color:white; padding:10px 20px; border-radius:40px; text-decoration:none; font-weight:700; font-size:0.9rem;">
-            <i class="fas fa-plus"></i> Setor Baru
-        </a>
+<!-- ===== HERO ===== -->
+<section class="page-hero">
+    <div class="container">
+        <h1><i class="fas fa-history"></i> Riwayat Setoran</h1>
+        <p>Lihat semua setoran sampah yang telah Anda kirimkan</p>
     </div>
+</section>
 
-    <!-- Statistik -->
-    <div class="stat-box">
-        <div class="stat-item">
-            <div class="number">{{ $totalSetoran }}</div>
-            <div class="label">Total Setoran</div>
-        </div>
-        <div class="stat-item">
-            <div class="number">{{ number_format($totalBerat, 2) }} kg</div>
-            <div class="label">Total Berat</div>
-        </div>
-        <div class="stat-item">
-            <div class="number">{{ number_format($totalPoin) }}</div>
-            <div class="label">Total Poin</div>
-        </div>
-    </div>
+<!-- ===== CONTENT ===== -->
+<div style="padding: 0 0 40px; background: #f0f7f2; flex:1;">
+    <div class="container">
 
-    <!-- Tabel -->
-    <div class="card">
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tanggal</th>
-                        <th>Metode</th>
-                        <th>Berat (kg)</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($transaksis as $trx)
-                        <tr>
-                            <td>#{{ $trx->id }}</td>
-                            <td>{{ \Carbon\Carbon::parse($trx->tanggal)->format('d M Y') }}</td>
-                            <td>{{ ucfirst($trx->metode) }}</td>
-                            <td>{{ number_format($trx->berat, 2) }}</td>
-                            <td>
-                                <span class="badge-status badge-{{ $trx->status }}">
-                                    {{ ucfirst($trx->status) }}
-                                </span>
-                            </td>
-                            <td>
-                                {{-- HANYA TOMBOL DETAIL --}}
-                                <a href="{{ route('user.transaksi.detail', $trx->id) }}" class="btn-detail">
-                                    <i class="fas fa-eye"></i> Detail
-                                </a>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" style="text-align:center; padding:40px 0; color:#2d5a43;">
-                                <i class="fas fa-box-open" style="font-size:40px; display:block; margin-bottom:8px;"></i>
-                                Belum ada setoran. Yuk, mulai setor sekarang!
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        @if ($transaksis->hasPages())
-            <div style="margin-top:20px; display:flex; justify-content:center;">
-                {{ $transaksis->links() }}
+        <!-- Statistik -->
+        <div class="stats-wrapper">
+            <div class="stat-card">
+                <div>
+                    <span class="icon"><i class="fas fa-boxes"></i></span>
+                    <div class="number">{{ $totalSetoran ?? 0 }}</div>
+                    <div class="label">Total Setoran</div>
+                </div>
             </div>
-        @endif
+            <div class="stat-card">
+                <div>
+                    <span class="icon"><i class="fas fa-weight-hanging"></i></span>
+                    <div class="number">{{ number_format($totalBerat ?? 0, 2) }} <small>kg</small></div>
+                    <div class="label">Total Berat</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div>
+                    <span class="icon"><i class="fas fa-coins"></i></span>
+                    <div class="number">{{ number_format($totalPoin ?? 0) }}</div>
+                    <div class="label">Total Poin</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tombol Aksi & Judul -->
+        <div class="action-bar">
+            <div class="title">
+                <i class="fas fa-list-ul"></i> Daftar Setoran
+            </div>
+            <a href="{{ route('user.transaksi.create') }}" class="btn-primary">
+                <i class="fas fa-plus"></i> Setor Baru
+            </a>
+        </div>
+
+        <!-- Tabel -->
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tanggal</th>
+                            <th>Metode</th>
+                            <th>Berat (kg)</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($transaksis as $trx)
+                            <tr>
+                                <td>#{{ $trx->id }}</td>
+                                <td>{{ \Carbon\Carbon::parse($trx->tanggal)->format('d M Y') }}</td>
+                                <td>{{ ucfirst($trx->metode) }}</td>
+                                <td>{{ number_format($trx->berat, 2) }}</td>
+                                <td>
+                                    <span class="badge-status badge-{{ $trx->status }}">
+                                        {{ ucfirst($trx->status) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ route('user.transaksi.detail', $trx->id) }}" class="btn-detail">
+                                        <i class="fas fa-eye"></i> Detail
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <i class="fas fa-box-open"></i>
+                                        <p>Belum ada setoran. Yuk, mulai setor sekarang!</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if ($transaksis->hasPages())
+                <div class="pagination-wrapper">
+                    {{ $transaksis->links() }}
+                </div>
+            @endif
+        </div>
+
     </div>
 </div>
 
-<!-- FOOTER -->
+<!-- ===== FOOTER ===== -->
 <footer class="footer">
     <div class="container">
         <p>&copy; {{ date('Y') }} <strong>EcoPoint</strong> — Gerakan Hijau untuk Masa Depan.</p>

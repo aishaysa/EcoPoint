@@ -348,7 +348,7 @@
 <!-- NAVBAR RESPONSIVE (Logout Langsung) -->
 <nav class="navbar">
     <div class="container navbar-content">
-        <a href="{{ route('user.dashboard') }}" class="logo"><i class="fas fa-leaf"></i> EcoPoint</a>
+        <a href="{{ route('user.dashboard') }}" class="logo"><i class="fas fa-recycle"></i> EcoPoint</a>
 
         <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
             <span></span><span></span><span></span>

@@ -10,7 +10,7 @@
 <body class="bg-green-50 flex items-center justify-center min-h-screen">
     <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
         <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-green-700"><i class="fas fa-leaf"></i> EcoPoint</h1>
+            <h1 class="text-3xl font-bold text-green-700"><i class="fas fa-recycle"></i> EcoPoint</h1>
             <p class="text-slate-500 text-sm">Daftar akun baru</p>
         </div>
         <form method="POST" action="{{ route('register') }}">
