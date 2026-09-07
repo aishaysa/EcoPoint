@@ -8,7 +8,6 @@
                 <span>EcoPoint</span>
             </a>
             <button id="closeSidebar" class="md:hidden text-gray-500 hover:text-gray-700">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
@@ -51,6 +50,14 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                 </svg>
                 Transaksi
+            </a>
+
+            <a href="{{ route('admin.withdraw.index') }}"
+               class="flex items-center px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('withdraw.*') ? 'bg-green-50 text-green-600 font-medium' : 'text-gray-700 hover:bg-green-50 hover:text-green-600' }}">
+                <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                Paket Penukaran
             </a>
 
             

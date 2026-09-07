@@ -8,18 +8,16 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     */
-public function up()
+     */public function up()
 {
     Schema::table('users', function (Blueprint $table) {
-        // Hapus kolom name jika sebelumnya pakai string biasa, atau biarkan saja
-        // Kita ubah name menjadi nullable dulu, lalu tambah first_name dan last_name
-        $table->string('name')->nullable()->change(); 
-        $table->string('first_name')->after('id');
-        $table->string('last_name')->after('first_name');
-        
-        // Hapus kolom no_hp dan alamat (kalau sudah ada di tabel users)
-        $table->dropColumn(['no_hp', 'alamat']); 
+        // Cek apakah kolom first_name sudah ada, jika belum baru tambah
+        if (!Schema::hasColumn('users', 'first_name')) {
+            $table->string('first_name')->after('id');
+        }
+        if (!Schema::hasColumn('users', 'last_name')) {
+            $table->string('last_name')->nullable()->after('first_name');
+        }
     });
 }
 

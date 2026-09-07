@@ -442,7 +442,7 @@
             <a href="{{ route('user.poin') }}" class="feature-item">
                 <div class="icon-box"><i class="fas fa-coins"></i></div>
                 <h3>Poin Saya</h3>
-                <p>Pantau saldo poin kamu. Fitur penukaran uang akan segera hadir.</p>
+                <p>Pantau saldo poin kamu dan tukarkan dengan uang!</p>
             </a>
         </div>
     </div>

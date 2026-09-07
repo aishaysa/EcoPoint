@@ -334,9 +334,9 @@
             <div class="poin-label">Total Poin Anda</div>
 
             <div class="poin-actions">
-                <button class="btn-poin btn-poin-primary" onclick="alert('Fitur penukaran poin sedang dalam pengembangan!')">
-                    <i class="fas fa-hourglass-half"></i> Segera Hadir
-                </button>
+<a href="{{ route('user.withdraw') }}" class="btn-poin btn-poin-primary">
+    <i class="fas fa-exchange-alt"></i> Tukar Poin
+</a>
                 <a href="{{ route('user.setoran') }}" class="btn-poin btn-poin-secondary">
                     <i class="fas fa-recycle"></i> Lihat Setoran
                 </a>

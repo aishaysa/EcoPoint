@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\ExchangePackageController;
 use App\Http\Controllers\Admin\JenisSampahController;
 use App\Http\Controllers\Admin\PelangganController;
 use App\Http\Controllers\Admin\TitikKumpulController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Admin\TransaksiController;
 use App\Http\Controllers\SetoranController;
 use App\Http\Controllers\User\UserAuthController;
 use App\Http\Controllers\User\UserDashboardController;
+use App\Http\Controllers\WithdrawController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -122,6 +124,10 @@ Route::prefix('admin')
                 'pelanggan/{id}',
                 [PelangganController::class, 'show']
             )->name('pelanggan.show');
+
+            Route::resource('exchange-packages', ExchangePackageController::class)
+    ->except(['show']);
+
 
 
             /*
@@ -403,6 +409,8 @@ Route::prefix('user')
             'poin'
         ])->name('poin');
 
+Route::get('/withdraw', [WithdrawController::class, 'index'])->name('withdraw');
+Route::post('/withdraw', [WithdrawController::class, 'store'])->name('withdraw.store');
 
         /*
         |--------------------------------------------------------------------------
