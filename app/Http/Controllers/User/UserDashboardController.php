@@ -59,7 +59,7 @@ class UserDashboardController extends Controller
 
 
         return view(
-            'user.home',
+            'user.dashboard',
             compact(
                 'user',
                 'pelanggan',
@@ -1019,7 +1019,7 @@ class UserDashboardController extends Controller
 
 
         return view(
-            'user.profile-edit',
+            'user.profile',
             compact('user')
         );
     }

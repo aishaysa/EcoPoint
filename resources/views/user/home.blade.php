@@ -1,165 +1,690 @@
-@extends('layouts.user')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>EcoPoint — Hidup Berkelanjutan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-@section('title', 'Beranda - EcoPoint')
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f7f2;
+            color: #1a2e24;
+            line-height: 1.6;
+        }
 
-@section('content')
-    <!-- ====== HERO ====== -->
-    <section class="bg-light py-5 fade-in-up show">
-        <div class="container">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-6">
-                    {{-- Tampilkan sapaan hanya untuk user yang sudah login --}}
-                    @auth
-                        <div class="mb-2">
-                            <span class="text-success fw-semibold fs-5">
-                                <i class="fas fa-hand-peace me-2"></i>
-                                Selamat Datang Kembali, {{ Auth::user()->first_name ?? 'Pecinta Bumi' }}!
-                            </span>
-                        </div>
-                    @endauth
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
 
-                    <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-3 py-2 mb-3">
-                        <i class="fas fa-recycle me-1"></i> Ramah Lingkungan
-                    </span>
-                    <h1 class="display-4 fw-bold text-dark">
-                        Hidup Berkelanjutan dengan <br>
-                        <span class="text-success">EcoPoint</span>
-                    </h1>
-                    <p class="lead text-secondary mt-3">
-                        Setor sampah daur ulang, kumpulkan poin, dan tukarkan dengan uang tunai. 
-                        Mudah, cepat, dan berdampak.
-                    </p>
-                    <div class="mt-4 d-flex flex-wrap gap-3">
-                        <a href="{{ route('user.setoran') }}" class="btn btn-primary btn-lg px-4">
-                            <i class="fas fa-recycle me-2"></i> Setor Sekarang
-                        </a>
-                        <a href="#carakerja" class="btn btn-outline-primary btn-lg px-4">
-                            <i class="fas fa-play-circle me-2"></i> Cara Kerja
-                        </a>
-                    </div>
-                    <div class="mt-4 d-flex gap-4 text-secondary">
-                        <i class=></i> 
-                        <i class=></i> 
-                    </div>
-                </div>
-                <div class="col-lg-6 text-center">
-                    <div class="bg-success bg-opacity-10 rounded-circle p-5 d-inline-block shadow-lg">
-                        <i class="fas fa-trash-alt fa-7x text-success"></i>
-                    </div>
-                </div>
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: #0d2b1f;
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            color: #6fcf97;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-decoration: none;
+        }
+
+        .logo i {
+            color: #a8e6c1;
+            margin-right: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #cde8d6;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: #6fcf97;
+        }
+
+        /* ===== HERO (DUA KOLOM) ===== */
+        .hero {
+            padding: 60px 0 40px 0;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-bottom: 4px solid #6fcf97;
+        }
+
+        .hero .container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+        }
+
+        .hero-text {
+            flex: 1 1 500px;
+        }
+
+        .hero-text .badge {
+            display: inline-block;
+            background: #0d2b1f;
+            color: #6fcf97;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .hero-text h1 {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.2;
+            color: #0d2b1f;
+            margin-bottom: 16px;
+        }
+
+        .hero-text h1 i {
+            color: #2e7d5a;
+        }
+
+        .hero-text p {
+            font-size: 18px;
+            color: #1f4232;
+            max-width: 550px;
+            margin-bottom: 24px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .hero-actions .btn-primary {
+            background: #0d2b1f;
+            color: white;
+            border: none;
+            padding: 14px 36px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 6px 20px rgba(13, 43, 31, 0.25);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .hero-actions .btn-primary:hover {
+            background: #1a4532;
+            transform: translateY(-3px);
+            color: white;
+        }
+
+        .hero-actions .small-hint {
+            display: block;
+            width: 100%;
+            font-size: 14px;
+            color: #2d5a43;
+            margin-top: 4px;
+        }
+
+        .hero-image {
+            flex: 1 1 300px;
+            text-align: center;
+            font-size: 100px;
+            color: #2e7d5a;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 30px 20px;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+        }
+
+        .hero-image span {
+            font-size: 18px;
+            display: block;
+            font-weight: 600;
+            color: #1a4532;
+            margin-top: 8px;
+        }
+
+        /* ===== DIVIDER + TOMBOL LIHAT SELENGKAPNYA ===== */
+        .section-divider {
+            padding: 30px 0 10px 0;
+            text-align: center;
+        }
+
+        .btn-reveal {
+            background: #0d2b1f;
+            color: white;
+            border: none;
+            padding: 16px 50px;
+            border-radius: 60px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 8px 28px rgba(13, 43, 31, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .btn-reveal:hover {
+            background: #1f4d38;
+            transform: scale(1.02);
+        }
+
+        .btn-reveal i {
+            margin-right: 12px;
+        }
+
+        /* ===== KONTEN BLUR (FITUR, CARA KERJA, TENTANG) ===== */
+        .blur-wrapper {
+            transition: all 0.4s ease;
+        }
+
+        .blur-wrapper.blurred .feature-card,
+        .blur-wrapper.blurred .cara-kerja-item,
+        .blur-wrapper.blurred .tentang-card {
+            filter: blur(10px);
+            opacity: 0.4;
+            user-select: none;
+            pointer-events: none;
+            transform: scale(0.96);
+        }
+
+        .blur-wrapper.blurred .section-title,
+        .blur-wrapper.blurred .section-sub {
+            filter: blur(8px);
+            opacity: 0.4;
+            user-select: none;
+        }
+
+        /* ===== FITUR UNGGULAN ===== */
+        .features-section {
+            padding: 20px 0 40px 0;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 32px 24px;
+            border-radius: 28px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0, 30, 10, 0.08);
+            border: 1px solid #d4e8db;
+            transition: filter 0.4s, opacity 0.4s, transform 0.3s;
+        }
+
+        .feature-card .icon {
+            font-size: 48px;
+            color: #2e7d5a;
+            margin-bottom: 12px;
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            color: #0d2b1f;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: #2d4d3b;
+            font-size: 15px;
+        }
+
+        /* ===== CARA KERJA ===== */
+        .cara-kerja-section {
+            padding: 40px 0;
+        }
+
+        .cara-kerja-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .cara-kerja-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8fbf9;
+            border-radius: 24px;
+            border: 1px solid #d4e8db;
+            transition: filter 0.4s, opacity 0.4s, transform 0.3s;
+        }
+
+        .cara-kerja-item .step-number {
+            background: #0d2b1f;
+            color: #6fcf97;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0 auto 16px auto;
+        }
+
+        .cara-kerja-item h4 {
+            font-size: 20px;
+            color: #0d2b1f;
+            margin-bottom: 8px;
+        }
+
+        .cara-kerja-item p {
+            color: #2d4d3b;
+            font-size: 15px;
+        }
+
+        /* ===== TENTANG ===== */
+        .tentang-section {
+            padding: 40px 0 20px 0;
+        }
+
+        .tentang-card {
+            background: white;
+            padding: 40px;
+            border-radius: 28px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0, 30, 10, 0.08);
+            border: 1px solid #d4e8db;
+            transition: filter 0.4s, opacity 0.4s, transform 0.3s;
+        }
+
+        .tentang-card p {
+            font-size: 18px;
+            color: #2d4d3b;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            color: #0d2b1f;
+            margin-bottom: 8px;
+            transition: 0.4s;
+        }
+
+        .section-sub {
+            text-align: center;
+            font-size: 18px;
+            color: #2d5a43;
+            margin-bottom: 20px;
+            transition: 0.4s;
+        }
+
+        /* ===== CTA ===== */
+        .cta-section {
+            background: linear-gradient(145deg, #0d2b1f 0%, #1a4532 100%);
+            border-radius: 48px 48px 0 0;
+            padding: 70px 30px 60px 30px;
+            margin-top: 30px;
+            color: white;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 14px;
+            letter-spacing: -0.5px;
+        }
+
+        .cta-section h2 i {
+            color: #6fcf97;
+            margin-right: 12px;
+        }
+
+        .cta-section p {
+            font-size: 18px;
+            opacity: 0.85;
+            max-width: 600px;
+            margin: 0 auto 32px auto;
+            line-height: 1.7;
+        }
+
+        .cta-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 18px;
+        }
+
+        .cta-buttons .btn-cta-primary {
+            background: #6fcf97;
+            color: #0d2b1f;
+            border: none;
+            padding: 16px 44px;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 8px 24px rgba(111, 207, 151, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cta-buttons .btn-cta-primary:hover {
+            background: #84dba5;
+            transform: translateY(-4px);
+            color: #0d2b1f;
+        }
+
+        .cta-buttons .btn-cta-secondary {
+            background: transparent;
+            border: 2px solid #6fcf97;
+            color: #cde8d6;
+            padding: 16px 44px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.25s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cta-buttons .btn-cta-secondary:hover {
+            background: rgba(111, 207, 151, 0.12);
+            border-color: #84dba5;
+            color: #cde8d6;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: #071a12;
+            padding: 30px 0;
+            text-align: center;
+            color: #8baa99;
+            font-size: 14px;
+            border-top: 1px solid #1e4533;
+        }
+
+        .footer a {
+            color: #6fcf97;
+            text-decoration: none;
+        }
+
+        .footer .social {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 22px;
+        }
+
+        .footer .social a {
+            color: #8baa99;
+            transition: 0.2s;
+        }
+
+        .footer .social a:hover {
+            color: #6fcf97;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 700px) {
+            .hero-text h1 {
+                font-size: 32px;
+            }
+            .cta-section h2 {
+                font-size: 30px;
+            }
+            .nav-links {
+                gap: 16px;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 10px;
+            }
+            .navbar .container {
+                flex-direction: column;
+            }
+            .hero .container {
+                flex-direction: column-reverse;
+                text-align: center;
+            }
+            .hero-actions {
+                justify-content: center;
+            }
+            .hero-text p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .hero-image {
+                font-size: 70px;
+                padding: 20px;
+            }
+            .btn-reveal {
+                padding: 14px 30px;
+                font-size: 16px;
+                width: 100%;
+            }
+            .cara-kerja-grid {
+                grid-template-columns: 1fr;
+            }
+            .tentang-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <div class="container">
+        <a href="{{ route('home') }}" class="logo">
+            <i class="fas fa-leaf"></i> EcoPoint
+        </a>
+        <div class="nav-links">
+            <a href="{{ route('home') }}">Beranda</a>
+            <a href="#tentang">Tentang</a>
+            <a href="#cara-kerja">Cara Kerja</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-text">
+            <div class="badge"><i class="fas fa-recycle"></i> #HidupBerkelanjutan</div>
+            <h1><i class="fas fa-seedling"></i> Hidup Berkelanjutan dengan EcoPoint</h1>
+            <p>
+                Setor sampah daur ulang, kumpulkan poin, dan tukarkan dengan uang tunai.
+                Mudah, cepat, dan berdampak.
+            </p>
+            <div class="hero-actions">
+                    <a href="{{ route('register') }}" class="btn-primary">
+                        <i class="fas fa-user-plus"></i> Daftar Sekarang
+                    </a>
+                    <small class="small-hint">Belum punya akun? Daftar sekarang!</small>
             </div>
         </div>
-    </section>
-
-    <!-- ====== FITUR ====== -->
-    <section id="fitur" class="py-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <span class="text-success fw-semibold">FITUR UNGGULAN</span>
-                <h2 class="display-6 fw-bold text-dark">Kenapa Harus EcoPoint?</h2>
-                <p class="text-secondary">Kami hadir untuk memudahkan Anda berkontribusi menjaga bumi.</p>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card card-hover p-4 h-100 text-center">
-                        <div class="bg-success bg-opacity-10 rounded-circle mx-auto mb-3" style="width:70px;height:70px;line-height:70px;">
-                            <i class="fas fa-trash-alt fa-2x text-success"></i>
-                        </div>
-                        <h5 class="fw-bold">Setor Sampah</h5>
-                        <p class="text-secondary">Setor botol plastik, kardus, kaca, dan berbagai jenis sampah daur ulang.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card card-hover p-4 h-100 text-center">
-                        <div class="bg-primary bg-opacity-10 rounded-circle mx-auto mb-3" style="width:70px;height:70px;line-height:70px;">
-                            <i class="fas fa-coins fa-2x text-primary"></i>
-                        </div>
-                        <h5 class="fw-bold">Kumpulkan Poin</h5>
-                        <p class="text-secondary">Setiap 1 kg sampah = 10 poin. Semakin banyak setor, semakin besar poin.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card card-hover p-4 h-100 text-center">
-                        <div class="bg-warning bg-opacity-10 rounded-circle mx-auto mb-3" style="width:70px;height:70px;line-height:70px;">
-                            <i class="fas fa-money-bill-wave fa-2x text-warning"></i>
-                        </div>
-                        <h5 class="fw-bold">Tukar Uang</h5>
-                        <p class="text-secondary">50 poin = Rp 5.000, 100 poin = Rp 10.000, dan seterusnya.</p>
-                    </div>
-                </div>
-            </div>
+        <div class="hero-image">
+            <i class="fas fa-recycle"></i>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- ====== CARA KERJA ====== -->
-    <section id="carakerja" class="py-5 bg-light rounded-4">
-        <div class="container">
-            <div class="text-center mb-5">
-                <span class="text-success fw-semibold">PANDUAN</span>
-                <h2 class="display-6 fw-bold text-dark">Cara Kerja EcoPoint</h2>
-                <p class="text-secondary">Hanya 3 langkah mudah untuk mulai berkontribusi.</p>
-            </div>
-            <div class="row g-4 text-center position-relative">
-                <!-- Garis penghubung (Desktop) -->
-                <div class="d-none d-md-block position-absolute top-50 start-0 w-100 bg-success bg-opacity-25" style="height:2px;transform:translateY(-50%);z-index:0;"></div>
+<!-- ===== TOMBOL LIHAT SELENGKAPNYA ===== -->
+<div class="section-divider container">
+    <button class="btn-reveal" id="toggleBtn">
+        <i class="fas fa-chevron-down" id="toggleIcon"></i>
+        <span id="toggleLabel">Lihat Selengkapnya</span>
+    </button>
+</div>
 
-                <div class="col-md-4 position-relative" style="z-index:1;">
-                    <div class="bg-success text-white rounded-circle fw-bold mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:50px;height:50px;font-size:22px;">1</div>
-                    <h5 class="fw-bold">Setor Sampah</h5>
-                    <p class="text-secondary">Bawa sampah daur ulang ke titik kumpul terdekat.</p>
-                </div>
-                <div class="col-md-4 position-relative" style="z-index:1;">
-                    <div class="bg-success text-white rounded-circle fw-bold mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:50px;height:50px;font-size:22px;">2</div>
-                    <h5 class="fw-bold">Dapatkan Poin</h5>
-                    <p class="text-secondary">Setelah setor, poin langsung masuk ke akun Anda.</p>
-                </div>
-                <div class="col-md-4 position-relative" style="z-index:1;">
-                    <div class="bg-success text-white rounded-circle fw-bold mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:50px;height:50px;font-size:22px;">3</div>
-                    <h5 class="fw-bold">Tukarkan Poin</h5>
-                    <p class="text-secondary">Kumpulkan poin dan tukarkan dengan uang tunai.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- ===== KONTEN BLUR ===== -->
+<div class="blur-wrapper blurred" id="blur-wrapper">
+    <div class="container">
 
-    <!-- ====== TENTANG ====== -->
-    <section id="tentang" class="py-5">
-        <div class="container">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-6 fade-in-up">
-                    <h2 class="display-6 fw-bold text-dark">Tentang EcoPoint</h2>
-                    <p class="text-secondary">EcoPoint adalah platform inovatif yang memudahkan masyarakat untuk berpartisipasi dalam daur ulang sampah. Dengan sistem poin yang transparan, setiap kontribusi Anda akan dihargai.</p>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Mudah digunakan dan ramah pengguna.</li>
-                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Mendukung lingkungan dan keberlanjutan.</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i> Memberikan insentif nyata bagi pengguna.</li>
-                    </ul>
+        <!-- FITUR UNGGULAN -->
+        <section class="features-section">
+            <h2 class="section-title">FITUR UNGGULAN</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon"><i class="fas fa-coins"></i></div>
+                    <h3>Tukar Poin Jadi Uang</h3>
+                    <p>Setiap 100 poin = Rp 1.000. Cairkan kapan saja ke dompet digital.</p>
                 </div>
-                <div class="col-lg-6 text-center fade-in-up">
-                    <img src="{{ asset('image/sampah.jpg') }}" alt="Tentang EcoPoint" class="img-fluid rounded-4 shadow-lg" onerror="this.src='https://placehold.co/600x400/11998e/white?text=EcoPoint'">
+                <div class="feature-card">
+                    <div class="icon"><i class="fas fa-truck-fast"></i></div>
+                    <h3>Jemput Sampah</h3>
+                    <p>Kami jemput langsung dari rumah Anda. Gratis dan terjadwal.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>Pantau Dampak</h3>
+                    <p>Lihat seberapa banyak emisi karbon yang sudah kamu kurangi.</p>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ====== CTA BANNER ====== -->
-    <section class="py-5 bg-success rounded-4 text-center text-white">
-        <div class="container">
-            @guest
-                {{-- Untuk pengunjung yang belum login --}}
-                <h2 class="fw-bold">Siap Berkontribusi untuk Bumi?</h2>
-                <p class="lead">Mulai setor sampah dan kumpulkan poin sekarang!</p>
-                <a href="{{ route('register') }}" class="btn btn-light text-success fw-bold px-5 py-3 rounded-pill shadow-lg mt-2">
-                    <i class="fas fa-user-plus me-2"></i> Daftar Sekarang
+        <!-- CARA KERJA -->
+        <section class="cara-kerja-section" id="cara-kerja">
+            <h2 class="section-title">Bagaimana Cara Kerjanya?</h2>
+            <p class="section-sub">Ikuti 3 langkah mudah ini untuk mulai berkontribusi</p>
+            <div class="cara-kerja-grid">
+                <div class="cara-kerja-item">
+                    <div class="step-number">1</div>
+                    <h4>Daftar & Verifikasi</h4>
+                    <p>Buat akun EcoPoint dan verifikasi data diri Anda.</p>
+                </div>
+                <div class="cara-kerja-item">
+                    <div class="step-number">2</div>
+                    <h4>Setor Sampah</h4>
+                    <p>Pilih jenis sampah, timbang, dan kirimkan ke titik kumpul terdekat.</p>
+                </div>
+                <div class="cara-kerja-item">
+                    <div class="step-number">3</div>
+                    <h4>Kumpulkan Poin & Tukar</h4>
+                    <p>Dapatkan poin dari setiap setoran, lalu tukarkan dengan uang tunai.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TENTANG -->
+        <section class="tentang-section" id="tentang">
+            <h2 class="section-title">Tentang EcoPoint</h2>
+            <div class="tentang-card">
+                <p>
+                    EcoPoint adalah platform yang menghubungkan masyarakat dengan sistem daur ulang.
+                    Kami percaya bahwa setiap tindakan kecil dapat membawa dampak besar bagi lingkungan.
+                    Dengan mengumpulkan dan mendaur ulang sampah, kita tidak hanya mengurangi limbah,
+                    tetapi juga menciptakan nilai ekonomi bagi semua pihak.
+                </p>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<!-- ===== CTA ===== -->
+<section class="cta-section">
+    <div class="container">
+        <h2><i class="fas fa-hand-holding-heart"></i> Siap berkontribusi untuk bumi?</h2>
+        <p>
+            Mulai langkah kecilmu sekarang. Setorkan sampah daur ulang,
+            kumpulkan poin, dan rasakan dampak nyata bagi lingkungan.
+        </p>
+        <div class="cta-buttons">
+                <a href="{{ route('register') }}" class="btn-cta-primary">
+                    <i class="fas fa-rocket"></i> Daftar Sekarang
                 </a>
-            @else
-                {{-- Untuk user yang sudah login --}}
-                <h2 class="fw-bold">Ayo Setor Sekarang!</h2>
-                <p class="lead">Kumpulkan lebih banyak poin dan tukarkan dengan uang tunai.</p>
-                <a href="{{ route('user.setoran') }}" class="btn btn-light text-success fw-bold px-5 py-3 rounded-pill shadow-lg mt-2">
-                    <i class="fas fa-recycle me-2"></i> Setor Sekarang
-                </a>
-            @endguest
+            <a href="#blur-wrapper" class="btn-cta-secondary">
+                <i class="fas fa-book-open"></i> Pelajari Lebih Lanjut
+            </a>
         </div>
-    </section>
-@endsection
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2026 <strong>EcoPoint</strong> — Gerakan Hijau untuk Masa Depan.</p>
+        <div class="social">
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+        </div>
+    </div>
+</footer>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('toggleBtn');
+        const toggleLabel = document.getElementById('toggleLabel');
+        const toggleIcon = document.getElementById('toggleIcon');
+        const blurWrapper = document.getElementById('blur-wrapper');
+
+        let isRevealed = false;
+
+        toggleBtn.addEventListener('click', function () {
+            isRevealed = !isRevealed;
+
+            if (isRevealed) {
+                blurWrapper.classList.remove('blurred');
+                blurWrapper.classList.add('revealed');
+                toggleLabel.textContent = 'Sembunyikan';
+                toggleIcon.className = 'fas fa-chevron-up';
+            } else {
+                blurWrapper.classList.remove('revealed');
+                blurWrapper.classList.add('blurred');
+                toggleLabel.textContent = 'Lihat Selengkapnya';
+                toggleIcon.className = 'fas fa-chevron-down';
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

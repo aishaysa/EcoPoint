@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [UserDashboardController::class, 'home'])
     ->name('home');
+Route::get('/dashboard', [UserDashboardController::class, 'home'])
+    ->name('dashboard');
 
 Route::view('/user/transaksi/create', 'user.transaksi.create');
 
@@ -326,7 +328,7 @@ Route::prefix('user')
         Route::get('/profile/edit', [
             UserDashboardController::class,
             'editProfile'
-        ])->name('profile.edit');
+        ])->name('profile-edit');
 
         Route::post('/profile/update', [
             UserDashboardController::class,
