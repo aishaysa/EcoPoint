@@ -10,24 +10,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
             background: #f0f7f2;
             color: #1a2e24;
             line-height: 1.6;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
-        /* ===== NAVBAR SEDERHANA ===== */
+        /* ===== NAVBAR RESPONSIVE ===== */
         .navbar {
             background: #0d2b1f;
             padding: 14px 0;
@@ -41,6 +33,7 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            gap: 15px;
         }
         .logo {
             color: #6fcf97;
@@ -48,281 +41,225 @@
             font-weight: 800;
             text-decoration: none;
             letter-spacing: -0.5px;
+            order: 1;
         }
-        .logo i {
-            color: #a8e6c1;
-            margin-right: 8px;
-        }
+        .logo i { color: #a8e6c1; margin-right: 8px; }
 
-        /* Elemen auth di kanan */
-        .nav-right {
+        /* Hamburger (Garis 3) */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            order: 3;
+            z-index: 10;
+        }
+        .hamburger span {
+            display: block;
+            width: 26px;
+            height: 3px;
+            background: #cde8d6;
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+
+        /* Menu Navigasi */
+        .nav-links {
             display: flex;
+            gap: 28px;
             align-items: center;
-            gap: 20px;
+            order: 2;
         }
-        .nav-right .btn-nav {
-            background: #6fcf97;
-            color: #0d2b1f;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-weight: 700;
-            font-size: 14px;
-            text-decoration: none;
-            transition: 0.2s;
-        }
-        .nav-right .btn-nav:hover {
-            background: #84dba5;
-            color: #0d2b1f;
-        }
-        .nav-right a {
+        .nav-links a {
             color: #cde8d6;
             text-decoration: none;
             font-weight: 600;
             font-size: 15px;
         }
-        .nav-right a:hover {
-            color: #6fcf97;
-        }
+        .nav-links a:hover { color: #6fcf97; }
 
-        /* ===== DROPDOWN PROFILE ===== */
-        .profile-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        .profile-dropdown .avatar {
-            background: #2e7d5a;
-            color: white;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
+        /* Elemen Kanan (Hanya Link Akun) - Desktop */
+        .nav-right {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            border: 2px solid #6fcf97;
+            gap: 20px;
+            order: 3;
+        }
+        .nav-right .btn-account {
+            background: transparent;
+            color: #cde8d6;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
             transition: 0.2s;
         }
-        .profile-dropdown .avatar:hover {
-            background: #6fcf97;
-            color: #0d2b1f;
-        }
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 44px;
-            background: white;
-            min-width: 180px;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-            border: 1px solid #d4e8db;
-            overflow: hidden;
-            z-index: 10;
-        }
-        .dropdown-menu.show {
-            display: block;
-        }
-        .dropdown-menu a,
-        .dropdown-menu button {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 20px;
-            color: #1a2e24;
-            text-decoration: none;
-            font-size: 15px;
-            font-weight: 500;
-            background: none;
-            border: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-            transition: 0.15s;
-        }
-        .dropdown-menu a:hover,
-        .dropdown-menu button:hover {
-            background: #e8f5e9;
-        }
-        .dropdown-menu .divider {
-            height: 1px;
-            background: #d4e8db;
-            margin: 4px 0;
-        }
+        .nav-right .btn-account:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
+
+        /* Elemen Mobile */
+        .mobile-divider, .mobile-actions { display: none; }
 
         /* ===== HERO ===== */
-        .hero {
-            padding: 80px 0 60px;
-            background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%);
-            text-align: center;
-            border-bottom: 4px solid #6fcf97;
-        }
-        .hero .badge {
-            display: inline-block;
-            background: #0d2b1f;
-            color: #6fcf97;
-            padding: 6px 20px;
-            border-radius: 40px;
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-        .hero h1 {
-            font-size: 52px;
-            font-weight: 800;
-            line-height: 1.2;
-            color: #0d2b1f;
-            margin-bottom: 16px;
-        }
-        .hero h1 i {
-            color: #2e7d5a;
-        }
-        .hero p {
-            font-size: 20px;
-            color: #1f4232;
-            max-width: 600px;
-            margin: 0 auto 30px;
-        }
-        .hero .btn-hero {
-            background: #0d2b1f;
-            color: white;
-            border: none;
-            padding: 16px 48px;
-            border-radius: 60px;
-            font-weight: 700;
-            font-size: 18px;
-            cursor: pointer;
-            transition: 0.25s;
-            box-shadow: 0 8px 28px rgba(13,43,31,0.3);
-            text-decoration: none;
-            display: inline-block;
-        }
-        .hero .btn-hero:hover {
-            background: #1a4532;
-            transform: translateY(-4px);
-        }
+        .hero { padding: 80px 0 60px; background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%); text-align: center; border-bottom: 4px solid #6fcf97; }
+        .hero .badge { display: inline-block; background: #0d2b1f; color: #6fcf97; padding: 6px 20px; border-radius: 40px; font-size: 14px; font-weight: 700; margin-bottom: 20px; }
+        .hero h1 { font-size: 52px; font-weight: 800; line-height: 1.2; color: #0d2b1f; margin-bottom: 16px; }
+        .hero h1 i { color: #2e7d5a; }
+        .hero p { font-size: 20px; color: #1f4232; max-width: 600px; margin: 0 auto 30px; }
+        .hero .btn-hero { background: #0d2b1f; color: white; border: none; padding: 16px 48px; border-radius: 60px; font-weight: 700; font-size: 18px; cursor: pointer; transition: 0.25s; box-shadow: 0 8px 28px rgba(13,43,31,0.3); text-decoration: none; display: inline-block; }
+        .hero .btn-hero:hover { background: #1a4532; transform: translateY(-4px); }
 
         /* ===== FITUR ===== */
-        .features {
-            padding: 60px 0;
-        }
-        .section-title {
-            text-align: center;
-            font-size: 34px;
-            font-weight: 800;
-            color: #0d2b1f;
-            margin-bottom: 8px;
-        }
-        .section-sub {
-            text-align: center;
-            font-size: 18px;
-            color: #2d5a43;
-            margin-bottom: 40px;
-        }
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 30px;
-        }
-        .feature-item {
-            background: white;
-            padding: 40px 20px;
-            border-radius: 24px;
-            text-align: center;
-            box-shadow: 0 6px 24px rgba(0,30,10,0.06);
-            border: 1px solid #d4e8db;
-            transition: 0.3s;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-        .feature-item:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 36px rgba(0,30,10,0.12);
-        }
-        .feature-item .icon-box {
-            font-size: 48px;
-            color: #2e7d5a;
-            margin-bottom: 16px;
-        }
-        .feature-item h3 {
-            font-size: 22px;
-            color: #0d2b1f;
-            font-weight: 700;
-        }
+        .features { padding: 60px 0; }
+        .section-title { text-align: center; font-size: 34px; font-weight: 800; color: #0d2b1f; margin-bottom: 8px; }
+        .section-sub { text-align: center; font-size: 18px; color: #2d5a43; margin-bottom: 40px; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; }
+        .feature-item { background: white; padding: 40px 20px; border-radius: 24px; text-align: center; box-shadow: 0 6px 24px rgba(0,30,10,0.06); border: 1px solid #d4e8db; transition: 0.3s; text-decoration: none; color: inherit; display: block; }
+        .feature-item:hover { transform: translateY(-6px); box-shadow: 0 12px 36px rgba(0,30,10,0.12); }
+        .feature-item .icon-box { font-size: 48px; color: #2e7d5a; margin-bottom: 16px; }
+        .feature-item h3 { font-size: 22px; color: #0d2b1f; font-weight: 700; }
 
         /* ===== FOOTER ===== */
-        .footer {
-            background: #071a12;
-            padding: 30px 0;
-            text-align: center;
-            color: #8baa99;
-            font-size: 14px;
-            border-top: 1px solid #1e4533;
-        }
-        .footer a {
-            color: #6fcf97;
-            text-decoration: none;
-        }
-        .footer .social {
-            margin-top: 12px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            font-size: 22px;
-        }
-        .footer .social a {
-            color: #8baa99;
-            transition: 0.2s;
-        }
-        .footer .social a:hover {
-            color: #6fcf97;
+        .footer { background: #071a12; padding: 30px 0; text-align: center; color: #8baa99; font-size: 14px; border-top: 1px solid #1e4533; }
+        .footer a { color: #6fcf97; text-decoration: none; }
+        .footer .social { margin-top: 12px; display: flex; justify-content: center; gap: 20px; font-size: 22px; }
+        .footer .social a { color: #8baa99; transition: 0.2s; }
+        .footer .social a:hover { color: #6fcf97; }
+
+        /* ===== RESPONSIVE MOBILE ===== */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                gap: 16px;
+                padding: 15px 0;
+                border-top: 1px solid #1e4533;
+                margin-top: 10px;
+                order: 4;
+            }
+            .nav-links.open { display: flex; }
+            .nav-links a { font-size: 16px; width: 100%; text-align: center; padding: 8px 0; }
+
+            .nav-right { display: none; }
+
+            .mobile-divider { display: block; height: 1px; background: #1e4533; width: 100%; margin: 8px 0; }
+            
+            /* PERBAIKAN UTAMA DI SINI */
+            .mobile-actions { 
+                display: flex; 
+                flex-direction: column; 
+                width: 100%; 
+                gap: 0; 
+                align-items: stretch; 
+            }
+            .mobile-actions .btn-account,
+            .mobile-actions form {
+                width: 100%;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .mobile-actions .btn-account {
+                background: transparent;
+                color: #cde8d6;
+                font-weight: 600;
+                font-size: 16px;
+                text-decoration: none;
+                padding: 12px 0;
+                transition: 0.2s;
+            }
+            .mobile-actions .btn-account:hover { color: #6fcf97; }
+            
+            .mobile-actions form button {
+                background: transparent;
+                border: none;
+                color: #cde8d6;
+                font-weight: 600;
+                font-size: 16px;
+                width: 100%;
+                padding: 12px 0;
+                cursor: pointer;
+                transition: 0.2s;
+            }
+            .mobile-actions form button:hover { color: #6fcf97; }
+
+            .hero { padding: 50px 0 40px; }
+            .hero h1 { font-size: 32px; }
+            .hero p { font-size: 16px; padding: 0 15px; }
+            .hero .btn-hero { padding: 14px 32px; font-size: 16px; }
+            .section-title { font-size: 28px; }
+            .features-grid { grid-template-columns: 1fr; }
         }
 
-        @media (max-width: 700px) {
-            .hero h1 {
-                font-size: 32px;
-            }
-            .navbar .container {
-                flex-direction: column;
-                gap: 10px;
-            }
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 480px) {
+            .container { padding: 0 12px; }
+            .logo { font-size: 22px; }
         }
     </style>
 </head>
 <body>
 
-<!-- ===== NAVBAR SEDERHANA ===== -->
+<!-- ===== NAVBAR RESPONSIVE ===== -->
 <nav class="navbar">
     <div class="container">
-        <a href="{{ route('home') }}" class="logo">
+        <a href="{{ route('user.dashboard') }}" class="logo">
             <i class="fas fa-leaf"></i> EcoPoint
         </a>
 
+        <!-- Garis 3 untuk Mobile -->
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+
+        <!-- Menu Navigasi (Beranda, Setoran, Poin, Akun, Logout) -->
+        <div class="nav-links" id="navLinks">
+            <a href="{{ route('user.dashboard') }}">Beranda</a>
+            <a href="{{ route('user.setoran') }}">Setoran</a>
+            <a href="{{ route('user.poin') }}">Poin</a>
+            
+            <div class="mobile-divider"></div>
+
+            @auth
+                <div class="mobile-actions">
+                    <a href="{{ route('user.profile') }}" class="btn-account">
+                        <i class="fas fa-user"></i> Akun
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div class="mobile-actions">
+                    <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="{{ route('register') }}" class="btn-nav">Daftar</a>
+                </div>
+            @endauth
+        </div>
+
+        <!-- Elemen Kanan (Hanya Link Akun Desktop) -->
         <div class="nav-right">
             @auth
-                <a href="{{ route('user.setoran') }}" class="btn-nav">Setor</a>
-                <div class="profile-dropdown" id="profileDropdown">
-                    <div class="avatar" id="avatarBtn">
-                        {{ strtoupper(substr(Auth::user()->first_name ?? 'U', 0, 1)) }}
-                    </div>
-                    <div class="dropdown-menu" id="dropdownMenu">
-                        <a href="{{ route('user.profile') }}">
-                            <i class="fas fa-user-edit"></i> Edit Profile
-                        </a>
-                        <div class="divider"></div>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </button>
-                        </form>
-                    </div>
-                </div>
+                <a href="{{ route('user.profile') }}" class="btn-account">
+                    <i class="fas fa-user"></i> Akun
+                </a>
             @else
                 <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
                     <i class="fas fa-sign-in-alt"></i> Login
@@ -398,17 +335,20 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const avatarBtn = document.getElementById('avatarBtn');
-        const dropdownMenu = document.getElementById('dropdownMenu');
-        if (avatarBtn && dropdownMenu) {
-            avatarBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                dropdownMenu.classList.toggle('show');
+        // Hamburger toggle (Menu Mobile)
+        const hamburger = document.getElementById('hamburgerBtn');
+        const navLinks = document.getElementById('navLinks');
+        if (hamburger && navLinks) {
+            hamburger.addEventListener('click', function() {
+                hamburger.classList.toggle('active');
+                navLinks.classList.toggle('open');
             });
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.profile-dropdown')) {
-                    dropdownMenu.classList.remove('show');
-                }
+            // Tutup menu saat link diklik
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    navLinks.classList.remove('open');
+                });
             });
         }
     });

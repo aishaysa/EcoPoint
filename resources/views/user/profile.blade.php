@@ -3,115 +3,156 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profil Saya</title>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>EcoPoint — Profil Saya</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        /* ============================================================
-           GAYA SERAGAM DENGAN LAYOUT USER & FORM SETORAN
-        ============================================================ */
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: #f0f7f2;
+            color: #1a2e24;
+            line-height: 1.6;
         }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-        .profile-page {
-            width: 100%;
-            min-height: 100vh;
-            background: #f0f7f2;
-            padding: 28px 22px 50px;
+        /* ===== NAVBAR RESPONSIVE ===== */
+        .navbar {
+            background: #0d2b1f;
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
-
-        .profile-container {
-            width: 100%;
-            max-width: 820px;
-            margin: 0 auto;
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
+        .logo {
+            color: #6fcf97;
+            font-size: 26px;
+            font-weight: 800;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            order: 1;
+        }
+        .logo i { color: #a8e6c1; }
 
+        /* Hamburger (Garis 3) */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            order: 3;
+            z-index: 10;
+        }
+        .hamburger span {
+            display: block;
+            width: 26px;
+            height: 3px;
+            background: #cde8d6;
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+
+        /* Menu Navigasi */
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+            order: 2;
+        }
+        .nav-links a {
+            color: #cde8d6;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+        .nav-links a:hover { color: #6fcf97; }
+
+        /* Elemen Kanan (Akun) - Desktop */
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            order: 3;
+        }
+        .nav-right .btn-account {
+            background: transparent;
+            color: #cde8d6;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        .nav-right .btn-account:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
+
+        /* Elemen Mobile */
+        .mobile-divider, .mobile-actions { display: none; }
+
+        /* ===== PAGE / PROFILE ===== */
+        .profile-page { padding: 28px 16px 50px; background: #f0f7f2; }
+        .profile-container { max-width: 820px; margin: 0 auto; }
         .profile-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 20px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
-
         .profile-title {
-            margin: 0;
-            font-size: 1.7rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: #0d2b1f;
+            margin: 0;
         }
-
-        .profile-subtitle {
-            margin-top: 4px;
-            color: #2d5a43;
-            font-size: 0.8rem;
-        }
-
-        .profile-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-edit {
-            text-decoration: none;
-            padding: 9px 18px;
-            border-radius: 40px;
-            background: #2e7d5a;
-            color: white;
-            font-weight: 600;
-            font-size: 0.75rem;
-            transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            border: none;
-            cursor: pointer;
-        }
-        .btn-edit:hover {
-            background: #1a4532;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(46, 125, 90, 0.3);
-        }
-
+        .profile-subtitle { color: #2d5a43; font-size: 0.8rem; margin-top: 2px; }
         .btn-back {
             text-decoration: none;
-            padding: 9px 14px;
+            padding: 8px 14px;
             border: 1px solid #cde0d3;
             border-radius: 10px;
             background: #fff;
             color: #2d5a43;
             font-weight: 600;
-            transition: 0.2s;
             font-size: 0.75rem;
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            transition: 0.2s;
         }
-        .btn-back:hover {
-            background: #e8f5e9;
-            border-color: #6fcf97;
-        }
+        .btn-back:hover { background: #e8f5e9; border-color: #6fcf97; }
 
-        /* CARD */
         .profile-card {
             background: #ffffff;
             border: 1px solid #d4e8db;
             border-radius: 24px;
             box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
-            overflow: hidden;
-            padding: 32px;
+            padding: 28px 24px;
         }
-
         .profile-avatar {
             display: flex;
             align-items: center;
@@ -119,187 +160,341 @@
             margin-bottom: 28px;
             padding-bottom: 24px;
             border-bottom: 1px solid #d4e8db;
+            flex-wrap: wrap;
         }
-
         .profile-avatar img {
-            width: 100px;
-            height: 100px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid #2e7d5a;
-            background: #e8f5e9;
         }
-
-        .profile-avatar .default-avatar {
-            width: 100px;
-            height: 100px;
+        .default-avatar {
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
             background: #e8f5e9;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
+            font-size: 2.6rem;
             color: #2e7d5a;
             border: 3px solid #2e7d5a;
         }
+        .profile-name { font-size: 1.4rem; font-weight: 700; color: #0d2b1f; margin: 0; }
+        .profile-email { color: #4d7a63; font-size: 0.85rem; margin: 0; }
 
-        .profile-name {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #0d2b1f;
-        }
-
-        .profile-email {
-            margin: 0;
-            color: #4d7a63;
-            font-size: 0.85rem;
-        }
-
-        /* INFO GRID */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px 30px;
-        }
-
-        .info-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .info-item .label {
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label {
             font-size: 0.7rem;
             font-weight: 700;
             color: #4d7a63;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
         }
-
-        .info-item .value {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #0d2b1f;
-            padding: 6px 0;
-            border-bottom: 1px dashed #d4e8db;
+        .form-group .input, .form-group .file-input {
+            border: 1px solid #d4e8db;
+            border-radius: 16px;
+            background: #fafffc;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            color: #1a2e24;
+            outline: none;
+            transition: 0.2s;
+            width: 100%;
         }
-
-        .info-item .value .poin-badge {
+        .form-group .input:focus, .form-group .file-input:focus {
+            border-color: #2e7d5a;
+            box-shadow: 0 0 0 4px rgba(46, 125, 90, 0.12);
+        }
+        .form-group .help-text { font-size: 0.7rem; color: #4d7a63; margin-top: 3px; }
+        
+        .form-actions {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid #d4e8db;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn-submit {
             background: #2e7d5a;
             color: white;
-            padding: 2px 14px;
+            border: none;
+            padding: 10px 28px;
             border-radius: 40px;
-            font-size: 0.85rem;
             font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-submit:hover { background: #1a4532; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 125, 90, 0.3); }
+        .btn-cancel {
+            background: white;
+            border: 1px solid #d4e8db;
+            color: #2d5a43;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-cancel:hover { background: #f0f7f2; border-color: #6fcf97; }
+
+        .alert { padding: 12px 16px; border-radius: 16px; margin-bottom: 20px; font-weight: 500; font-size: 0.8rem; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #b8d9b8; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-danger ul { margin-top: 5px; padding-left: 18px; }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: #071a12;
+            padding: 30px 0;
+            text-align: center;
+            color: #8baa99;
+            font-size: 14px;
+            border-top: 1px solid #1e4533;
+        }
+        .footer a { color: #6fcf97; text-decoration: none; }
+        .footer .social { margin-top: 12px; display: flex; justify-content: center; gap: 20px; font-size: 22px; }
+        .footer .social a { color: #8baa99; transition: 0.2s; }
+        .footer .social a:hover { color: #6fcf97; }
+
+        /* ===== RESPONSIVE MOBILE ===== */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                gap: 16px;
+                padding: 15px 0;
+                border-top: 1px solid #1e4533;
+                margin-top: 10px;
+                order: 4;
+            }
+            .nav-links.open { display: flex; }
+            .nav-links a { font-size: 16px; width: 100%; text-align: center; padding: 8px 0; }
+
+            .nav-right { display: none; }
+            .mobile-divider { display: block; height: 1px; background: #1e4533; width: 100%; margin: 8px 0; }
+            
+            .mobile-actions { 
+                display: flex; 
+                flex-direction: column; 
+                width: 100%; 
+                gap: 0; 
+                align-items: stretch; 
+            }
+            .mobile-actions .btn-account,
+            .mobile-actions form { width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; }
+            .mobile-actions .btn-account { background: transparent; color: #cde8d6; font-weight: 600; font-size: 16px; text-decoration: none; padding: 12px 0; }
+            .mobile-actions form button { background: transparent; border: none; color: #cde8d6; font-weight: 600; font-size: 16px; width: 100%; padding: 12px 0; cursor: pointer; }
+
+            .profile-avatar { flex-direction: column; text-align: center; gap: 16px; }
+            .profile-avatar img, .default-avatar { width: 100px; height: 100px; }
+            .form-grid { grid-template-columns: 1fr; gap: 16px; }
+            .profile-card { padding: 20px 16px; }
+            .profile-title { font-size: 1.3rem; }
+            .form-actions { flex-direction: column-reverse; align-items: stretch; }
+            .btn-submit, .btn-cancel { justify-content: center; padding: 12px; }
+            .profile-header { flex-direction: column; align-items: flex-start; }
+            .btn-back { align-self: flex-start; width: 100%; text-align: center; justify-content: center; }
         }
 
-        /* RESPONSIVE */
-        @media (max-width: 700px) {
-            .profile-page {
-                padding: 18px 12px 30px;
-            }
-            .profile-card {
-                padding: 20px;
-            }
-            .profile-avatar {
-                flex-direction: column;
-                text-align: center;
-            }
-            .info-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-            .profile-header {
-                flex-wrap: wrap;
-            }
-            .profile-actions {
-                width: 100%;
-                justify-content: flex-start;
-            }
+        @media (max-width: 480px) {
+            .container { padding: 0 12px; }
+            .profile-page { padding: 16px 8px 30px; }
+            .profile-card { padding: 16px 12px; }
+            .logo { font-size: 22px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="profile-page">
+<!-- NAVBAR RESPONSIVE (Tanpa Dropdown, Langsung "Akun") -->
+<nav class="navbar">
+    <div class="container navbar-content">
+        <a href="{{ route('user.dashboard') }}" class="logo"><i class="fas fa-leaf"></i> EcoPoint</a>
 
-        <div class="profile-container">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
 
-            <!-- HEADER -->
-            <div class="profile-header">
-                <div>
-                    <h1 class="profile-title">
-                        <i class="fas fa-user-circle" style="color:#2e7d5a; margin-right:8px;"></i>
-                        Profil Saya
-                    </h1>
-                    <div class="profile-subtitle">
-                        Informasi akun dan riwayat poin Anda
-                    </div>
-                </div>
-                <div class="profile-actions">
-                    <a href="#" class="btn-back">
-                        <i class="fas fa-arrow-left"></i> Dashboard
+        <!-- Menu Navigasi + Akun + Logout (Mobile) -->
+        <div class="nav-links" id="navLinks">
+            <a href="{{ route('user.dashboard') }}">Beranda</a>
+            <a href="{{ route('user.setoran') }}">Setoran</a>
+            <a href="{{ route('user.poin') }}">Poin</a>
+            
+            <div class="mobile-divider"></div>
+
+            @auth
+                <div class="mobile-actions">
+                    <a href="{{ route('user.profile') }}" class="btn-account">
+                        <i class="fas fa-user"></i> Akun
                     </a>
-                    <a href="#" class="btn-edit">
-                        <i class="fas fa-pen"></i> Edit Profil
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div class="mobile-actions">
+                    <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
+                        <i class="fas fa-sign-in-alt"></i> Login
                     </a>
+                    <a href="{{ route('register') }}" class="btn-nav">Daftar</a>
                 </div>
-            </div>
-
-            <!-- CARD -->
-            <div class="profile-card">
-
-                <!-- AVATAR & NAMA -->
-                <div class="profile-avatar">
-                    <!-- Ganti src dengan foto profil sebenarnya jika ada -->
-                    <!-- <img src="foto-profil.jpg" alt="Foto Profil"> -->
-
-                    <!-- Default avatar (tanpa foto) -->
-                    <div class="default-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div>
-                        <h2 class="profile-name">Budi Santoso</h2>
-                        <p class="profile-email">budi@example.com</p>
-                    </div>
-                </div>
-
-                <!-- DATA LENGKAP -->
-                <div class="info-grid">
-                    <div class="info-item">
-                        <span class="label">Nama Lengkap</span>
-                        <span class="value">Budi Santoso</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Email</span>
-                        <span class="value">budi@example.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Nomor HP</span>
-                        <span class="value">0812-3456-7890</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Alamat</span>
-                        <span class="value">Jl. Merdeka No. 10, Jakarta</span>
-                    </div>
-                    <div class="info-item" style="grid-column: 1 / -1;">
-                        <span class="label">Total Poin</span>
-                        <span class="value">
-                            <span class="poin-badge">1.250</span>
-                            <span style="font-size:0.75rem; color:#4d7a63; margin-left:8px;">poin</span>
-                        </span>
-                    </div>
-                </div>
-
-            </div>
-            <!-- end .profile-card -->
-
+            @endauth
         </div>
-        <!-- end .container -->
 
+        <!-- Elemen Kanan (Hanya Link Akun Desktop) -->
+        <div class="nav-right">
+            @auth
+                <a href="{{ route('user.profile') }}" class="btn-account">
+                    <i class="fas fa-user"></i> Akun
+                </a>
+            @else
+                <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a href="{{ route('register') }}" class="btn-nav">Daftar</a>
+            @endauth
+        </div>
     </div>
-    <!-- end .profile-page -->
+</nav>
+
+<!-- CONTENT (Profil) -->
+<div class="profile-page">
+    <div class="profile-container">
+        <div class="profile-header">
+            <div>
+                <h1 class="profile-title"><i class="fas fa-user-circle" style="color:#2e7d5a; margin-right:8px;"></i> Profil Saya</h1>
+                <div class="profile-subtitle">Kelola data akun Anda</div>
+            </div>
+            <a href="{{ route('user.dashboard') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        </div>
+
+        <div class="profile-card">
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <strong>Perbaiki kesalahan berikut:</strong>
+                    <ul>@foreach($errors->all() as $e) <li>{{ $e }}</li> @endforeach</ul>
+                </div>
+            @endif
+
+            <form action="{{ route('user.profile.update') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+
+                <div class="profile-avatar">
+                    @if(isset($user->foto) && $user->foto)
+                        <img src="{{ asset('storage/' . $user->foto) }}" alt="Foto Profil">
+                    @else
+                        <div class="default-avatar"><i class="fas fa-user"></i></div>
+                    @endif
+                    <div>
+                        <div class="profile-name">{{ $user->name }}</div>
+                        <div class="profile-email">{{ $user->email }}</div>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="name">Nama Lengkap</label>
+                        <input type="text" name="name" id="name" class="input" value="{{ old('name', $user->name) }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email" class="input" value="{{ old('email', $user->email) }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="no_hp">Nomor HP</label>
+                        <input type="text" name="no_hp" id="no_hp" class="input" value="{{ old('no_hp', $user->pelanggan->no_hp ?? '') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="alamat">Alamat</label>
+                        <input type="text" name="alamat" id="alamat" class="input" value="{{ old('alamat', $user->pelanggan->alamat ?? '') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password Baru</label>
+                        <input type="password" name="password" id="password" class="input" placeholder="Kosongkan jika tidak diganti">
+                        <span class="help-text">Minimal 6 karakter</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="password_confirmation">Konfirmasi Password</label>
+                        <input type="password" name="password_confirmation" id="password_confirmation" class="input" placeholder="Ulangi password baru">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="foto">Foto Profil</label>
+                        <input type="file" name="foto" id="foto" class="file-input" accept="image/*">
+                        @if(isset($user->foto) && $user->foto)
+                            <div class="foto-preview">
+                                <img src="{{ asset('storage/' . $user->foto) }}" alt="Foto saat ini">
+                                <div style="font-size:0.7rem; color:#4d7a63; margin-top:4px;">Foto saat ini</div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{{ route('user.dashboard') }}" class="btn-cancel"><i class="fas fa-times"></i> Batal</a>
+                    <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="container">
+        <p>&copy; {{ date('Y') }} <strong>EcoPoint</strong> — Gerakan Hijau untuk Masa Depan.</p>
+        <div class="social">
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Garis 3 (Hamburger) Toggle
+        const hamburger = document.getElementById('hamburgerBtn');
+        const navLinks = document.getElementById('navLinks');
+        if (hamburger && navLinks) {
+            hamburger.addEventListener('click', function() {
+                hamburger.classList.toggle('active');
+                navLinks.classList.toggle('open');
+            });
+            // Tutup menu saat link diklik
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    navLinks.classList.remove('open');
+                });
+            });
+        }
+    });
+</script>
 
 </body>
 </html>
