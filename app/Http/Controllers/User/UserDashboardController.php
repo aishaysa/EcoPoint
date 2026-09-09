@@ -301,35 +301,38 @@ public function poin()
         return view('user.profile', compact('user'));
     }
 
-    public function updateProfile(Request $request)
-    {
-        $user = Auth::user();
-        if (!$user) return redirect()->route('user.login');
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'no_hp' => ['nullable', 'string', 'max:15'],
-            'alamat' => ['nullable', 'string'],
-        ]);
+public function updateProfile(Request $request)
+{
+    $user = Auth::user();
+    if (!$user) return redirect()->route('user.login');
+    
+    $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'email', 'max:255'],
+        'no_hp' => ['nullable', 'string', 'max:15'],
+        'alamat' => ['nullable', 'string'],
+    ]);
 
-        $user->name = $request->name;
-        $user->email = $request->email;
-        if ($request->has('no_hp')) $user->no_hp = $request->no_hp;
-        if ($request->has('alamat')) $user->alamat = $request->alamat;
-        $user->save();
+    // Update hanya name & email di tabel users
+    $user->name = $request->name;
+    $user->email = $request->email;
+    // HAPUS baris ini:
+    // if ($request->has('no_hp')) $user->no_hp = $request->no_hp;
+    // if ($request->has('alamat')) $user->alamat = $request->alamat;
+    $user->save();
 
-        $pelanggan = $user->pelanggan;
-        if ($pelanggan) {
-            $pelanggan->nama = $user->name;
-            $pelanggan->email = $user->email;
-            if ($request->has('no_hp')) $pelanggan->no_hp = $request->no_hp;
-            if ($request->has('alamat')) $pelanggan->alamat = $request->alamat;
-            $pelanggan->save();
-        }
-
-        return redirect()->route('user.profile')->with('success', 'Profil berhasil diperbarui.');
+    // Update no_hp & alamat di tabel pelanggan
+    $pelanggan = $user->pelanggan;
+    if ($pelanggan) {
+        $pelanggan->nama = $user->name;
+        $pelanggan->email = $user->email;
+        if ($request->has('no_hp')) $pelanggan->no_hp = $request->no_hp;
+        if ($request->has('alamat')) $pelanggan->alamat = $request->alamat;
+        $pelanggan->save();
     }
 
+    return redirect()->route('user.profile')->with('success', 'Profil berhasil diperbarui.');
+}
     private function getOrCreatePelanggan($user, ?string $noHp = null, ?string $alamat = null)
     {
         $pelanggan = $user->pelanggan;
