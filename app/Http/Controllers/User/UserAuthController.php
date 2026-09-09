@@ -77,7 +77,7 @@ class UserAuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->route('user.dashboard')
+        return redirect()->route('login')
             ->with('success', 'Registrasi berhasil!');
     }
 
