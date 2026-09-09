@@ -5,23 +5,24 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Withdrawal;
 use App\Models\WithdrawPackage;
+use App\Helpers\PoinHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class WithdrawController extends Controller
 {
-public function index()
-{
-    $packages = WithdrawPackage::where('is_active', true)
-        ->orderBy('points', 'asc')
-        ->get();
+    public function index()
+    {
+        $packages = WithdrawPackage::where('is_active', true)
+            ->orderBy('points', 'asc')
+            ->get();
 
-    $histories = Withdrawal::where('user_id', Auth::id())
-        ->orderBy('created_at', 'desc')
-        ->get();
+        $histories = Withdrawal::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    return view('user.withdraw', compact('packages', 'histories'));
-}
+        return view('user.withdraw', compact('packages', 'histories'));
+    }
 
     public function store(Request $request)
     {
@@ -37,12 +38,18 @@ public function index()
         $user = Auth::user();
         $package = WithdrawPackage::findOrFail($request->package_id);
 
-        if ($user->points < $package->points) {
-            return redirect()->back()->with('error', 'Poin tidak mencukupi!');
+        if (($user->points ?? 0) < $package->points) {
+            return redirect()->back()->with('error', 'Poin tidak mencukupi');
         }
 
-        $user->points -= $package->points;
-        $user->save();
+        // Catat riwayat poin (poin berkurang)
+        PoinHelper::catat(
+            $user,
+            -$package->points,
+            'penarikan',
+            'Penarikan paket ' . $package->points . ' poin (Rp ' . number_format($package->amount, 0, ',', '.') . ')',
+            null
+        );
 
         $accountNumber = $request->phone ?? $request->account_number ?? null;
         $accountName = $request->account_name ?? $user->name;
@@ -61,6 +68,6 @@ public function index()
         ]);
 
         return redirect()->route('user.withdraw')
-            ->with('success', 'Pengajuan penarikan berhasil! Tunggu proses admin.');
+            ->with('success', 'Pengajuan penarikan berhasil. Tunggu proses admin.');
     }
 }

@@ -173,6 +173,8 @@ Route::prefix('user')->name('user.')->middleware(['auth:web'])->group(function (
     Route::get('/riwayat/{id}', [UserDashboardController::class, 'riwayatDetail'])->name('riwayat.detail');
 
     Route::get('/poin', [UserDashboardController::class, 'poin'])->name('poin');
+    Route::get('/poin/{id}/detail', [UserDashboardController::class, 'detailPoin'])->name('poin-detail');
+    Route::get('/poin/riwayat', [UserDashboardController::class, 'riwayatPoinStruk'])->name('poin.riwayat');
 
     Route::get('/withdraw', [UserWithdrawController::class, 'index'])->name('withdraw');
     Route::post('/withdraw', [UserWithdrawController::class, 'store'])->name('withdraw.store');

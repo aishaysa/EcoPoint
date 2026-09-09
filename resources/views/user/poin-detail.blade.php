@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Struk Setoran - #{{ $transaksi->id }}</title>
+    <title>Detail Riwayat Poin</title>
     <style>
         * {
             margin: 0;
@@ -74,6 +74,12 @@
             font-weight: 500;
             text-align: right;
         }
+        .value.plus {
+            color: #0a6b4a;
+        }
+        .value.minus {
+            color: #b91c1c;
+        }
         .divider {
             border-top: 2px dashed #dce1e6;
             margin: 16px 0;
@@ -100,21 +106,17 @@
             font-weight: 700;
             text-transform: uppercase;
         }
-        .status-pending {
-            background: #fef3c7;
-            color: #b45309;
-        }
-        .status-approved {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-        .status-completed {
+        .status-setoran {
             background: #d1fae5;
             color: #065f46;
         }
-        .status-rejected {
+        .status-penarikan {
             background: #fee2e2;
             color: #991b1b;
+        }
+        .status-refund {
+            background: #fef3c7;
+            color: #b45309;
         }
         .struk-footer {
             text-align: center;
@@ -185,84 +187,70 @@
     <div class="struk-container" id="struk">
         <div class="struk-header">
             <h1>EcoPoint</h1>
-            <div class="sub">Struk Setoran Sampah</div>
-            <div class="id-badge">#{{ $transaksi->id }}</div>
+            <div class="sub">Detail Riwayat Poin</div>
+            <div class="id-badge">#{{ $riwayat->id }}</div>
         </div>
 
         <div class="struk-body">
             <div class="row">
                 <span class="label">Tanggal</span>
-                <span class="value">{{ $transaksi->created_at->format('d M Y, H:i') }}</span>
+                <span class="value">{{ $riwayat->created_at->format('d M Y, H:i') }}</span>
             </div>
             <div class="row">
-                <span class="label">Pelanggan</span>
-                <span class="value">{{ $transaksi->pelanggan->nama ?? '-' }}</span>
+                <span class="label">User</span>
+                <span class="value">{{ auth()->user()->name }}</span>
             </div>
             <div class="row">
-                <span class="label">No HP</span>
-                <span class="value">{{ $transaksi->no_hp ?? '-' }}</span>
+                <span class="label">Jenis Transaksi</span>
+                <span class="value">{{ $riwayat->jenis_label }}</span>
             </div>
-            <div class="row">
-                <span class="label">Metode</span>
-                <span class="value">{{ ucfirst($transaksi->metode) }}</span>
-            </div>
-            @if($transaksi->metode == 'jemput')
-            <div class="row">
-                <span class="label">Alamat Jemput</span>
-                <span class="value" style="text-align:right;max-width:60%;">{{ $transaksi->alamat_jemput ?? '-' }}</span>
-            </div>
-            @else
-            <div class="row">
-                <span class="label">Titik Kumpul</span>
-                <span class="value">{{ $transaksi->titikKumpul->nama ?? '-' }}</span>
-            </div>
-            @endif
 
             <div class="divider"></div>
 
-            @if($transaksi->jenisSampahs && $transaksi->jenisSampahs->count())
-                @foreach($transaksi->jenisSampahs as $sampah)
-                <div class="row">
-                    <span class="label">{{ $sampah->nama }}</span>
-                    <span class="value">{{ number_format($sampah->pivot->berat_estimasi ?? 0, 2) }} kg</span>
-                </div>
-                @endforeach
-            @else
-                <div class="row">
-                    <span class="label">{{ $transaksi->jenisSampah->nama ?? 'Sampah' }}</span>
-                    <span class="value">{{ number_format($transaksi->berat, 2) }} kg</span>
-                </div>
-            @endif
+            <div class="row">
+                <span class="label">Deskripsi</span>
+                <span class="value" style="text-align:right; max-width:60%;">{{ $riwayat->deskripsi ?? '-' }}</span>
+            </div>
+
+            <div class="row">
+                <span class="label">Jumlah Poin</span>
+                <span class="value {{ $riwayat->jumlah > 0 ? 'plus' : 'minus' }}">
+                    {{ $riwayat->jumlah > 0 ? '+' : '' }}{{ number_format($riwayat->jumlah) }}
+                </span>
+            </div>
+
+            <div class="row">
+                <span class="label">Saldo Sebelumnya</span>
+                <span class="value">{{ number_format($riwayat->saldo_sebelumnya) }}</span>
+            </div>
+
+            <div class="row">
+                <span class="label">Saldo Setelah</span>
+                <span class="value">{{ number_format($riwayat->saldo_setelah) }}</span>
+            </div>
 
             <div class="divider"></div>
-
-            <div class="row total-row">
-                <span class="label">Total Berat</span>
-                <span class="value">{{ number_format($transaksi->berat, 2) }} kg</span>
-            </div>
 
             <div class="row" style="margin-top:8px;">
                 <span class="label">Status</span>
                 <span class="value">
-                    <span class="status-badge status-{{ $transaksi->status }}">
-                        {{ ucfirst($transaksi->status) }}
+                    <span class="status-badge status-{{ $riwayat->jenis }}">
+                        {{ $riwayat->jenis_label }}
                     </span>
                 </span>
             </div>
 
-            @if($transaksi->berat_aktual > 0)
+            @if($riwayat->referensi_type)
             <div class="row">
-                <span class="label">Berat Aktual</span>
-                <span class="value">{{ number_format($transaksi->berat_aktual, 2) }} kg</span>
+                <span class="label">Referensi</span>
+                <span class="value" style="font-size:12px; color:#8a9aa8;">#{{ $riwayat->referensi_id }}</span>
             </div>
             @endif
 
-            @if($transaksi->total_harga > 0)
-            <div class="row" style="font-weight:700;color:#0a6b4a;">
-                <span class="label">Total Harga</span>
-                <span class="value">Rp {{ number_format($transaksi->total_harga, 0, ',', '.') }}</span>
+            <div class="row total-row">
+                <span class="label">Saldo Akhir</span>
+                <span class="value">{{ number_format($riwayat->saldo_setelah) }} poin</span>
             </div>
-            @endif
         </div>
 
         <div class="struk-footer">
@@ -271,7 +259,7 @@
         </div>
 
         <button class="btn-print" onclick="window.print()">Cetak / Print</button>
-        <a href="{{ route('user.setoran') }}" class="btn-back">Kembali ke Daftar Setoran</a>
+        <a href="{{ route('user.poin') }}" class="btn-back">Kembali ke Riwayat</a>
     </div>
 </body>
 </html>

@@ -106,7 +106,7 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-1.5">
                         {{-- APPROVE SETORAN --}}
                         @if($trx->type == 'setoran' && in_array($trx->status, ['pending', 'menunggu']))
-                            <form action="{{ route('admin.setoran.approve', $trx->id) }}" method="POST" id="approve-form-{{ $trx->id }}" style="display:inline-block;">
+                            <form action="{{ route('admin.transaksi.approve', $trx->id) }}" method="POST" id="approve-form-{{ $trx->id }}" style="display:inline-block;">
                                 @csrf
                                 <button type="button" 
                                         class="confirm-btn inline-flex items-center px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-md text-xs font-medium transition"

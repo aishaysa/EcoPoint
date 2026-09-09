@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Cabang;
 use App\Models\JenisSampah;
 use App\Models\Pelanggan;
+use App\Models\RiwayatPoin;
 use App\Models\TitikKumpul;
 use App\Models\Transaksi;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\PoinHelper;
 
 class UserDashboardController extends Controller
 {
@@ -86,7 +88,6 @@ class UserDashboardController extends Controller
 
     public function storeTransaksi(Request $request)
     {
-        // Validasi dasar
         $request->validate([
             'nama_pengirim'   => ['required', 'string', 'max:255'],
             'no_hp'           => ['required', 'string', 'min:10', 'max:15'],
@@ -103,8 +104,6 @@ class UserDashboardController extends Controller
             'jenis_sampah_data.*.min' => 'Berat minimal 0.1 kg.',
         ]);
 
-        // ---- TANGANI TITIK KUMPUL ----
-        // Jika titik_kumpul_id tidak valid atau kosong, cari otomatis titik terdekat
         $titikKumpulId = $request->titik_kumpul_id;
         $titik = null;
 
@@ -112,7 +111,6 @@ class UserDashboardController extends Controller
             $titik = TitikKumpul::find($titikKumpulId);
         }
 
-        // Jika tidak ditemukan atau tidak ada, cari titik terdekat dari lokasi user
         if (!$titik) {
             $allTitik = TitikKumpul::all();
             $terdekat = null;
@@ -130,17 +128,14 @@ class UserDashboardController extends Controller
 
             if ($terdekat && $jarakTerdekat <= 30) {
                 $titik = $terdekat;
-                // Set ulang request agar titik yang dipakai sesuai
                 $request->merge(['titik_kumpul_id' => $titik->id]);
             } else {
-                // Tidak ada titik dalam radius 30 km
                 return back()->withInput()->withErrors([
                     'titik_kumpul_id' => 'Tidak ada titik kumpul dalam radius 30 km dari lokasi Anda.'
                 ]);
             }
         }
 
-        // Sekarang $titik pasti ada, cek jarak lagi
         $jarak = $this->haversine(
             $request->latitude,
             $request->longitude,
@@ -154,7 +149,6 @@ class UserDashboardController extends Controller
             ]);
         }
 
-        // ---- PROSES SELANJUTNYA ----
         $user = Auth::user();
         if (!$user) return redirect()->route('user.login');
 
@@ -255,13 +249,43 @@ class UserDashboardController extends Controller
         return $pdf->download('transaksi-' . $transaksi->id . '.pdf');
     }
 
-    public function poin()
+    /**
+     * HALAMAN POIN (RIWAYAT POIN)
+     */
+public function poin()
+{
+    $user = Auth::user();
+    if (!$user) return redirect()->route('user.login');
+
+    $riwayat = RiwayatPoin::where('user_id', $user->id)
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+
+    return view('user.poin', compact('riwayat'));
+}
+    public function riwayatPoin()
     {
         $user = Auth::user();
         if (!$user) return redirect()->route('user.login');
-        $poin = $user->pelanggan?->poin ?? 0;
-        return view('user.poin', compact('poin'));
+
+        $riwayat = RiwayatPoin::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('user.riwayat-poin', compact('riwayat'));
     }
+
+    public function detailPoin($id)
+{
+    $user = Auth::user();
+    if (!$user) return redirect()->route('user.login');
+
+    $riwayat = RiwayatPoin::where('user_id', $user->id)
+        ->where('id', $id)
+        ->firstOrFail();
+
+    return view('user.poin-detail', compact('riwayat'));
+}
 
     public function profile()
     {

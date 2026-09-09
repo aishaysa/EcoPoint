@@ -7,6 +7,7 @@ use App\Models\Setoran;
 use App\Models\Withdrawal;
 use App\Models\User;
 use App\Models\Pelanggan;
+use App\Helpers\PoinHelper;
 use GlennRaya\Xendivel\Xendivel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -106,7 +107,14 @@ class TransaksiController extends Controller
 
         $user = User::find($setoran->user_id);
         if ($user) {
-            $user->increment('points', $poinDidapat); 
+            //  Catat riwayat poin (poin bertambah)
+            PoinHelper::catat(
+                $user,
+                $poinDidapat,
+                'setoran',
+                'Setoran sampah seberat ' . number_format($beratAkhir, 2) . ' kg',
+                $setoran
+            );
         }
 
         $pelanggan = Pelanggan::find($setoran->pelanggan_id);
@@ -154,6 +162,7 @@ class TransaksiController extends Controller
             return redirect()->back()->with('error', 'Penarikan sudah diproses.');
         }
 
+        //  Status diubah menjadi completed (poin sudah dikurangi saat user mengajukan)
         $withdrawal->status = 'completed';
         $withdrawal->processed_at = now();
         $withdrawal->save();
@@ -170,8 +179,15 @@ class TransaksiController extends Controller
         }
 
         $user = $withdrawal->user;
-        $user->points += $withdrawal->points;
-        $user->save();
+
+        // Catat riwayat refund (poin kembali) 
+        PoinHelper::catat(
+            $user,
+            $withdrawal->points,
+            'refund',
+            'Refund penarikan paket ' . $withdrawal->points . ' poin',
+            $withdrawal
+        );
 
         $withdrawal->status = 'failed';
         $withdrawal->admin_note = $request->note ?? 'Ditolak oleh admin';

@@ -22,7 +22,6 @@
         }
         .container { max-width:1200px; margin:0 auto; padding:0 24px; }
 
-        /* ===== NAVBAR ===== */
         .navbar {
             background: #0d2b1f;
             padding: 14px 0;
@@ -123,7 +122,6 @@
 
         .mobile-divider, .mobile-actions { display: none; }
 
-        /* ===== HERO ===== */
         .page-hero {
             background: linear-gradient(145deg, #0d2b1f, #1a4532);
             padding: 40px 0 60px;
@@ -170,7 +168,6 @@
             margin-top: 6px;
         }
 
-        /* ===== BALANCE CARD ===== */
         .balance-wrapper {
             display: flex;
             justify-content: center;
@@ -225,9 +222,8 @@
             color: #2e7d5a;
         }
 
-        /* ===== RIWAYAT ===== */
         .history-section {
-            max-width: 820px;
+            max-width: 1000px;
             margin: 0 auto 40px;
         }
         .history-header {
@@ -247,6 +243,10 @@
             gap: 10px;
         }
         .history-header h2 i { color: #2e7d5a; }
+        .history-header span {
+            font-size: 14px;
+            color: #6c7d74;
+        }
 
         .history-card {
             background: white;
@@ -289,6 +289,21 @@
         .status-pending { background: #fff3cd; color: #856404; }
         .status-failed { background: #fde8e8; color: #721c24; }
 
+        .btn-detail {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #eef2f6;
+            color: #1f3a4b;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .btn-detail:hover {
+            background: #dce1e6;
+        }
+
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -302,7 +317,6 @@
         }
         .empty-state p { font-size: 15px; }
 
-        /* ===== TOMBOL AKSI ===== */
         .action-buttons {
             display: flex;
             justify-content: center;
@@ -345,7 +359,6 @@
             box-shadow: 0 8px 28px rgba(0,0,0,0.04);
         }
 
-        /* ===== FOOTER ===== */
         .footer {
             background: #071a12;
             padding: 30px 0;
@@ -366,7 +379,6 @@
         .footer .social a { color: #8baa99; transition: 0.2s; }
         .footer .social a:hover { color: #6fcf97; }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .hamburger { display: flex; }
             .nav-links {
@@ -426,14 +438,11 @@
                 padding: 12px 0;
                 cursor: pointer;
             }
-
             .page-hero { padding: 30px 0 50px; border-radius: 0 0 28px 28px; }
             .page-hero h1 { font-size: 26px; }
-
             .balance-card { padding: 18px 22px; max-width: 360px; flex-wrap: wrap; gap: 10px; }
             .balance-card .info .value { font-size: 30px; }
             .balance-card .icon-wrap { width: 50px; height: 50px; font-size: 24px; }
-
             .history-section { padding: 0 4px; }
             .history-table th, .history-table td { padding: 10px 14px; font-size: 13px; }
             .action-buttons { flex-direction: column; align-items: stretch; }
@@ -447,9 +456,9 @@
             .balance-card .icon-wrap { align-self: center; }
             .history-table th, .history-table td { padding: 8px 10px; font-size: 12px; }
             .history-table .status { font-size: 10px; padding: 2px 10px; }
+            .btn-detail { font-size: 10px; padding: 2px 8px; }
         }
 
-        /* ===== ANIMASI ===== */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
@@ -461,22 +470,17 @@
 </head>
 <body>
 
-<!-- ===== NAVBAR ===== -->
 <nav class="navbar">
     <div class="container">
         <a href="{{ route('user.dashboard') }}" class="logo"><i class="fas fa-recycle"></i> EcoPoint</a>
-
         <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
-
         <div class="nav-links" id="navLinks">
             <a href="{{ route('user.dashboard') }}">Beranda</a>
             <a href="{{ route('user.setoran') }}">Setoran</a>
-            <a href="{{ route('user.poin') }}">Poin</a>
-
+            <a href="{{ route('user.poin') }}" style="color:#6fcf97;">Poin</a>
             <div class="mobile-divider"></div>
-
             @auth
                 <div class="mobile-actions">
                     <a href="{{ route('user.profile') }}" class="btn-account">
@@ -484,37 +488,29 @@
                     </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </button>
+                        <button type="submit"><i class="fas fa-sign-out-alt"></i> Logout</button>
                     </form>
                 </div>
             @else
                 <div class="mobile-actions">
-                    <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                    <a href="{{ route('register') }}" class="btn-nav">Daftar</a>
+                    <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">Login</a>
+                    <a href="{{ route('register') }}" style="color:#cde8d6; font-weight:600;">Daftar</a>
                 </div>
             @endauth
         </div>
-
         <div class="nav-right">
             @auth
                 <a href="{{ route('user.profile') }}" class="btn-account">
                     <i class="fas fa-user"></i> {{ Auth::user()->name }}
                 </a>
             @else
-                <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </a>
-                <a href="{{ route('register') }}" class="btn-nav">Daftar</a>
+                <a href="{{ route('login') }}" style="color:#6fcf97; font-weight:600;">Login</a>
+                <a href="{{ route('register') }}" style="color:#cde8d6; font-weight:600;">Daftar</a>
             @endauth
         </div>
     </div>
 </nav>
 
-<!-- ===== HERO ===== -->
 <section class="page-hero">
     <div class="container">
         <h1><i class="fas fa-coins"></i> Poin Saya</h1>
@@ -522,24 +518,18 @@
     </div>
 </section>
 
-<!-- ===== CONTENT ===== -->
 <div class="poin-page" style="padding: 0 0 40px; background: #f0f7f2; flex:1;">
     <div class="container">
-
-        <!-- Balance Card -->
         <div class="balance-wrapper">
             <div class="balance-card">
                 <div class="info">
                     <div class="label">Total Poin</div>
-                    <div class="value">{{ Auth::user()->points ?? 0 }} <small>poin</small></div>
+                    <div class="value">{{ number_format(auth()->user()->points ?? 0) }} <small>poin</small></div>
                 </div>
-                <div class="icon-wrap">
-                    <i class="fas fa-coins"></i>
-                </div>
+                <div class="icon-wrap"><i class="fas fa-coins"></i></div>
             </div>
         </div>
 
-        <!-- Tombol Aksi -->
         <div class="action-buttons" style="margin-bottom: 32px;">
             <a href="{{ route('user.withdraw') }}" class="btn-poin btn-poin-primary">
                 <i class="fas fa-exchange-alt"></i> Tukar Poin
@@ -549,57 +539,64 @@
             </a>
         </div>
 
-        <!-- Riwayat Penukaran -->
         <div class="history-section">
-@isset($histories)
-    <span style="font-size:14px; color:#6c7d74;">{{ $histories->count() }} transaksi</span>
-@else
-    <span style="font-size:14px; color:#6c7d74;">0 transaksi</span>
-@endisset
+            <div class="history-header">
+                <h2><i class="fas fa-history"></i> Riwayat Poin</h2>
+                <span>{{ $riwayat->total() }} transaksi</span>
+            </div>
             <div class="history-card">
-                @if(isset($histories) && $histories->count() > 0)
+                @if($riwayat->count() > 0)
                     <table class="history-table">
                         <thead>
                             <tr>
                                 <th>Tanggal</th>
-                                <th>Poin</th>
+                                <th>Keterangan</th>
                                 <th>Jumlah</th>
-                                <th>Metode</th>
-                                <th>Status</th>
+                                <th>Saldo Akhir</th>
+                                <th>Jenis</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($histories as $history)
+                            @foreach($riwayat as $item)
                             <tr>
-                                <td>{{ $history->created_at->format('d/m/Y H:i') }}</td>
-                                <td>{{ $history->points }}</td>
-                                <td>Rp {{ number_format($history->amount, 0, ',', '.') }}</td>
-                                <td>{{ strtoupper($history->payment_method) }}</td>
+                                <td>{{ $item->created_at->format('d/m/Y H:i') }}</td>
+                                <td>{{ $item->deskripsi ?? $item->jenis_label }}</td>
+                                <td style="font-weight:700; color: {{ $item->jumlah > 0 ? '#2e7d5a' : '#b91c1c' }};">
+                                    {{ $item->jumlah > 0 ? '+' : '' }}{{ number_format($item->jumlah) }}
+                                </td>
+                                <td>{{ number_format($item->saldo_setelah) }}</td>
                                 <td>
                                     <span class="status 
-                                        @if($history->status == 'success') status-success
-                                        @elseif($history->status == 'pending') status-pending
-                                        @else status-failed @endif">
-                                        {{ ucfirst($history->status) }}
+                                        @if($item->jenis == 'setoran') status-success
+                                        @elseif($item->jenis == 'penarikan') status-failed
+                                        @else status-pending @endif">
+                                        {{ $item->jenis_label }}
                                     </span>
+                                </td>
+                                <td>
+                                    <a href="{{ route('user.poin-detail', $item->id) }}" class="btn-detail">
+                                        <i class="fas fa-eye"></i> Detail
+                                    </a>
                                 </td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
+                    <div style="padding:16px 20px; border-top:1px solid #edf3ef;">
+                        {{ $riwayat->links() }}
+                    </div>
                 @else
                     <div class="empty-state">
                         <i class="fas fa-inbox"></i>
-                        <p>Belum ada riwayat penukaran.<br>Mulai tukar poin Anda sekarang!</p>
+                        <p>Belum ada riwayat poin.<br>Mulai setoran sampah untuk mengumpulkan poin!</p>
                     </div>
                 @endif
             </div>
         </div>
-
     </div>
 </div>
 
-<!-- ===== FOOTER ===== -->
 <footer class="footer">
     <div class="container">
         <p>&copy; {{ date('Y') }} <strong>EcoPoint</strong> — Daur Ulang untuk Lindungi Lingkungan.</p>
