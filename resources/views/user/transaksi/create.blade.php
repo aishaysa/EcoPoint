@@ -11,7 +11,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
+        /* reset & global */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background: #f0f7f2;
@@ -21,7 +26,11 @@
             display: flex;
             flex-direction: column;
         }
-        .container { max-width:1200px; margin:0 auto; padding:0 24px; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
 
         /* ===== NAVBAR ===== */
         .navbar {
@@ -30,7 +39,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
         .navbar .container {
             display: flex;
@@ -48,7 +57,9 @@
             align-items: center;
             gap: 8px;
         }
-        .logo i { color: #a8e6c1; }
+        .logo i {
+            color: #a8e6c1;
+        }
 
         .hamburger {
             display: none;
@@ -68,9 +79,15 @@
             border-radius: 4px;
             transition: 0.3s;
         }
-        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px,6px); }
-        .hamburger.active span:nth-child(2) { opacity: 0; }
-        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px,-6px); }
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
 
         .nav-links {
             display: flex;
@@ -95,8 +112,12 @@
             background: #6fcf97;
             transition: 0.3s;
         }
-        .nav-links a:hover { color: #6fcf97; }
-        .nav-links a:hover::after { width: 100%; }
+        .nav-links a:hover {
+            color: #6fcf97;
+        }
+        .nav-links a:hover::after {
+            width: 100%;
+        }
 
         .nav-right {
             display: flex;
@@ -120,8 +141,14 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .nav-right .btn-account:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
-        .mobile-divider, .mobile-actions { display: none; }
+        .nav-right .btn-account:hover {
+            color: #6fcf97;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .mobile-divider,
+        .mobile-actions {
+            display: none;
+        }
 
         /* ===== HERO ===== */
         .page-hero {
@@ -139,7 +166,7 @@
             right: -10%;
             width: 350px;
             height: 350px;
-            background: rgba(111,207,151,0.06);
+            background: rgba(111, 207, 151, 0.06);
             border-radius: 50%;
         }
         .page-hero::after {
@@ -149,7 +176,7 @@
             left: -5%;
             width: 250px;
             height: 250px;
-            background: rgba(111,207,151,0.04);
+            background: rgba(111, 207, 151, 0.04);
             border-radius: 50%;
         }
         .page-hero .container {
@@ -167,9 +194,12 @@
             justify-content: center;
             gap: 14px;
         }
-        .page-hero h1 i { color: #6fcf97; font-size: 36px; }
+        .page-hero h1 i {
+            color: #6fcf97;
+            font-size: 36px;
+        }
         .page-hero p {
-            color: rgba(255,255,255,0.7);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 16px;
             margin-top: 6px;
         }
@@ -184,18 +214,26 @@
             z-index: 2;
         }
         .form-card {
-            background: rgba(255,255,255,0.94);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(12px);
             border-radius: 32px;
-            border: 1px solid rgba(255,255,255,0.5);
-            box-shadow: 0 16px 48px rgba(13,43,31,0.08);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 16px 48px rgba(13, 43, 31, 0.08);
             overflow: hidden;
             animation: fadeUp 0.5s ease both;
             width: 100%;
         }
-        .form-body { padding: 32px 32px 20px; }
+        .form-body {
+            padding: 32px 32px 20px;
+        }
 
-        .form-body, .section, .field, .pickup-info, .alert {
+        /* semua elemen di dalam card tidak overflow */
+        .form-body,
+        .section,
+        .field,
+        .pickup-info,
+        .branch-info,
+        .alert {
             word-wrap: break-word;
             overflow-wrap: break-word;
             max-width: 100%;
@@ -220,11 +258,18 @@
             align-items: center;
             gap: 10px;
         }
-        .section-title i { color: #2e7d5a; font-size: 18px; }
+        .section-title i {
+            color: #2e7d5a;
+            font-size: 18px;
+        }
 
         /* ===== FIELDS ===== */
-        .field { margin-bottom: 14px; }
-        .field:last-child { margin-bottom: 0; }
+        .field {
+            margin-bottom: 14px;
+        }
+        .field:last-child {
+            margin-bottom: 0;
+        }
         .field label {
             display: block;
             font-weight: 600;
@@ -232,7 +277,9 @@
             color: #2d5a43;
             margin-bottom: 5px;
         }
-        .input, .select, .textarea {
+        .input,
+        .select,
+        .textarea {
             width: 100% !important;
             max-width: 100%;
             padding: 10px 14px;
@@ -245,14 +292,23 @@
             color: #1a2e24;
             box-sizing: border-box;
         }
-        .input:focus, .select:focus, .textarea:focus {
+        .input:focus,
+        .select:focus,
+        .textarea:focus {
             outline: none;
             border-color: #2e7d5a;
             background: white;
-            box-shadow: 0 0 0 4px rgba(46,125,90,0.06);
+            box-shadow: 0 0 0 4px rgba(46, 125, 90, 0.06);
         }
-        .textarea { resize: vertical; min-height: 70px; }
-        .readonly { background: #edf5f0 !important; color: #2d5a43; cursor: not-allowed; }
+        .textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+        .readonly {
+            background: #edf5f0 !important;
+            color: #2d5a43;
+            cursor: not-allowed;
+        }
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -265,7 +321,11 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
         }
-        .method-input { position: absolute; opacity: 0; pointer-events: none; }
+        .method-input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
         .method-label {
             display: block;
             padding: 14px 16px;
@@ -276,10 +336,10 @@
             background: #fafcfa;
             text-align: center;
         }
-        .method-input:checked + .method-label {
+        .method-input:checked+.method-label {
             border-color: #2e7d5a;
             background: #f2fbf6;
-            box-shadow: 0 0 0 3px rgba(46,125,90,0.12);
+            box-shadow: 0 0 0 3px rgba(46, 125, 90, 0.12);
         }
         .method-label strong {
             display: block;
@@ -313,7 +373,11 @@
             align-items: center;
             gap: 6px;
         }
-        .location-button:hover { background: #2e7d5a; color: white; border-color: #2e7d5a; }
+        .location-button:hover {
+            background: #2e7d5a;
+            color: white;
+            border-color: #2e7d5a;
+        }
         .location-status {
             font-size: 13px;
             color: #5a7f6e;
@@ -345,9 +409,20 @@
             align-items: flex-start;
             gap: 10px;
         }
-        .alert-success { color: #155724; background: #def5e6; border: 1px solid #b8dfc6; }
-        .alert-danger { color: #721c24; background: #fde8e8; border: 1px solid #f5c6cb; }
-        .alert-danger ul { margin-top: 4px; padding-left: 20px; }
+        .alert-success {
+            color: #155724;
+            background: #def5e6;
+            border: 1px solid #b8dfc6;
+        }
+        .alert-danger {
+            color: #721c24;
+            background: #fde8e8;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-danger ul {
+            margin-top: 4px;
+            padding-left: 20px;
+        }
 
         /* ===== JENIS SAMPAH ===== */
         .sampah-grid {
@@ -365,7 +440,9 @@
             background: #fafcfa;
             transition: 0.2s;
         }
-        .sampah-item:hover { background: #f0f7f2; }
+        .sampah-item:hover {
+            background: #f0f7f2;
+        }
         .sampah-item input[type="checkbox"] {
             flex-shrink: 0;
             accent-color: #2e7d5a;
@@ -391,13 +468,17 @@
         }
         .weight:focus {
             border-color: #2e7d5a;
-            box-shadow: 0 0 0 3px rgba(46,125,90,0.08);
+            box-shadow: 0 0 0 3px rgba(46, 125, 90, 0.08);
             outline: none;
         }
-        .weight:disabled { background: #edf5f0; cursor: not-allowed; }
+        .weight:disabled {
+            background: #edf5f0;
+            cursor: not-allowed;
+        }
 
         /* ===== PICKUP INFO ===== */
-        .pickup-info {
+        .pickup-info,
+        .branch-info {
             margin-top: 12px;
             padding: 12px 16px;
             border-radius: 14px;
@@ -406,8 +487,13 @@
             word-break: break-word;
             max-width: 100%;
         }
-        .pickup-info strong { display: block; color: #1a4532; }
-        .pickup-info div {
+        .pickup-info strong,
+        .branch-info strong {
+            display: block;
+            color: #1a4532;
+        }
+        .pickup-info div,
+        .branch-info div {
             margin-top: 3px;
             font-size: 13px;
             color: #2d5a43;
@@ -425,7 +511,9 @@
             font-weight: 700;
             transition: 0.2s;
         }
-        .maps-button:hover { background: #1a4532; }
+        .maps-button:hover {
+            background: #1a4532;
+        }
 
         /* ===== FOOTER ACTIONS ===== */
         .form-footer {
@@ -456,15 +544,18 @@
             color: #2d5a43;
             border: 1.5px solid #d4e8db;
         }
-        .button-cancel:hover { background: #f0f7f2; border-color: #6fcf97; }
+        .button-cancel:hover {
+            background: #f0f7f2;
+            border-color: #6fcf97;
+        }
         .button-submit {
             background: linear-gradient(135deg, #2e7d5a, #1a4532);
             color: white;
-            box-shadow: 0 4px 16px rgba(46,125,90,0.25);
+            box-shadow: 0 4px 16px rgba(46, 125, 90, 0.25);
         }
         .button-submit:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(46,125,90,0.35);
+            box-shadow: 0 8px 28px rgba(46, 125, 90, 0.35);
         }
         .button-submit:disabled {
             opacity: 0.5;
@@ -482,7 +573,10 @@
             border-top: 1px solid #1e4533;
             margin-top: auto;
         }
-        .footer a { color: #6fcf97; text-decoration: none; }
+        .footer a {
+            color: #6fcf97;
+            text-decoration: none;
+        }
         .footer .social {
             margin-top: 12px;
             display: flex;
@@ -490,17 +584,31 @@
             gap: 20px;
             font-size: 22px;
         }
-        .footer .social a { color: #8baa99; transition: 0.2s; }
-        .footer .social a:hover { color: #6fcf97; }
+        .footer .social a {
+            color: #8baa99;
+            transition: 0.2s;
+        }
+        .footer .social a:hover {
+            color: #6fcf97;
+        }
 
+        /* ===== ANIMASI ===== */
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(24px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .hamburger { display: flex; }
+            .hamburger {
+                display: flex;
+            }
             .nav-links {
                 display: none;
                 flex-direction: column;
@@ -510,10 +618,21 @@
                 border-top: 1px solid #1e4533;
                 margin-top: 10px;
             }
-            .nav-links.open { display: flex; }
-            .nav-links a { font-size: 16px; width: 100%; text-align: center; padding: 8px 0; }
-            .nav-links a::after { display: none; }
-            .nav-right { display: none; }
+            .nav-links.open {
+                display: flex;
+            }
+            .nav-links a {
+                font-size: 16px;
+                width: 100%;
+                text-align: center;
+                padding: 8px 0;
+            }
+            .nav-links a::after {
+                display: none;
+            }
+            .nav-right {
+                display: none;
+            }
             .mobile-divider {
                 display: block;
                 height: 1px;
@@ -559,31 +678,80 @@
                 cursor: pointer;
             }
 
-            .page-hero { padding: 28px 0 44px; border-radius: 0 0 28px 28px; }
-            .page-hero h1 { font-size: 26px; }
-            .page-hero p { font-size: 14px; }
+            .page-hero {
+                padding: 28px 0 44px;
+                border-radius: 0 0 28px 28px;
+            }
+            .page-hero h1 {
+                font-size: 26px;
+            }
+            .page-hero p {
+                font-size: 14px;
+            }
 
-            .form-wrapper { padding: 0 12px; margin-top: -20px; }
-            .form-body { padding: 20px 16px; }
-            .form-footer { padding: 14px 16px; flex-direction: column; }
-            .button { width: 100%; justify-content: center; }
+            .form-wrapper {
+                padding: 0 12px;
+                margin-top: -20px;
+            }
+            .form-body {
+                padding: 20px 16px;
+            }
+            .form-footer {
+                padding: 14px 16px;
+                flex-direction: column;
+            }
+            .button {
+                width: 100%;
+                justify-content: center;
+            }
 
-            .grid-2, .method-grid, .sampah-grid { grid-template-columns: 1fr; }
-            #map { height: 200px; }
+            .grid-2,
+            .method-grid,
+            .sampah-grid {
+                grid-template-columns: 1fr;
+            }
+            #map {
+                height: 200px;
+            }
 
-            .location-button { font-size: 12px; padding: 6px 14px; }
+            .location-button {
+                font-size: 12px;
+                padding: 6px 14px;
+            }
         }
 
         @media (max-width: 480px) {
-            .container { padding: 0 12px; }
-            .logo { font-size: 22px; }
-            .page-hero h1 { font-size: 22px; }
-            .form-body { padding: 16px 12px; }
-            .section-title { font-size: 15px; }
-            .field label { font-size: 12px; }
-            .input, .select, .textarea { font-size: 13px; padding: 8px 12px; }
-            .weight { width: 60px; font-size: 12px; }
-            .sampah-item { padding: 8px 10px; }
+            .container {
+                padding: 0 12px;
+            }
+            .logo {
+                font-size: 22px;
+            }
+            .page-hero h1 {
+                font-size: 22px;
+            }
+            .form-body {
+                padding: 16px 12px;
+            }
+            .section-title {
+                font-size: 15px;
+            }
+            .field label {
+                font-size: 12px;
+            }
+            .input,
+            .select,
+            .textarea {
+                font-size: 13px;
+                padding: 8px 12px;
+            }
+            .weight {
+                width: 60px;
+                font-size: 12px;
+            }
+            .sampah-item {
+                padding: 8px 10px;
+            }
         }
     </style>
 </head>
@@ -744,7 +912,7 @@
                                 <textarea name="alamat_jemput" id="alamat_jemput" class="textarea" placeholder="Alamat akan otomatis terisi dari lokasi Anda...">{{ old('alamat_jemput') }}</textarea>
                             </div>
 
-                            <!-- Info Cabang Terdekat untuk metode Jemput (tanpa navigasi) -->
+                            <!-- Info Cabang Terdekat untuk metode Jemput -->
                             <div id="cabangInfo" class="pickup-info" style="display:none; margin-top:12px;">
                                 <strong id="cabangNama">-</strong>
                                 <div><strong>Estimasi Kedatangan:</strong> <span id="estimasiWaktu">-</span></div>
@@ -772,13 +940,13 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <!-- Info titik yang dipilih (dengan navigasi) -->
+                            <!-- Info titik yang dipilih -->
                             <div id="titikInfo" class="pickup-info" style="display:none;">
                                 <strong id="titikNama">-</strong>
                                 <div><strong>Alamat:</strong> <span id="titikAlamat"></span></div>
                                 <div><strong>Jarak:</strong> <span id="titikJarak"></span></div>
                                 <a href="#" id="mapsLink" target="_blank" class="maps-button">
-                                    <i class="fas fa-map-location-dot"></i> Navigasi ke Titik Kumpul
+                                    <i class="fas fa-map-location-dot"></i> Buka Google Maps
                                 </a>
                             </div>
                             <!-- Peringatan tidak ada titik dalam jangkauan -->
@@ -845,10 +1013,10 @@
     </footer>
 
     <!-- ===== SCRIPTS ===== -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
             // ===== HAMBURGER =====
             const hamburger = document.getElementById('hamburgerBtn');
             const navLinks = document.getElementById('navLinks');
@@ -887,7 +1055,6 @@
             const noTitikWarning = document.getElementById('noTitikWarning');
             const noTitikPesan = document.getElementById('noTitikPesan');
             const submitBtn = document.getElementById('submitBtn');
-            const form = document.getElementById('formSetoran');
 
             // Elemen cabang info
             const cabangInfo = document.getElementById('cabangInfo');
@@ -931,6 +1098,7 @@
                 map.setView([currentLat, currentLng], 15);
                 filterTitikKumpul();
                 updateCabangTerdekat();
+                // Update alamat jika metode jemput
                 if (metodeJemput.checked) {
                     getAddress(lat, lng).then(alamat => {
                         if (alamat) alamatInput.value = alamat;
@@ -961,7 +1129,6 @@
                 let terdekat = null;
                 let jarakTerdekat = Infinity;
 
-                // Loop semua option, sembunyikan yang > MAX_JARAK
                 for (let i = 0; i < options.length; i++) {
                     const opt = options[i];
                     if (!opt.value) continue;
@@ -981,12 +1148,10 @@
                     }
                 }
 
-                // Jika tidak ada titik dekat
                 if (!adaYangDekat) {
                     titikSelect.disabled = true;
                     titikSelect.value = '';
                     noTitikWarning.style.display = 'flex';
-                    // Cari jarak minimal untuk info
                     let minJarak = Infinity;
                     for (let i = 0; i < options.length; i++) {
                         const opt = options[i];
@@ -1006,19 +1171,13 @@
                     return;
                 }
 
-                // Ada titik dekat
                 titikSelect.disabled = false;
                 noTitikWarning.style.display = 'none';
                 submitBtn.disabled = false;
 
-                // Jika user belum pilih manual, pilih yang terdekat
                 if (!titikSelect.dataset.userSelected && terdekat) {
                     terdekat.selected = true;
-                    // Tandai bahwa kita sudah set otomatis
-                    titikSelect.dataset.userSelected = '1';
                 }
-
-                // Update info titik yang dipilih
                 updateTitikInfo();
             }
 
@@ -1086,11 +1245,9 @@
             }
 
             // ===== EVENT LISTENERS =====
-            // Saat user mengubah pilihan manual
             titikSelect.addEventListener('change', function() {
                 this.dataset.userSelected = '1';
                 updateTitikInfo();
-                // Jika pilihan yang dipilih ternyata disembunyikan, reset
                 const opt = this.options[this.selectedIndex];
                 if (opt && opt.value && opt.style.display === 'none') {
                     this.dataset.userSelected = '';
@@ -1098,7 +1255,6 @@
                 }
             });
 
-            // Metode toggle
             function updateMetode() {
                 const jemput = metodeJemput.checked;
                 jemputArea.style.display = jemput ? 'block' : 'none';
@@ -1111,18 +1267,15 @@
             metodeJemput.addEventListener('change', updateMetode);
             metodeAntar.addEventListener('change', updateMetode);
 
-            // Drag marker
             marker.on('dragend', async function() {
                 const pos = marker.getLatLng();
                 updateLocation(pos.lat, pos.lng);
             });
 
-            // Klik peta
             map.on('click', async function(e) {
                 updateLocation(e.latlng.lat, e.latlng.lng);
             });
 
-            // Ambil lokasi user
             function ambilLokasi() {
                 if (!navigator.geolocation) {
                     locationStatus.textContent = 'Browser tidak mendukung lokasi.';
@@ -1154,43 +1307,64 @@
                 checkbox.addEventListener('change', function() {
                     const id = this.dataset.id;
                     const weight = document.getElementById('berat_' + id);
-                    weight.disabled = !this.checked;
-                    if (!this.checked) {
-                        weight.value = 0;
-                    } else {
+
+                    if (this.checked) {
+                        weight.disabled = false;
+
+                        if (!weight.value || parseFloat(weight.value) < 0.1) {
+                            weight.value = '0.1';
+                        }
+
                         weight.focus();
+                        weight.select();
+                    } else {
+                        weight.disabled = true;
+                        weight.value = '0';
                     }
                 });
             });
 
-            // ===== VALIDASI SEBELUM SUBMIT =====
-            form.addEventListener('submit', function(e) {
-                // Jika tombol submit disabled atau dropdown disabled
-                if (submitBtn.disabled || titikSelect.disabled) {
-                    e.preventDefault();
-                    alert('Tidak dapat mengirim karena tidak ada titik kumpul dalam jangkauan 30 km.');
-                    return;
-                }
+            // ===== VALIDASI SUBMIT =====
+            const formSetoran = document.getElementById('formSetoran');
 
-                const selected = titikSelect.options[titikSelect.selectedIndex];
-                if (!selected || !selected.value || selected.value === '') {
-                    e.preventDefault();
-                    alert('Silakan pilih titik kumpul terlebih dahulu.');
-                    return;
-                }
+            if (formSetoran) {
+                formSetoran.addEventListener('submit', function(e) {
+                    const checked = document.querySelectorAll('.sampah-check:checked');
 
-                // Jika pilihan yang dipilih tersembunyi (tidak valid)
-                if (selected.style.display === 'none') {
-                    e.preventDefault();
-                    alert('Pilihan titik kumpul tidak valid. Silakan pilih ulang.');
-                    return;
-                }
-            });
+                    if (checked.length === 0) {
+                        e.preventDefault();
+                        alert('Pilih minimal satu jenis sampah.');
+                        return;
+                    }
+
+                    let totalBerat = 0;
+
+                    checked.forEach(function(checkbox) {
+                        const id = checkbox.dataset.id;
+                        const weight = document.getElementById('berat_' + id);
+                        const berat = parseFloat(weight.value);
+
+                        if (isNaN(berat) || berat < 0.1) {
+                            e.preventDefault();
+                            weight.disabled = false;
+                            weight.value = '0.1';
+                            weight.focus();
+                            alert('Berat sampah minimal 0.1 kg.');
+                            return;
+                        }
+
+                        // pastikan input yang dicentang ikut terkirim
+                        weight.disabled = false;
+                        totalBerat += berat;
+                    });
+
+                    console.log('Total berat yang dikirim:', totalBerat);
+                });
+            }
 
             // ===== INISIALISASI =====
             updateMetode();
             ambilLokasi();
-
         });
     </script>
 </body>

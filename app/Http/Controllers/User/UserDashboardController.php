@@ -168,7 +168,7 @@ class UserDashboardController extends Controller
             return back()->withInput()->with('error', 'Pilih minimal satu jenis sampah.');
         }
 
-        $totalBeratEstimasi = $jenisSampahDipilih->sum('float');
+        $totalBeratEstimasi = $jenisSampahDipilih->sum();
 
         $jenisSampahUtamaId = (int) $jenisSampahDipilih->keys()->first();
         $jenisSampahUtama = JenisSampah::find($jenisSampahUtamaId);

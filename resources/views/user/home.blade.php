@@ -648,7 +648,7 @@
 <!-- ===== FOOTER ===== -->
 <footer class="footer">
     <div class="container">
-        <p>&copy; 2026 <strong>EcoPoint</strong> — Gerakan Hijau untuk Masa Depan.</p>
+        <p>&copy; 2026 <strong>EcoPoint</strong> — Daur Ulang untuk Lindungi Lingkungan.</p>
         <div class="social">
             <a href="#"><i class="fab fa-instagram"></i></a>
             <a href="#"><i class="fab fa-twitter"></i></a>

@@ -6,339 +6,261 @@
 
 <style>
     .detail-page {
-        width: 100%;
-        padding: 28px 30px 45px;
-        background: #f7f9fc;
+        padding: 20px 24px 40px;
+        background: #f4f6f9;
         min-height: calc(100vh - 70px);
     }
     .detail-container {
-        max-width: 1100px;
+        max-width: 1200px;
         margin: 0 auto;
     }
-    .detail-header {
+
+    /* Header */
+    .page-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
-        margin-bottom: 22px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
     }
-    .detail-title {
-        margin: 0;
-        font-size: 1.65rem;
+    .page-header h1 {
+        font-size: 1.4rem;
         font-weight: 700;
-        color: #172033;
-        letter-spacing: -.02em;
+        color: #1e293b;
+        margin: 0;
     }
-    .detail-subtitle {
-        margin: 5px 0 0;
-        color: #718096;
-        font-size: .82rem;
+    .page-header .sub {
+        color: #64748b;
+        font-size: 0.85rem;
     }
     .btn-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 9px 14px;
-        border-radius: 9px;
-        border: 1px solid #dfe5eb;
         background: #fff;
-        color: #475467;
+        border: 1px solid #d1d9e0;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        color: #1e293b;
         text-decoration: none;
-        font-size: .78rem;
-        font-weight: 600;
-        transition: .2s;
+        transition: 0.15s;
     }
     .btn-back:hover {
-        color: #059669;
-        border-color: #a9dbc5;
-        background: #f8fffb;
+        background: #f1f5f9;
+        border-color: #b0c0cd;
     }
+
+    /* Alert */
+    .alert {
+        padding: 10px 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        font-size: 0.85rem;
+        border: 1px solid transparent;
+    }
+    .alert-success {
+        background: #dcfce7;
+        border-color: #bbf7d0;
+        color: #166534;
+    }
+    .alert-danger {
+        background: #fee2e2;
+        border-color: #fecaca;
+        color: #991b1b;
+    }
+
+    /* Profile card */
     .profile-card {
         background: #fff;
-        border: 1px solid #e6ebef;
-        border-radius: 14px;
-        box-shadow: 0 3px 12px rgba(15,23,42,.04);
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border: 1px solid #e2e8f0;
         margin-bottom: 20px;
         overflow: hidden;
     }
-    .profile-card-header {
-        padding: 17px 20px;
-        border-bottom: 1px solid #edf1f4;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 15px;
+    .profile-card .card-header {
+        padding: 12px 18px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        font-weight: 600;
+        color: #0f172a;
     }
-    .profile-heading {
-        display: flex;
-        align-items: center;
-        gap: 11px;
-    }
-    .profile-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        background: #e8f7f0;
-        color: #059669;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .profile-heading h2 {
-        margin: 0;
-        font-size: .95rem;
-        font-weight: 700;
-        color: #1f2937;
-    }
-    .profile-heading p {
-        margin: 2px 0 0;
-        font-size: .7rem;
-        color: #98a2b3;
-    }
-    .profile-card-body {
-        padding: 22px 20px;
-    }
-    .profile-grid {
+    .profile-card .card-body {
+        padding: 16px 18px;
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
     }
-    .info-card {
-        border: 1px solid #edf1f4;
-        border-radius: 11px;
-        background: #fbfcfd;
-        padding: 14px;
+    .profile-card .info-item {
+        font-size: 0.8rem;
     }
-    .info-label {
+    .profile-card .info-item .label {
         display: block;
-        margin-bottom: 5px;
-        color: #98a2b3;
-        font-size: .67rem;
-        font-weight: 600;
+        font-size: 0.65rem;
         text-transform: uppercase;
-        letter-spacing: .03em;
-    }
-    .info-value {
-        color: #263343;
-        font-size: .82rem;
+        color: #94a3b8;
         font-weight: 600;
+        letter-spacing: 0.03em;
+    }
+    .profile-card .info-item .value {
+        font-weight: 500;
+        color: #0f172a;
         word-break: break-word;
     }
-    .info-value.muted {
-        color: #98a2b3;
-        font-weight: 500;
+    .profile-card .info-item .value.muted {
+        color: #94a3b8;
+        font-weight: 400;
     }
-    .stats-grid {
+
+    /* Stats */
+    .stats-row {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 17px;
-        margin-bottom: 22px;
+        gap: 16px;
+        margin-bottom: 20px;
     }
-    .stat-card {
+    .stat-box {
         background: #fff;
-        border: 1px solid #e6ebef;
-        border-radius: 14px;
-        padding: 17px 19px;
-        display: flex;
-        align-items: center;
-        gap: 13px;
-        box-shadow: 0 3px 12px rgba(15,23,42,.035);
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 14px 18px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        text-align: center;
     }
-    .stat-icon {
-        width: 43px;
-        height: 43px;
-        border-radius: 11px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 17px;
+    .stat-box .number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.2;
     }
-    .stat-green .stat-icon {
-        background: #e8f8f1;
-        color: #059669;
-    }
-    .stat-blue .stat-icon {
-        background: #eaf1ff;
-        color: #2563eb;
-    }
-    .stat-yellow .stat-icon {
-        background: #fff8df;
-        color: #d89b00;
-    }
-    .stat-number {
+    .stat-box .label {
+        font-size: 0.7rem;
+        color: #64748b;
         display: block;
-        color: #1f2937;
-        font-size: 1.3rem;
-        line-height: 1.1;
-        font-weight: 800;
+        margin-top: 2px;
     }
-    .stat-label {
-        display: block;
-        margin-top: 3px;
-        color: #7b8798;
-        font-size: .7rem;
-    }
+
+    /* History table */
     .history-card {
         background: #fff;
-        border: 1px solid #e6ebef;
-        border-radius: 14px;
-        box-shadow: 0 3px 12px rgba(15,23,42,.04);
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
         overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .history-header {
+    .history-card .card-header {
+        padding: 12px 18px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        padding: 17px 20px;
-        border-bottom: 1px solid #edf1f4;
+        align-items: center;
     }
-    .history-header h2 {
+    .history-card .card-header h3 {
+        font-size: 0.95rem;
+        font-weight: 600;
         margin: 0;
-        color: #1f2937;
-        font-size: .95rem;
-        font-weight: 700;
+        color: #0f172a;
     }
-    .history-header span {
-        color: #98a2b3;
-        font-size: .7rem;
+    .history-card .card-header span {
+        font-size: 0.75rem;
+        background: #e2e8f0;
+        padding: 2px 10px;
+        border-radius: 20px;
+        color: #475569;
     }
     .table-wrap {
         overflow-x: auto;
     }
-    .history-table {
+    table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 0.8rem;
     }
-    .history-table thead th {
-        padding: 11px 18px;
+    thead th {
+        padding: 10px 14px;
         background: #f8fafc;
-        border-bottom: 1px solid #e8edf1;
-        color: #718096;
-        font-size: .66rem;
-        font-weight: 700;
+        border-bottom: 2px solid #e2e8f0;
+        color: #475569;
+        font-weight: 600;
         text-align: left;
         white-space: nowrap;
     }
-    .history-table tbody td {
-        padding: 13px 18px;
-        border-bottom: 1px solid #edf1f4;
-        color: #475467;
-        font-size: .74rem;
+    tbody td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #f1f5f9;
         vertical-align: middle;
     }
-    .history-table tbody tr:last-child td {
-        border-bottom: 0;
+    tbody tr:last-child td {
+        border-bottom: none;
     }
-    .history-table tbody tr:hover {
-        background: #fbfdfc;
+    tbody tr:hover {
+        background: #f8fafc;
     }
+
     .id-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 8px;
-        border-radius: 7px;
-        background: #f1f5f9;
-        color: #475467;
-        font-size: .67rem;
-        font-weight: 700;
+        display: inline-block;
+        padding: 2px 8px;
+        background: #e2e8f0;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.7rem;
+        color: #334155;
     }
+
+    /* Status */
     .status {
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 9px;
-        border-radius: 7px;
-        font-size: .64rem;
-        font-weight: 700;
-    }
-    .status.pending {
-        background: #f1f3f5;
-        color: #667085;
-    }
-    .status.approved {
-        background: #e7f0ff;
-        color: #2563eb;
-    }
-    .status.completed {
-        background: #dcfce7;
-        color: #15803d;
-    }
-    .status.rejected {
-        background: #fee2e2;
-        color: #dc2626;
-    }
-    .empty-state {
-        padding: 45px 20px;
-        text-align: center;
-    }
-    .empty-icon {
-        width: 48px;
-        height: 48px;
-        margin: 0 auto 12px;
-        border-radius: 13px;
-        background: #f2f4f7;
-        color: #98a2b3;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 19px;
-    }
-    .empty-state h3 {
-        margin: 0;
-        color: #344054;
-        font-size: .88rem;
-    }
-    .empty-state p {
-        margin: 5px 0 0;
-        color: #98a2b3;
-        font-size: .7rem;
-    }
-    .alert {
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin-bottom: 16px;
-        font-size: .82rem;
-    }
-    .alert-success {
-        background: #dcfce7;
-        color: #166534;
-        border: 1px solid #bbf7d0;
-    }
-    .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
-    }
-    /* Approval controls */
-    .approval-controls {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        align-items: center;
-    }
-    .weight-input {
-        width: 80px;
-        padding: 5px 8px;
-        font-size: 0.75rem;
-        border: 1px solid #d1d9e0;
-        border-radius: 6px;
-        background: #fff;
-    }
-    .btn-approve, .btn-reject {
-        padding: 5px 12px;
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
         font-size: 0.7rem;
         font-weight: 600;
+    }
+    .status.pending { background: #f1f5f9; color: #475569; }
+    .status.approved { background: #dbeafe; color: #1d4ed8; }
+    .status.completed { background: #dcfce7; color: #15803d; }
+    .status.rejected { background: #fee2e2; color: #b91c1c; }
+
+    /* ===== KOLOM APPROVAL - RAPI & SIMETRIS ===== */
+    .approval-cell {
+        min-width: 240px;
+        max-width: 240px;
+    }
+    .approval-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: nowrap;
+        min-height: 32px;  /* biar semua baris sama tingginya */
+    }
+    .weight-input {
+        width: 70px;
+        padding: 3px 6px;
+        font-size: 0.7rem;
+        border: 1px solid #d1d9e0;
+        border-radius: 4px;
+        height: 28px;
+        flex-shrink: 0;
+    }
+    .btn-approve, .btn-reject {
+        padding: 4px 10px;
+        font-size: 0.65rem;
+        font-weight: 600;
         border: none;
-        border-radius: 6px;
+        border-radius: 4px;
         cursor: pointer;
-        transition: 0.15s;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
     .btn-approve {
-        background: #059669;
+        background: #16a34a;
         color: #fff;
     }
     .btn-approve:hover {
-        background: #047857;
+        background: #15803d;
     }
     .btn-reject {
         background: #dc2626;
@@ -347,38 +269,48 @@
     .btn-reject:hover {
         background: #b91c1c;
     }
+
+    /* Badge untuk yang sudah diproses — ditempatkan di wrapper agar sejajar */
     .badge-processed {
         font-size: 0.7rem;
-        color: #98a2b3;
-        background: #f1f3f5;
-        padding: 4px 10px;
+        color: #64748b;
+        background: #f1f5f9;
+        padding: 4px 12px;
         border-radius: 20px;
+        display: inline-block;
+        white-space: nowrap;
+        height: 28px;
+        line-height: 28px;
+        padding: 0 14px;
+        box-sizing: border-box;
     }
-    @media (max-width: 900px) {
-        .profile-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
+
+    /* placeholder kosong untuk menjaga simetri (tidak digunakan, tapi biar aman) */
+    .empty-placeholder {
+        display: inline-block;
+        width: 100%;
+        height: 28px;
     }
-    @media (max-width: 700px) {
-        .detail-page {
-            padding: 20px 14px 35px;
-        }
-        .detail-header {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-        .btn-back {
-            width: 100%;
-            justify-content: center;
-        }
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
+
+    .empty-state {
+        padding: 40px 20px;
+        text-align: center;
+        color: #94a3b8;
     }
-    @media (max-width: 520px) {
-        .profile-grid {
-            grid-template-columns: 1fr;
-        }
+    .empty-state i {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .detail-page { padding: 12px; }
+        .stats-row { grid-template-columns: 1fr; }
+        .profile-card .card-body { grid-template-columns: 1fr; }
+        .approval-cell { min-width: 160px; max-width: none; }
+        .approval-wrapper { flex-wrap: wrap; gap: 4px; }
+        .weight-input { width: 100%; }
+        .btn-approve, .btn-reject { flex: 1; justify-content: center; }
     }
 </style>
 
@@ -387,15 +319,15 @@
     <div class="detail-container">
 
         {{-- HEADER --}}
-        <div class="detail-header">
+        <div class="page-header">
             <div>
-                <h1 class="detail-title">Detail Pelanggan</h1>
-                <p class="detail-subtitle">Informasi pelanggan dan riwayat aktivitas setoran</p>
+                <h1>Detail Pelanggan</h1>
+                <div class="sub">Informasi dan riwayat setoran</div>
             </div>
             <a href="{{ route('admin.pelanggan.index') }}" class="btn-back">← Kembali</a>
         </div>
 
-        {{-- ALERT MESSAGES --}}
+        {{-- ALERT --}}
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -405,112 +337,83 @@
 
         {{-- PROFILE --}}
         <div class="profile-card">
-            <div class="profile-card-header">
-                <div class="profile-heading">
-                    <div class="profile-icon"><i class="fas fa-user"></i></div>
-                    <div>
-                        <h2>Informasi Pelanggan</h2>
-                        <p>Data pelanggan EcoPoint</p>
-                    </div>
+            <div class="card-header"><i class="fas fa-user-circle"></i> Informasi Pelanggan</div>
+            <div class="card-body">
+                <div class="info-item">
+                    <span class="label">Nama</span>
+                    <span class="value">{{ $pelanggan->nama ?? '-' }}</span>
                 </div>
-            </div>
-            <div class="profile-card-body">
-                <div class="profile-grid">
-                    <div class="info-card">
-                        <span class="info-label">Nama</span>
-                        <div class="info-value">{{ $pelanggan->nama ?? '-' }}</div>
-                    </div>
-                    <div class="info-card">
-                        <span class="info-label">No HP</span>
-                        <div class="info-value">{{ $pelanggan->no_hp ?? '-' }}</div>
-                    </div>
-                    <div class="info-card">
-                        <span class="info-label">Email</span>
-                        <div class="info-value">{{ $pelanggan->email ?? '-' }}</div>
-                    </div>
-                    <div class="info-card">
-                        <span class="info-label">Bergabung</span>
-                        <div class="info-value">
-                            {{ $pelanggan->created_at ? $pelanggan->created_at->format('d M Y') : '-' }}
-                        </div>
-                    </div>
-                    <div class="info-card" style="grid-column: span 2;">
-                        <span class="info-label">Alamat</span>
-                        <div class="info-value {{ empty($pelanggan->alamat) ? 'muted' : '' }}">
-                            {{ $pelanggan->alamat ?: 'Alamat belum diisi' }}
-                        </div>
-                    </div>
-                    <div class="info-card">
-                        <span class="info-label">Poin</span>
-                        <div class="info-value">{{ number_format($pelanggan->poin ?? 0) }}</div>
-                    </div>
-                    <div class="info-card">
-                        <span class="info-label">ID Pelanggan</span>
-                        <div class="info-value">#{{ $pelanggan->id }}</div>
-                    </div>
+                <div class="info-item">
+                    <span class="label">No HP</span>
+                    <span class="value">{{ $pelanggan->no_hp ?? '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Email</span>
+                    <span class="value">{{ $pelanggan->email ?? '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Bergabung</span>
+                    <span class="value">{{ $pelanggan->created_at ? $pelanggan->created_at->format('d M Y') : '-' }}</span>
+                </div>
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <span class="label">Alamat</span>
+                    <span class="value {{ empty($pelanggan->alamat) ? 'muted' : '' }}">{{ $pelanggan->alamat ?: 'Alamat belum diisi' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Poin</span>
+                    <span class="value">{{ number_format($pelanggan->poin ?? 0) }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">ID Pelanggan</span>
+                    <span class="value">#{{ $pelanggan->id }}</span>
                 </div>
             </div>
         </div>
 
-        {{-- STATISTIK --}}
+        {{-- STATS --}}
         @php
             $totalSetoran = $transaksis->count();
             $totalBerat = 0;
-            foreach ($transaksis as $transaksi) {
-                $totalBerat += (float) ($transaksi->berat ?? 0);
-            }
+            foreach ($transaksis as $t) $totalBerat += (float) ($t->berat ?? 0);
         @endphp
-
-        <div class="stats-grid">
-            <div class="stat-card stat-green">
-                <div class="stat-icon"><i class="fas fa-recycle"></i></div>
-                <div>
-                    <span class="stat-number">{{ $totalSetoran }}</span>
-                    <span class="stat-label">Total Setoran</span>
-                </div>
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="number">{{ $totalSetoran }}</div>
+                <span class="label">Total Setoran</span>
             </div>
-            <div class="stat-card stat-blue">
-                <div class="stat-icon"><i class="fas fa-weight-hanging"></i></div>
-                <div>
-                    <span class="stat-number">{{ number_format($totalBerat, 1) }} kg</span>
-                    <span class="stat-label">Total Berat</span>
-                </div>
+            <div class="stat-box">
+                <div class="number">{{ number_format($totalBerat, 1) }} kg</div>
+                <span class="label">Total Berat</span>
             </div>
-            <div class="stat-card stat-yellow">
-                <div class="stat-icon"><i class="fas fa-star"></i></div>
-                <div>
-                    <span class="stat-number">{{ number_format($pelanggan->poin ?? 0) }}</span>
-                    <span class="stat-label">Poin</span>
-                </div>
+            <div class="stat-box">
+                <div class="number">{{ number_format($pelanggan->poin ?? 0) }}</div>
+                <span class="label">Poin</span>
             </div>
         </div>
 
-        {{-- RIWAYAT --}}
+        {{-- HISTORY --}}
         <div class="history-card">
-
-            <div class="history-header">
-                <h2>Riwayat Setoran</h2>
+            <div class="card-header">
+                <h3><i class="fas fa-list"></i> Riwayat Setoran</h3>
                 <span>{{ $transaksis->count() }} transaksi</span>
             </div>
 
             @if($transaksis->count())
-
                 <div class="table-wrap">
-                    <table class="history-table">
+                    <table>
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>TANGGAL</th>
-                                <th>JENIS SAMPAH</th>
-                                <th>BERAT</th>
-                                <th>METODE</th>
-                                <th>STATUS</th>
-                                <th>APPROVAL</th>
+                                <th>Tanggal</th>
+                                <th>Jenis Sampah</th>
+                                <th>Berat</th>
+                                <th>Metode</th>
+                                <th>Status</th>
+                                <th class="approval-cell">Approval</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($transaksis as $transaksi)
-
                                 @php
                                     $berat = (float) ($transaksi->berat ?? 0);
                                     $jenis = isset($transaksi->jenisSampahs)
@@ -524,60 +427,68 @@
                                         'completed'  => ['label' => 'Selesai',   'class' => 'completed'],
                                         'rejected'   => ['label' => 'Ditolak',   'class' => 'rejected'],
                                     ];
-                                    $status = $statusMap[$transaksi->status] ?? ['label' => ucfirst($transaksi->status), 'class' => 'pending'];
+                                    $st = $statusMap[$transaksi->status] ?? ['label' => ucfirst($transaksi->status), 'class' => 'pending'];
                                 @endphp
-
                                 <tr>
                                     <td><span class="id-badge">#{{ $transaksi->id }}</span></td>
                                     <td>{{ $transaksi->created_at ? $transaksi->created_at->format('d M Y, H:i') : '-' }}</td>
                                     <td>{{ $jenis }}</td>
                                     <td><strong>{{ number_format($berat, 1) }}</strong> kg</td>
                                     <td>{{ ucfirst($transaksi->metode ?? '-') }}</td>
-                                    <td><span class="status {{ $status['class'] }}">{{ $status['label'] }}</span></td>
-
-                                    {{-- KOLOM APPROVAL --}}
-                                    <td>
-                                        @if($transaksi->status === 'pending')
-                                            <form action="{{ route('admin.transaksi.approve', $transaksi->id) }}" method="POST" class="approval-form">
-                                                @csrf
-                                                @method('PATCH')
-                                                <div class="approval-controls">
-                                                    <input type="number" 
-                                                           name="berat_akhir" 
-                                                           step="0.01" 
-                                                           value="{{ number_format($berat, 2) }}" 
+                                    <td><span class="status {{ $st['class'] }}">{{ $st['label'] }}</span></td>
+                                    <td class="approval-cell">
+                                        <div class="approval-wrapper">
+                                            @if($transaksi->status === 'pending')
+                                                {{-- FORM APPROVE --}}
+                                                <form action="{{ route('admin.transaksi.approve', $transaksi->id) }}"
+                                                      method="POST"
+                                                      style="display:inline-flex; align-items:center; gap:4px; flex-wrap:nowrap;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="number"
+                                                           name="berat_akhir"
+                                                           step="0.01"
+                                                           value="{{ number_format($berat, 2) }}"
                                                            class="weight-input"
-                                                           placeholder="Berat"
                                                            required>
-                                                    <button type="submit" class="btn-approve">Setujui</button>
-                                                    <button type="submit" class="btn-reject" formaction="{{ route('admin.transaksi.reject', $transaksi->id) }}">Tolak</button>
-                                                </div>
-                                            </form>
-                                        @else
-                                            <span class="badge-processed">Telah diproses</span>
-                                        @endif
+                                                    <button type="submit" class="btn-approve">
+                                                        <i class="fas fa-check"></i> Setujui
+                                                    </button>
+                                                </form>
+
+                                                {{-- FORM REJECT --}}
+                                                <form action="{{ route('admin.transaksi.reject', $transaksi->id) }}"
+                                                      method="POST"
+                                                      style="display:inline;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="btn-reject"
+                                                            onclick="return confirm('Yakin ingin menolak transaksi ini?')">
+                                                        <i class="fas fa-times"></i> Tolak
+                                                    </button>
+                                                </form>
+                                            @else
+                                                {{-- Untuk status selain pending, tampilkan badge dengan tinggi sama --}}
+                                                <span class="badge-processed">
+                                                    <i class="fas fa-check-circle" style="color:#16a34a;"></i> Telah diproses
+                                                </span>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
-
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-
             @else
-
                 <div class="empty-state">
-                    <div class="empty-icon"><i class="fas fa-inbox"></i></div>
-                    <h3>Belum ada setoran</h3>
-                    <p>Pelanggan ini belum memiliki riwayat setoran.</p>
+                    <i class="fas fa-inbox"></i>
+                    <p>Belum ada setoran</p>
                 </div>
-
             @endif
-
         </div>
 
     </div>
-
 </div>
 
 @endsection

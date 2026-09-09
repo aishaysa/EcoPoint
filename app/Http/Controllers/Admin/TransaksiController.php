@@ -35,11 +35,11 @@ class TransaksiController extends Controller
             DB::raw("NULL as admin_note")
         );
 
-        // 2. Query untuk WITHDRAW (13 kolom - TAMBAHAN pelanggan_id!)
+        // 2. Query untuk WITHDRAW (13 kolom)
         $withdraw = Withdrawal::select(
             'id',
             'user_id',
-            DB::raw('NULL as pelanggan_id'), // Ini yang bikin sama jumlah kolomnya
+            DB::raw('NULL as pelanggan_id'),
             DB::raw('created_at as tanggal'),
             DB::raw("'withdraw' as metode"),
             DB::raw('0 as berat'),
@@ -114,7 +114,9 @@ class TransaksiController extends Controller
     }
 
     /**
-     * APPROVE SETORAN (Fix: pakai Setoran + Update dua tabel + Handle kolom poin/points)
+     * APPROVE SETORAN
+     * - Tambah poin ke user dan pelanggan
+     * - Redirect ke halaman detail pelanggan
      */
     public function approve($id, Request $request)
     {
@@ -122,23 +124,16 @@ class TransaksiController extends Controller
         $setoran->status = 'approved'; 
         $setoran->save();
 
-        // Ambil berat akhir dari form (jika admin mengubah berat)
         $beratAkhir = $request->berat_akhir ?? $setoran->berat;
-        
-        // Hitung poin (10 poin per kg, sesuaikan rumus)
         $poinDidapat = $beratAkhir * 10; 
 
-        // 1. Update tabel USERS
         $user = User::find($setoran->user_id);
         if ($user) {
             $user->increment('points', $poinDidapat); 
         }
 
-        // 2. Update tabel PELANGGAN (karena admin baca dari sini!)
-        // Cek dulu apakah kolomnya namanya 'points' atau 'poin'
         $pelanggan = Pelanggan::find($setoran->pelanggan_id);
         if ($pelanggan) {
-            // Cek apakah kolom 'points' ada di database, jika tidak, gunakan 'poin'
             if (in_array('points', $pelanggan->getFillable()) || \Schema::hasColumn('pelanggan', 'points')) {
                 $pelanggan->increment('points', $poinDidapat);
             } else {
@@ -146,20 +141,36 @@ class TransaksiController extends Controller
             }
         }
 
-        return redirect()->route('admin.transaksi.index')->with('success', 'Transaksi berhasil disetujui.');
+        // 🔽 Redirect ke halaman detail pelanggan jika ada
+        if ($setoran->pelanggan_id) {
+            return redirect()->route('admin.pelanggan.show', $setoran->pelanggan_id)
+                             ->with('success', 'Transaksi berhasil disetujui.');
+        }
+
+        return redirect()->route('admin.transaksi.index')
+                         ->with('success', 'Transaksi berhasil disetujui.');
     }
 
     /**
      * REJECT SETORAN
+     * - Hanya ubah status, tidak tambah poin
+     * - Redirect ke halaman detail pelanggan
      */
     public function reject($id, Request $request)
     {
         $setoran = Setoran::findOrFail($id);
         $setoran->status = 'rejected'; 
-        $setoran->alasan = $request->alasan ?? null;
+        // $setoran->alasan = $request->alasan ?? null; // dihapus karena kolom tidak ada
         $setoran->save();
 
-        return redirect()->route('admin.transaksi.index')->with('success', 'Transaksi berhasil ditolak.');
+        // Redirect ke halaman pelanggan terkait
+        if ($setoran->pelanggan_id) {
+            return redirect()->route('admin.pelanggan.show', $setoran->pelanggan_id)
+                             ->with('success', 'Transaksi berhasil ditolak.');
+        }
+
+        return redirect()->route('admin.transaksi.index')
+                         ->with('success', 'Transaksi berhasil ditolak.');
     }
 
     // ============================================================
@@ -221,7 +232,6 @@ class TransaksiController extends Controller
                 throw new \Exception('Status dari Xendit: ' . ($response['status'] ?? 'unknown'));
             }
         } catch (\Exception $e) {
-            // Gagal -> kembalikan poin
             $user = $withdrawal->user;
             $user->points += $withdrawal->points;
             $user->save();
