@@ -49,17 +49,11 @@ class UserDashboardController extends Controller
                                   ->get();
 
         $totalSetoran = $allTransaksi->count();
-
-        // TOTAL BERAT: ambil langsung dari kolom 'berat' di tabel setoran
         $totalBerat = $allTransaksi->sum('berat');
 
-        // TOTAL POIN: hanya transaksi status 'completed' atau 'approved'
         $totalPoin = 0;
         foreach ($allTransaksi as $transaksi) {
-            if (!in_array($transaksi->status, ['completed', 'approved'])) {
-                continue;
-            }
-            // Gunakan berat_aktual jika ada, fallback ke berat
+            if (!in_array($transaksi->status, ['completed', 'approved'])) continue;
             $beratPoin = ($transaksi->berat_aktual > 0) ? $transaksi->berat_aktual : $transaksi->berat;
             $totalPoin += floor((float) $beratPoin * 10);
         }
@@ -80,7 +74,7 @@ class UserDashboardController extends Controller
         $centerLng = 100.4147;
 
         foreach ($cabangs as $cabang) {
-            if ($cabang->latitude !== null && $cabang->longitude !== null) {
+            if ($cabang->latitude && $cabang->longitude) {
                 $cabang->jarak = $this->haversine($centerLat, $centerLng, $cabang->latitude, $cabang->longitude);
             } else {
                 $cabang->jarak = null;
@@ -92,39 +86,75 @@ class UserDashboardController extends Controller
 
     public function storeTransaksi(Request $request)
     {
+        // Validasi dasar
         $request->validate([
-            'nama_pengirim' => ['required', 'string', 'max:255'],
-            'no_hp' => ['required', 'string', 'min:10', 'max:15'],
-            'metode' => ['required', 'in:jemput,antar'],
-            'alamat_jemput' => ['required_if:metode,jemput', 'nullable', 'string'],
-            'latitude' => ['required_if:metode,jemput', 'nullable', 'numeric'],
-            'longitude' => ['required_if:metode,jemput', 'nullable', 'numeric'],
-            'titik_kumpul_id' => ['required_if:metode,antar', 'nullable'],
+            'nama_pengirim'   => ['required', 'string', 'max:255'],
+            'no_hp'           => ['required', 'string', 'min:10', 'max:15'],
+            'metode'          => ['required', 'in:jemput,antar'],
+            'alamat_jemput'   => ['required_if:metode,jemput', 'nullable', 'string'],
+            'latitude'        => ['required', 'numeric', 'between:-90,90'],
+            'longitude'       => ['required', 'numeric', 'between:-180,180'],
             'jenis_sampah_data' => ['required', 'array', 'min:1'],
             'jenis_sampah_data.*' => ['required', 'numeric', 'min:0.1'],
         ], [
-            'nama_pengirim.required' => 'Nama pengirim wajib diisi.',
-            'no_hp.required' => 'Nomor HP wajib diisi.',
-            'no_hp.min' => 'Nomor HP minimal 10 digit.',
-            'no_hp.max' => 'Nomor HP maksimal 15 digit.',
-            'metode.required' => 'Silakan pilih metode setoran.',
-            'alamat_jemput.required_if' => 'Alamat jemput wajib diisi.',
-            'latitude.required_if' => 'Lokasi jemput wajib dipilih.',
-            'longitude.required_if' => 'Lokasi jemput wajib dipilih.',
-            'titik_kumpul_id.required_if' => 'Silakan pilih titik kumpul.',
+            'latitude.required' => 'Lokasi Anda wajib dipilih (gunakan peta atau tombol lokasi).',
+            'longitude.required' => 'Lokasi Anda wajib dipilih.',
             'jenis_sampah_data.required' => 'Pilih minimal satu jenis sampah.',
-            'jenis_sampah_data.min' => 'Pilih minimal satu jenis sampah.',
-            'jenis_sampah_data.*.numeric' => 'Berat sampah harus berupa angka.',
             'jenis_sampah_data.*.min' => 'Berat minimal 0.1 kg.',
         ]);
 
-        if ($request->metode === 'antar') {
-            $cekTitik = TitikKumpul::find($request->titik_kumpul_id);
-            if (!$cekTitik) {
-                return back()->withInput()->withErrors(['titik_kumpul_id' => 'Titik kumpul tidak ditemukan.']);
+        // ---- TANGANI TITIK KUMPUL ----
+        // Jika titik_kumpul_id tidak valid atau kosong, cari otomatis titik terdekat
+        $titikKumpulId = $request->titik_kumpul_id;
+        $titik = null;
+
+        if ($titikKumpulId) {
+            $titik = TitikKumpul::find($titikKumpulId);
+        }
+
+        // Jika tidak ditemukan atau tidak ada, cari titik terdekat dari lokasi user
+        if (!$titik) {
+            $allTitik = TitikKumpul::all();
+            $terdekat = null;
+            $jarakTerdekat = PHP_INT_MAX;
+
+            foreach ($allTitik as $t) {
+                if ($t->latitude && $t->longitude) {
+                    $jarak = $this->haversine($request->latitude, $request->longitude, $t->latitude, $t->longitude);
+                    if ($jarak < $jarakTerdekat) {
+                        $jarakTerdekat = $jarak;
+                        $terdekat = $t;
+                    }
+                }
+            }
+
+            if ($terdekat && $jarakTerdekat <= 30) {
+                $titik = $terdekat;
+                // Set ulang request agar titik yang dipakai sesuai
+                $request->merge(['titik_kumpul_id' => $titik->id]);
+            } else {
+                // Tidak ada titik dalam radius 30 km
+                return back()->withInput()->withErrors([
+                    'titik_kumpul_id' => 'Tidak ada titik kumpul dalam radius 30 km dari lokasi Anda.'
+                ]);
             }
         }
 
+        // Sekarang $titik pasti ada, cek jarak lagi
+        $jarak = $this->haversine(
+            $request->latitude,
+            $request->longitude,
+            $titik->latitude,
+            $titik->longitude
+        );
+
+        if ($jarak > 30) {
+            return back()->withInput()->withErrors([
+                'titik_kumpul_id' => 'Jarak ke titik kumpul terlalu jauh (' . round($jarak, 2) . ' km). Maksimal 30 km.'
+            ]);
+        }
+
+        // ---- PROSES SELANJUTNYA ----
         $user = Auth::user();
         if (!$user) return redirect()->route('user.login');
 
@@ -138,13 +168,10 @@ class UserDashboardController extends Controller
             return back()->withInput()->with('error', 'Pilih minimal satu jenis sampah.');
         }
 
-        $totalBeratEstimasi = $jenisSampahDipilih->sum(function ($berat) {
-            return (float) $berat;
-        });
+        $totalBeratEstimasi = $jenisSampahDipilih->sum('float');
 
         $jenisSampahUtamaId = (int) $jenisSampahDipilih->keys()->first();
         $jenisSampahUtama = JenisSampah::find($jenisSampahUtamaId);
-
         if (!$jenisSampahUtama) {
             return back()->withInput()->with('error', 'Jenis sampah tidak ditemukan.');
         }
@@ -153,31 +180,30 @@ class UserDashboardController extends Controller
 
         try {
             $transaksi = Transaksi::create([
-                'pelanggan_id' => $pelanggan->id,
-                'user_id' => $user->id,
+                'pelanggan_id'    => $pelanggan->id,
+                'user_id'         => $user->id,
                 'jenis_sampah_id' => $jenisSampahUtamaId,
-                'nama_pengirim' => $request->nama_pengirim,
-                'no_hp' => $request->no_hp,
-                'metode' => $request->metode,
-                'alamat_jemput' => $request->metode === 'jemput' ? $request->alamat_jemput : null,
-                'latitude' => $request->metode === 'jemput' ? $request->latitude : null,
-                'longitude' => $request->metode === 'jemput' ? $request->longitude : null,
-                'titik_kumpul_id' => $request->metode === 'antar' ? $request->titik_kumpul_id : null,
-                'berat' => $totalBeratEstimasi,
-                'total_harga' => 0,
-                'berat_aktual' => 0,
-                'status' => 'pending',
-                'tanggal' => now()->toDateString(),
-                'alamat' => $request->metode === 'jemput' ? $request->alamat_jemput : null,
+                'nama_pengirim'   => $request->nama_pengirim,
+                'no_hp'           => $request->no_hp,
+                'metode'          => $request->metode,
+                'alamat_jemput'   => $request->metode === 'jemput' ? $request->alamat_jemput : null,
+                'latitude'        => $request->latitude,
+                'longitude'       => $request->longitude,
+                'titik_kumpul_id' => $titik->id,
+                'berat'           => $totalBeratEstimasi,
+                'total_harga'     => 0,
+                'berat_aktual'    => 0,
+                'status'          => 'pending',
+                'tanggal'         => now()->toDateString(),
+                'alamat'          => $request->metode === 'jemput' ? $request->alamat_jemput : null,
             ]);
 
             foreach ($jenisSampahDipilih as $jenisId => $berat) {
                 $berat = (float) $berat;
                 if ($berat <= 0) continue;
-
                 $transaksi->jenisSampahs()->attach($jenisId, [
                     'berat_estimasi' => $berat,
-                    'berat_aktual' => 0,
+                    'berat_aktual'   => 0,
                 ]);
             }
 
@@ -285,13 +311,13 @@ class UserDashboardController extends Controller
         $pelanggan = $user->pelanggan;
         if (!$pelanggan) {
             $pelanggan = Pelanggan::create([
-                'user_id' => $user->id,
-                'nama' => $user->name,
-                'email' => $user->email,
+                'user_id'  => $user->id,
+                'nama'     => $user->name,
+                'email'    => $user->email,
                 'password' => $user->password,
-                'no_hp' => $noHp ?? $user->no_hp ?? '',
-                'alamat' => $alamat ?? $user->alamat ?? '',
-                'poin' => 0,
+                'no_hp'    => $noHp ?? $user->no_hp ?? '',
+                'alamat'   => $alamat ?? $user->alamat ?? '',
+                'poin'     => 0,
             ]);
         }
         return $pelanggan;
@@ -303,8 +329,8 @@ class UserDashboardController extends Controller
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
         $a = sin($dLat / 2) * sin($dLat / 2) +
-            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-            sin($dLon / 2) * sin($dLon / 2);
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLon / 2) * sin($dLon / 2);
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         return $R * $c;
     }
