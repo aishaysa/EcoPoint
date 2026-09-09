@@ -86,7 +86,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/transaksi/{id}/edit', [TransaksiController::class, 'edit'])->name('transaksi.edit');
         Route::put('/transaksi/{id}', [TransaksiController::class, 'update'])->name('transaksi.update');
         Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
-
+        Route::patch('/transaksi/approve/{id}', [TransaksiController::class, 'approve'])->name('transaksi.approve');
+        Route::patch('/transaksi/reject/{id}', [TransaksiController::class, 'reject'])->name('transaksi.reject');
         Route::get('transaksi/index', [TransaksiController::class, 'index'])->name('transaksi.index');
         Route::get('transaksi/create', [TransaksiController::class, 'create'])->name('transaksi.create');
         Route::post('transaksi/store', [TransaksiController::class, 'store'])->name('transaksi.store');

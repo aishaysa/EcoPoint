@@ -85,6 +85,4 @@
 </div>
 
 {{-- MODAL & TOAST sama seperti transaksi --}}
-@include('admin.partials.delete-modal')
-@include('admin.partials.toast')
 @endsection

@@ -388,7 +388,7 @@
     }
     .opacity-0 { opacity: 0; }
     .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-    #toastProgress { transition: width 10ms linear; }
+    #toastProgress { transition : width 10ms linear; }
     #deleteModalContent { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; }
     #deleteModal:not(.hidden) { background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
 </style>

@@ -1,78 +1,48 @@
 @extends('layouts.admin')
 
-@section('title', 'Setoran Ditolak')
+@section('title', 'Konfirmasi Penolakan Transaksi')
 
 @section('content')
 <div class="container-fluid">
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Daftar Setoran Ditolak</h3>
-            <div class="card-tools">
-                <a href="{{ route('admin.transaksi.index') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-arrow-left"></i> Kembali ke Semua Setoran
-                </a>
-            </div>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-danger">Konfirmasi Penolakan Transaksi</h6>
         </div>
         <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            @if(session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
+            <div class="alert alert-danger">
+                <strong>Perhatian!</strong> Apakah Anda yakin ingin menolak transaksi ini? Poin tidak akan ditambahkan ke user.
+            </div>
 
-            @if($transaksis->count() > 0)
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Pelanggan</th>
-                                <th>Jenis Sampah</th>
-                                <th>Berat (kg)</th>
-                                <th>Metode</th>
-                                <th>Status</th>
-                                <th>Tanggal Ditolak</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($transaksis as $transaksi)
-                            <tr>
-                                <td>#{{ $transaksi->id }}</td>
-                                <td>{{ $transaksi->pelanggan->nama ?? 'Tidak diketahui' }}</td>
-                                <td>{{ $transaksi->jenisSampah->nama ?? '-' }}</td>
-                                <td>{{ number_format($transaksi->berat, 2) }}</td>
-                                <td>{{ ucfirst($transaksi->metode ?? '-') }}</td>
-                                <td>
-                                    <span class="badge bg-danger">Ditolak</span>
-                                </td>
-                                <td>{{ $transaksi->updated_at ? $transaksi->updated_at->format('d M Y, H:i') : '-' }}</td>
-                                <td>
-                                    <a href="{{ route('admin.pelanggan.show', $transaksi->pelanggan_id) }}" class="btn btn-sm btn-info">
-                                        <i class="fas fa-eye"></i> Detail Pelanggan
-                                    </a>
-                                    <form action="{{ route('admin.transaksi.destroy', $transaksi->id) }}" method="POST" style="display:inline-block;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Hapus transaksi ini?')">
-                                            <i class="fas fa-trash"></i> Hapus
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+            <table class="table table-bordered">
+                <tr>
+                    <th width="30%">Kode Transaksi</th>
+                    <td>{{ $transaksi->kode ?? $transaksi->id }}</td>
+                </tr>
+                <tr>
+                    <th>Nama User</th>
+                    <td>{{ $transaksi->user->name ?? 'User tidak ditemukan' }}</td>
+                </tr>
+                <tr>
+                    <th>Total Poin</th>
+                    <td>{{ $transaksi->points ?? $transaksi->total_poin }}</td>
+                </tr>
+            </table>
+
+            <!-- Form ini POST ke route reject -->
+            <form action="{{ route('transaksi.reject', $transaksi->id) }}" method="POST">
+                @csrf
+                <div class="form-group">
+                    <label for="alasan">Alasan Penolakan (Opsional)</label>
+                    <textarea name="alasan" id="alasan" class="form-control" rows="3" placeholder="Tuliskan alasan penolakan..."></textarea>
                 </div>
-                {{ $transaksis->links() }}
-            @else
-                <div class="text-center py-5">
-                    <i class="fas fa-check-circle fa-4x text-muted mb-3"></i>
-                    <h4>Belum ada setoran yang ditolak</h4>
-                    <p class="text-muted">Semua setoran masih dalam proses atau sudah disetujui.</p>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-times"></i> Ya, Tolak Transaksi
+                    </button>
+                    <a href="{{ route('transaksi.index') }}" class="btn btn-secondary">Batal / Kembali</a>
                 </div>
-            @endif
+            </form>
         </div>
     </div>
 </div>

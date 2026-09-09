@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setoran;
 use App\Models\Withdrawal;
+use App\Models\User;
+use App\Models\Pelanggan;
 use GlennRaya\Xendivel\Xendivel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,13 +18,14 @@ class TransaksiController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Query untuk SETORAN
+        // 1. Query untuk SETORAN (13 kolom)
         $setoran = Setoran::select(
             'id',
             'user_id',
+            'pelanggan_id',
             'tanggal',
             'metode',
-            DB::raw('berat_aktual as berat'),
+            DB::raw('berat as berat'),
             DB::raw('0 as total'),
             'status',
             DB::raw("'setoran' as type"),
@@ -32,10 +35,11 @@ class TransaksiController extends Controller
             DB::raw("NULL as admin_note")
         );
 
-        // 2. Query untuk WITHDRAW
+        // 2. Query untuk WITHDRAW (13 kolom - TAMBAHAN pelanggan_id!)
         $withdraw = Withdrawal::select(
             'id',
             'user_id',
+            DB::raw('NULL as pelanggan_id'), // Ini yang bikin sama jumlah kolomnya
             DB::raw('created_at as tanggal'),
             DB::raw("'withdraw' as metode"),
             DB::raw('0 as berat'),
@@ -109,13 +113,59 @@ class TransaksiController extends Controller
         return redirect()->route('admin.transaksi.index')->with('success', 'Setoran berhasil dihapus.');
     }
 
-    // ============================================================
-    // FUNGSI APPROVE / REJECT WITHDRAW (LANGSUNG DI SINI)
-    // ============================================================
+    /**
+     * APPROVE SETORAN (Fix: pakai Setoran + Update dua tabel + Handle kolom poin/points)
+     */
+    public function approve($id, Request $request)
+    {
+        $setoran = Setoran::findOrFail($id);
+        $setoran->status = 'approved'; 
+        $setoran->save();
+
+        // Ambil berat akhir dari form (jika admin mengubah berat)
+        $beratAkhir = $request->berat_akhir ?? $setoran->berat;
+        
+        // Hitung poin (10 poin per kg, sesuaikan rumus)
+        $poinDidapat = $beratAkhir * 10; 
+
+        // 1. Update tabel USERS
+        $user = User::find($setoran->user_id);
+        if ($user) {
+            $user->increment('points', $poinDidapat); 
+        }
+
+        // 2. Update tabel PELANGGAN (karena admin baca dari sini!)
+        // Cek dulu apakah kolomnya namanya 'points' atau 'poin'
+        $pelanggan = Pelanggan::find($setoran->pelanggan_id);
+        if ($pelanggan) {
+            // Cek apakah kolom 'points' ada di database, jika tidak, gunakan 'poin'
+            if (in_array('points', $pelanggan->getFillable()) || \Schema::hasColumn('pelanggan', 'points')) {
+                $pelanggan->increment('points', $poinDidapat);
+            } else {
+                $pelanggan->increment('poin', $poinDidapat); 
+            }
+        }
+
+        return redirect()->route('admin.transaksi.index')->with('success', 'Transaksi berhasil disetujui.');
+    }
 
     /**
-     * Admin approve penarikan (kirim uang via Xendit)
+     * REJECT SETORAN
      */
+    public function reject($id, Request $request)
+    {
+        $setoran = Setoran::findOrFail($id);
+        $setoran->status = 'rejected'; 
+        $setoran->alasan = $request->alasan ?? null;
+        $setoran->save();
+
+        return redirect()->route('admin.transaksi.index')->with('success', 'Transaksi berhasil ditolak.');
+    }
+
+    // ============================================================
+    // FUNGSI APPROVE / REJECT WITHDRAW
+    // ============================================================
+
     public function approveWithdraw($id)
     {
         $withdrawal = Withdrawal::with('user')->findOrFail($id);
@@ -184,9 +234,6 @@ class TransaksiController extends Controller
         }
     }
 
-    /**
-     * Admin tolak penarikan (kembalikan poin)
-     */
     public function rejectWithdraw(Request $request, $id)
     {
         $withdrawal = Withdrawal::findOrFail($id);
@@ -206,9 +253,6 @@ class TransaksiController extends Controller
         return redirect()->back()->with('success', 'Penarikan ditolak. Poin dikembalikan.');
     }
 
-    /**
-     * Helper: mapping bank ke kode Xendit
-     */
     private function getBankCode($bankName)
     {
         $banks = [

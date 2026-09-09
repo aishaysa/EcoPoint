@@ -580,10 +580,10 @@
             @endauth
         </div>
 
-        <h1><i class="fas fa-leaf"></i> EcoPoint</h1>
+        <h1>EcoPoint</h1>
         <p>Setor sampah daur ulang, kumpulkan poin, dan tukarkan dengan uang tunai. Mulai langkah kecilmu sekarang.</p>
         @auth
-            <a href="{{ route('user.setoran.create') }}" class="btn-hero">
+            <a href="{{ route('user.transaksi.create') }}" class="btn-hero">
                 <i class="fas fa-recycle"></i> Mulai Setor Sekarang
             </a>
         @else
@@ -655,7 +655,7 @@
         <h2 class="section-title">Fitur Unggulan</h2>
         <p class="section-sub">Semua kemudahan ada di sini</p>
         <div class="features-grid">
-            <a href="{{ route('user.setoran.create') }}" class="feature-item">
+            <a href="{{ route('user.transaksi.create') }}" class="feature-item">
                 <div class="icon-box"><i class="fas fa-recycle"></i></div>
                 <h3>Setor Sampah</h3>
                 <p>Ajukan setoran sampah daur ulang dengan metode jemput atau antar ke titik kumpul.</p>

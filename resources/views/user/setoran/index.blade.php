@@ -486,7 +486,7 @@
 <nav class="navbar">
     <div class="container">
         <a href="{{ route('user.dashboard') }}" class="logo">
-            <i class="fas fa-leaf"></i> EcoPoint
+            EcoPoint
         </a>
 
         <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
