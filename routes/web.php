@@ -86,16 +86,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/transaksi/{id}/edit', [TransaksiController::class, 'edit'])->name('transaksi.edit');
         Route::put('/transaksi/{id}', [TransaksiController::class, 'update'])->name('transaksi.update');
         Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
-        Route::patch('/transaksi/approve/{id}', [TransaksiController::class, 'approve'])->name('transaksi.approve');
-        Route::patch('/transaksi/reject/{id}', [TransaksiController::class, 'reject'])->name('transaksi.reject');
         Route::get('transaksi/index', [TransaksiController::class, 'index'])->name('transaksi.index');
         Route::get('transaksi/create', [TransaksiController::class, 'create'])->name('transaksi.create');
         Route::post('transaksi/store', [TransaksiController::class, 'store'])->name('transaksi.store');
 
-        // APPROVE SETORAN (otomatis tambah poin)
-        Route::post('/setoran/{id}/approve', [TransaksiController::class, 'approveSetoran'])->name('setoran.approve');
+        // ============================================================
+        // APPROVE / REJECT SETORAN (PATCH)
+        // ============================================================
+        Route::patch('/transaksi/approve/{id}', [TransaksiController::class, 'approve'])->name('transaksi.approve');
+        Route::patch('/transaksi/reject/{id}', [TransaksiController::class, 'reject'])->name('transaksi.reject');
 
-        // APPROVE / REJECT WITHDRAW
+        // ============================================================
+        // APPROVE / REJECT WITHDRAW (POST)
+        // ============================================================
         Route::post('/withdraw/{id}/approve', [TransaksiController::class, 'approveWithdraw'])->name('withdraw.approve');
         Route::post('/withdraw/{id}/reject', [TransaksiController::class, 'rejectWithdraw'])->name('withdraw.reject');
 
@@ -149,21 +152,16 @@ Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
 */
 Route::prefix('user')->name('user.')->middleware(['auth:web'])->group(function () {
 
-    // DASHBOARD
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
-
-    // SETORAN
     Route::get('/setoran', [UserDashboardController::class, 'setoran'])->name('setoran');
     Route::get('/setoran/create', [SetoranController::class, 'setoranCreate'])->name('setoran.create');
     Route::post('/setoran/store', [SetoranController::class, 'store'])->name('setoran.store');
     Route::get('/setoran/{id}', [SetoranController::class, 'show'])->name('setoran.detail');
 
-    // PROFILE
     Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile');
     Route::get('/profile/edit', [UserDashboardController::class, 'editProfile'])->name('profile-edit');
     Route::post('/profile/update', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
 
-    // TRANSAKSI (user)
     Route::get('/transaksi/create', [UserDashboardController::class, 'createTransaksi'])->name('transaksi.create');
     Route::post('/transaksi/store', [UserDashboardController::class, 'storeTransaksi'])->name('transaksi.store');
     Route::get('/transaksi', [UserDashboardController::class, 'transaksi'])->name('transaksi');
@@ -171,20 +169,14 @@ Route::prefix('user')->name('user.')->middleware(['auth:web'])->group(function (
     Route::get('/transaksi/{id}/cetak', [UserDashboardController::class, 'cetakTransaksi'])->name('transaksi.cetak');
     Route::get('/transaksi/{id}/cetak-pdf', [UserDashboardController::class, 'cetakTransaksiPDF'])->name('transaksi.cetak-pdf');
 
-    // RIWAYAT
     Route::get('/riwayat', [UserDashboardController::class, 'riwayat'])->name('riwayat');
     Route::get('/riwayat/{id}', [UserDashboardController::class, 'riwayatDetail'])->name('riwayat.detail');
 
-    // POIN
     Route::get('/poin', [UserDashboardController::class, 'poin'])->name('poin');
 
-    // ============================================================
-    // WITHDRAW (USER AJUKAN PENARIKAN)
-    // ============================================================
     Route::get('/withdraw', [UserWithdrawController::class, 'index'])->name('withdraw');
     Route::post('/withdraw', [UserWithdrawController::class, 'store'])->name('withdraw.store');
 
-    // LOGOUT
     Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
 });
 

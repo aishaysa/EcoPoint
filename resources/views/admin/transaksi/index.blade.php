@@ -102,13 +102,17 @@
                         </span>
                     </td>
 
+                    {{-- ====== KOLOM AKSI ====== --}}
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-1.5">
                         {{-- APPROVE SETORAN --}}
                         @if($trx->type == 'setoran' && in_array($trx->status, ['pending', 'menunggu']))
-                            <form action="{{ route('admin.setoran.approve', $trx->id) }}" method="POST" style="display:inline-block;">
+                            <form action="{{ route('admin.setoran.approve', $trx->id) }}" method="POST" id="approve-form-{{ $trx->id }}" style="display:inline-block;">
                                 @csrf
-                                <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-md text-xs font-medium transition"
-                                        onclick="return confirm('Setujui setoran ini? Poin akan otomatis ditambahkan.')">
+                                <button type="button" 
+                                        class="confirm-btn inline-flex items-center px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-md text-xs font-medium transition"
+                                        data-form-id="approve-form-{{ $trx->id }}"
+                                        data-message="Setujui setoran ini? Poin akan otomatis ditambahkan."
+                                        data-title="Konfirmasi Persetujuan">
                                     <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                     </svg>
@@ -119,20 +123,26 @@
 
                         {{-- WITHDRAW PENDING --}}
                         @if($trx->type == 'withdraw' && $trx->status == 'pending')
-                            <form action="{{ route('admin.withdraw.approve', $trx->id) }}" method="POST" style="display:inline-block;">
+                            <form action="{{ route('admin.withdraw.approve', $trx->id) }}" method="POST" id="kirim-form-{{ $trx->id }}" style="display:inline-block;">
                                 @csrf
-                                <button class="inline-flex items-center px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-md text-xs font-medium transition"
-                                        onclick="return confirm('Kirim uang ke e-wallet user?')">
+                                <button type="button" 
+                                        class="confirm-btn inline-flex items-center px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-md text-xs font-medium transition"
+                                        data-form-id="kirim-form-{{ $trx->id }}"
+                                        data-message="Kirim uang ke e-wallet user?"
+                                        data-title="Konfirmasi Kirim">
                                     <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                     </svg>
                                     Kirim
                                 </button>
                             </form>
-                            <form action="{{ route('admin.withdraw.reject', $trx->id) }}" method="POST" style="display:inline-block;">
+                            <form action="{{ route('admin.withdraw.reject', $trx->id) }}" method="POST" id="tolak-form-{{ $trx->id }}" style="display:inline-block;">
                                 @csrf
-                                <button class="inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-xs font-medium transition"
-                                        onclick="return confirm('Tolak penarikan ini?')">
+                                <button type="button" 
+                                        class="confirm-btn inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-xs font-medium transition"
+                                        data-form-id="tolak-form-{{ $trx->id }}"
+                                        data-message="Tolak penarikan ini?"
+                                        data-title="Konfirmasi Penolakan">
                                     <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                     </svg>
@@ -141,7 +151,7 @@
                             </form>
                         @endif
 
-                        {{-- SETORAN LAINNYA --}}
+                        {{-- SETORAN LAINNYA (edit, detail, hapus) --}}
                         @if($trx->type == 'setoran' && !in_array($trx->status, ['pending', 'menunggu']))
                             <a href="{{ route('admin.transaksi.edit', $trx->id) }}" 
                                class="inline-flex items-center px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md text-xs font-medium transition">
@@ -205,11 +215,13 @@
     @endif
 </div>
 
+{{-- ======================== TOAST NOTIFICATIONS ======================== --}}
+
 {{-- Toast Sukses --}}
 @if(session('success'))
-<div id="toast" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
+<div id="toast-success" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
     <div class="bg-white rounded-2xl shadow-2xl border border-green-100 overflow-hidden relative">
-        <div id="toastProgress" class="h-1 bg-gradient-to-r from-green-400 to-green-600 transition-all duration-[4000ms] ease-linear" style="width: 100%"></div>
+        <div id="toastProgress-success" class="h-1 bg-gradient-to-r from-green-400 to-green-600 transition-all duration-[4000ms] ease-linear" style="width: 100%"></div>
         <div class="p-5 flex items-start gap-4">
             <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
                 <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -220,7 +232,57 @@
                 <p class="text-sm font-semibold text-gray-800">Berhasil!</p>
                 <p class="text-sm text-gray-600 leading-relaxed">{{ session('success') }}</p>
             </div>
-            <button onclick="closeToast()" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+            <button onclick="closeToast('toast-success')" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- Toast Error --}}
+@if(session('error'))
+<div id="toast-error" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
+    <div class="bg-white rounded-2xl shadow-2xl border border-red-100 overflow-hidden relative">
+        <div id="toastProgress-error" class="h-1 bg-gradient-to-r from-red-400 to-red-600 transition-all duration-[4000ms] ease-linear" style="width: 100%"></div>
+        <div class="p-5 flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center shadow-lg">
+                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <div class="flex-1 pt-0.5">
+                <p class="text-sm font-semibold text-gray-800">Gagal!</p>
+                <p class="text-sm text-gray-600 leading-relaxed">{{ session('error') }}</p>
+            </div>
+            <button onclick="closeToast('toast-error')" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- Toast Info --}}
+@if(session('info'))
+<div id="toast-info" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
+    <div class="bg-white rounded-2xl shadow-2xl border border-blue-100 overflow-hidden relative">
+        <div id="toastProgress-info" class="h-1 bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-[4000ms] ease-linear" style="width: 100%"></div>
+        <div class="p-5 flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="flex-1 pt-0.5">
+                <p class="text-sm font-semibold text-gray-800">Informasi</p>
+                <p class="text-sm text-gray-600 leading-relaxed">{{ session('info') }}</p>
+            </div>
+            <button onclick="closeToast('toast-info')" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -233,7 +295,30 @@
 {{-- Toast Batal --}}
 <div id="cancelToastContainer"></div>
 
-{{-- MODAL --}}
+{{-- ===== MODAL KONFIRMASI UNIVERSAL ===== --}}
+<div id="confirmModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
+    <div id="confirmModalContent" class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0 p-6">
+        <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full mb-4" id="confirmIcon">
+            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <h3 class="text-lg font-bold text-center text-gray-800 mb-2" id="confirmTitle">Konfirmasi</h3>
+        <p class="text-sm text-center text-gray-600 mb-6" id="confirmMessage">Apakah Anda yakin?</p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <button id="confirmCancelBtn" 
+                    class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2">
+                Batal
+            </button>
+            <button id="confirmOkBtn" 
+                    class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Ya, Lanjutkan
+            </button>
+        </div>
+    </div>
+</div>
+
+{{-- ===== MODAL KONFIRMASI HAPUS ===== --}}
 <div id="deleteModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
     <div id="deleteModalContent" class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0 p-6">
         <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
@@ -254,28 +339,68 @@
 </div>
 
 <script>
-    @if(session('success'))
-    let progressWidth = 100;
-    const progressInterval = setInterval(function() {
-        progressWidth -= 0.25;
-        const progressBar = document.getElementById('toastProgress');
-        if (progressBar) {
-            progressBar.style.width = Math.max(progressWidth, 0) + '%';
-        }
-        if (progressWidth <= 0) {
-            clearInterval(progressInterval);
-            closeToast();
-        }
-    }, 10);
-    function closeToast() {
-        const toast = document.getElementById('toast');
+    // ============================================================
+    // TOAST NOTIFICATIONS
+    // ============================================================
+
+    function closeToast(id) {
+        const toast = document.getElementById(id);
         if (toast) {
             toast.classList.remove('translate-x-0', 'opacity-100');
             toast.classList.add('translate-x-full', 'opacity-0');
             setTimeout(function() { toast.remove(); }, 700);
         }
-        clearInterval(progressInterval);
     }
+
+    @if(session('success'))
+    (function() {
+        let progressWidth = 100;
+        const interval = setInterval(function() {
+            progressWidth -= 0.25;
+            const bar = document.getElementById('toastProgress-success');
+            if (bar) {
+                bar.style.width = Math.max(progressWidth, 0) + '%';
+            }
+            if (progressWidth <= 0) {
+                clearInterval(interval);
+                closeToast('toast-success');
+            }
+        }, 10);
+    })();
+    @endif
+
+    @if(session('error'))
+    (function() {
+        let progressWidth = 100;
+        const interval = setInterval(function() {
+            progressWidth -= 0.25;
+            const bar = document.getElementById('toastProgress-error');
+            if (bar) {
+                bar.style.width = Math.max(progressWidth, 0) + '%';
+            }
+            if (progressWidth <= 0) {
+                clearInterval(interval);
+                closeToast('toast-error');
+            }
+        }, 10);
+    })();
+    @endif
+
+    @if(session('info'))
+    (function() {
+        let progressWidth = 100;
+        const interval = setInterval(function() {
+            progressWidth -= 0.25;
+            const bar = document.getElementById('toastProgress-info');
+            if (bar) {
+                bar.style.width = Math.max(progressWidth, 0) + '%';
+            }
+            if (progressWidth <= 0) {
+                clearInterval(interval);
+                closeToast('toast-info');
+            }
+        }, 10);
+    })();
     @endif
 
     function showCancelToast(message) {
@@ -313,6 +438,121 @@
             }
         }, 2500);
     }
+
+    // ============================================================
+    // MODAL KONFIRMASI UNIVERSAL (untuk Approve, Kirim, Tolak)
+    // ============================================================
+
+    (function() {
+        const modal = document.getElementById('confirmModal');
+        const modalContent = document.getElementById('confirmModalContent');
+        const confirmTitle = document.getElementById('confirmTitle');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmIcon = document.getElementById('confirmIcon');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+        const okBtn = document.getElementById('confirmOkBtn');
+        let currentFormId = null;
+
+        function showConfirmModal(title, message, formId, iconColor) {
+            confirmTitle.textContent = title;
+            confirmMessage.textContent = message;
+            currentFormId = formId;
+
+            // Warna ikon
+            const iconMap = {
+                green: 'bg-green-100',
+                red: 'bg-red-100',
+                yellow: 'bg-yellow-100',
+                blue: 'bg-blue-100'
+            };
+            const textMap = {
+                green: 'text-green-600',
+                red: 'text-red-600',
+                yellow: 'text-yellow-600',
+                blue: 'text-blue-600'
+            };
+            const bgMap = {
+                green: 'bg-green-600 hover:bg-green-700 focus:ring-green-500',
+                red: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
+                yellow: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
+                blue: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+            };
+
+            const color = iconColor || 'blue';
+            confirmIcon.className = `flex items-center justify-center w-16 h-16 mx-auto rounded-full mb-4 ${iconMap[color]}`;
+            confirmIcon.querySelector('svg').className = `w-8 h-8 ${textMap[color]}`;
+            okBtn.className = `px-6 py-2.5 ${bgMap[color]} text-white rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2`;
+
+            // Ubah teks tombol OK sesuai konteks
+            if (color === 'green') okBtn.textContent = 'Ya, Setujui';
+            else if (color === 'red') okBtn.textContent = 'Ya, Tolak';
+            else if (color === 'yellow') okBtn.textContent = 'Ya, Lanjutkan';
+            else okBtn.textContent = 'Ya, Lanjutkan';
+
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            });
+        }
+
+        function hideConfirmModal() {
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                currentFormId = null;
+            }, 300);
+        }
+
+        // Event listener untuk tombol dengan class confirm-btn
+        document.querySelectorAll('.confirm-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const formId = this.dataset.formId;
+                const message = this.dataset.message;
+                const title = this.dataset.title || 'Konfirmasi';
+                let color = 'blue';
+                if (this.classList.contains('bg-green-100')) color = 'green';
+                else if (this.classList.contains('bg-red-100')) color = 'red';
+                else if (this.classList.contains('bg-yellow-100')) color = 'yellow';
+                showConfirmModal(title, message, formId, color);
+            });
+        });
+
+        cancelBtn.addEventListener('click', function() {
+            hideConfirmModal();
+            showCancelToast('Tindakan dibatalkan');
+        });
+
+        okBtn.addEventListener('click', function() {
+            if (currentFormId) {
+                const form = document.getElementById(currentFormId);
+                if (form) {
+                    form.submit();
+                }
+            }
+            hideConfirmModal();
+        });
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideConfirmModal();
+                showCancelToast('Tindakan dibatalkan');
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                hideConfirmModal();
+                showCancelToast('Tindakan dibatalkan');
+            }
+        });
+    })();
+
+    // ============================================================
+    // MODAL KONFIRMASI HAPUS
+    // ============================================================
 
     (function() {
         const modal = document.getElementById('deleteModal');
@@ -380,7 +620,7 @@
 </script>
 
 <style>
-    #toast, #cancelToastContainer .fixed {
+    #toast-success, #toast-error, #toast-info, #cancelToastContainer .fixed {
         transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
     }
     .translate-x-full {
@@ -388,8 +628,15 @@
     }
     .opacity-0 { opacity: 0; }
     .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-    #toastProgress { transition : width 10ms linear; }
-    #deleteModalContent { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; }
-    #deleteModal:not(.hidden) { background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+    #toastProgress-success, #toastProgress-error, #toastProgress-info {
+        transition: width 10ms linear;
+    }
+    #confirmModalContent, #deleteModalContent {
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    }
+    #confirmModal:not(.hidden), #deleteModal:not(.hidden) {
+        background-color: rgba(0,0,0,0.5);
+        backdrop-filter: blur(4px);
+    }
 </style>
 @endsection

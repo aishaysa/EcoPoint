@@ -13,12 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller
 {
-    /**
-     * Menampilkan semua transaksi (setoran + penarikan) dengan filter
-     */
     public function index(Request $request)
     {
-        // 1. Query untuk SETORAN (13 kolom)
         $setoran = Setoran::select(
             'id',
             'user_id',
@@ -35,7 +31,6 @@ class TransaksiController extends Controller
             DB::raw("NULL as admin_note")
         );
 
-        // 2. Query untuk WITHDRAW (13 kolom)
         $withdraw = Withdrawal::select(
             'id',
             'user_id',
@@ -52,7 +47,6 @@ class TransaksiController extends Controller
             'admin_note'
         );
 
-        // 3. Filter
         $filter = $request->filter ?? 'all';
         
         if ($filter == 'setoran') {
@@ -68,9 +62,6 @@ class TransaksiController extends Controller
         return view('admin.transaksi.index', compact('allTransactions', 'filter'));
     }
 
-    /**
-     * Detail transaksi (setoran atau withdraw)
-     */
     public function show(Request $request, $id)
     {
         $type = $request->query('type', 'setoran');
@@ -84,18 +75,12 @@ class TransaksiController extends Controller
         }
     }
 
-    /**
-     * Edit transaksi (khusus setoran)
-     */
     public function edit($id)
     {
         $setoran = Setoran::with('user.pelanggan')->findOrFail($id);
         return view('admin.transaksi.edit', compact('setoran'));
     }
 
-    /**
-     * Update transaksi (setoran)
-     */
     public function update(Request $request, $id)
     {
         $setoran = Setoran::findOrFail($id);
@@ -103,9 +88,6 @@ class TransaksiController extends Controller
         return redirect()->route('admin.transaksi.index')->with('success', 'Setoran berhasil diupdate.');
     }
 
-    /**
-     * Hapus transaksi (setoran)
-     */
     public function destroy($id)
     {
         $setoran = Setoran::findOrFail($id);
@@ -113,11 +95,6 @@ class TransaksiController extends Controller
         return redirect()->route('admin.transaksi.index')->with('success', 'Setoran berhasil dihapus.');
     }
 
-    /**
-     * APPROVE SETORAN
-     * - Tambah poin ke user dan pelanggan
-     * - Redirect ke halaman detail pelanggan
-     */
     public function approve($id, Request $request)
     {
         $setoran = Setoran::findOrFail($id);
@@ -141,7 +118,6 @@ class TransaksiController extends Controller
             }
         }
 
-        // 🔽 Redirect ke halaman detail pelanggan jika ada
         if ($setoran->pelanggan_id) {
             return redirect()->route('admin.pelanggan.show', $setoran->pelanggan_id)
                              ->with('success', 'Transaksi berhasil disetujui.');
@@ -151,19 +127,12 @@ class TransaksiController extends Controller
                          ->with('success', 'Transaksi berhasil disetujui.');
     }
 
-    /**
-     * REJECT SETORAN
-     * - Hanya ubah status, tidak tambah poin
-     * - Redirect ke halaman detail pelanggan
-     */
     public function reject($id, Request $request)
     {
         $setoran = Setoran::findOrFail($id);
         $setoran->status = 'rejected'; 
-        // $setoran->alasan = $request->alasan ?? null; // dihapus karena kolom tidak ada
         $setoran->save();
 
-        // Redirect ke halaman pelanggan terkait
         if ($setoran->pelanggan_id) {
             return redirect()->route('admin.pelanggan.show', $setoran->pelanggan_id)
                              ->with('success', 'Transaksi berhasil ditolak.');
@@ -174,7 +143,7 @@ class TransaksiController extends Controller
     }
 
     // ============================================================
-    // FUNGSI APPROVE / REJECT WITHDRAW
+    // WITHDRAW
     // ============================================================
 
     public function approveWithdraw($id)
@@ -185,63 +154,11 @@ class TransaksiController extends Controller
             return redirect()->back()->with('error', 'Penarikan sudah diproses.');
         }
 
-        try {
-            $xendit = new Xendivel();
+        $withdrawal->status = 'completed';
+        $withdrawal->processed_at = now();
+        $withdrawal->save();
 
-            $channelMap = [
-                'dana' => 'DANA',
-                'ovo' => 'OVO',
-                'gopay' => 'GOPAY',
-                'qris' => 'DANA',
-                'bank' => 'BANK_TRANSFER',
-            ];
-            $channel = $channelMap[$withdrawal->payment_method] ?? 'DANA';
-
-            $payload = [
-                'reference_id' => 'wd_' . $withdrawal->id . '_' . time(),
-                'currency' => 'IDR',
-                'amount' => (int) $withdrawal->amount,
-                'channel_code' => $channel,
-                'channel_properties' => [
-                    'mobile_number' => $withdrawal->account_number,
-                ],
-            ];
-
-            if ($withdrawal->payment_method === 'bank') {
-                $payload['channel_properties'] = [
-                    'account_holder_name' => $withdrawal->account_name ?? $withdrawal->user->name,
-                    'account_number' => $withdrawal->account_number,
-                    'bank_code' => $this->getBankCode($withdrawal->bank_name),
-                ];
-            }
-
-            $response = $xendit->ewallet()->createEWalletCharge($payload);
-
-            if ($response['status'] == 'SUCCEEDED') {
-                $withdrawal->status = 'success';
-                $withdrawal->processed_at = now();
-                $withdrawal->admin_note = 'Sukses via Xendit';
-                $withdrawal->save();
-
-                return redirect()->back()->with('success', '💰 Penarikan berhasil dikirim ke e-wallet user!');
-            } elseif ($response['status'] == 'PENDING') {
-                $withdrawal->status = 'processing';
-                $withdrawal->save();
-                return redirect()->back()->with('info', '⏳ Penarikan sedang diproses oleh sistem pembayaran.');
-            } else {
-                throw new \Exception('Status dari Xendit: ' . ($response['status'] ?? 'unknown'));
-            }
-        } catch (\Exception $e) {
-            $user = $withdrawal->user;
-            $user->points += $withdrawal->points;
-            $user->save();
-
-            $withdrawal->status = 'failed';
-            $withdrawal->admin_note = 'Error: ' . $e->getMessage();
-            $withdrawal->save();
-
-            return redirect()->back()->with('error', '❌ Gagal kirim uang: ' . $e->getMessage());
-        }
+        return redirect()->back()->with('success', 'Penarikan berhasil disetujui!');
     }
 
     public function rejectWithdraw(Request $request, $id)
