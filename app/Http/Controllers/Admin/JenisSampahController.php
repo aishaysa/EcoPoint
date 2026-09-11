@@ -5,79 +5,109 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\JenisSampah;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class JenisSampahController extends Controller
 {
-    public function index()
+    /**
+     * ============================================================
+     * LIST JENIS SAMPAH (dengan pagination)
+     * ============================================================
+     */
+    public function index(Request $request)
     {
-        $jenisSampahs = JenisSampah::latest()->get();
-        return view('admin.jenis-sampah.index', compact('jenisSampahs'));
+        // Jumlah per halaman (default 10, bisa diubah via ?per_page=25)
+        $perPage = $request->get('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
+
+        $jenisSampahs = JenisSampah::orderBy('id', 'desc')
+                                    ->paginate($perPage)
+                                    ->withQueryString();
+
+        return view('admin.jenis-sampah.index', compact('jenisSampahs', 'perPage'));
     }
 
+    /**
+     * ============================================================
+     * FORM TAMBAH
+     * ============================================================
+     */
     public function create()
     {
         return view('admin.jenis-sampah.create');
     }
 
+    /**
+     * ============================================================
+     * SIMPAN BARU
+     * ============================================================
+     */
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('jenis_sampahs', 'nama'), // <- tambahan unique
-            ],
-            'poin_per_kg' => 'required|integer|min:0',
-            'deskripsi' => 'nullable|string',
+            'nama'         => 'required|string|max:255',
+            'poin_per_kg'  => 'required|integer|min:0',
+            'deskripsi'    => 'nullable|string',
         ]);
 
         JenisSampah::create([
-            'nama' => $request->nama,
+            'nama'        => $request->nama,
             'poin_per_kg' => $request->poin_per_kg,
-            'deskripsi' => $request->deskripsi,
+            'deskripsi'   => $request->deskripsi,
         ]);
 
-        return redirect()
-            ->route('admin.jenis-sampah.index')
-            ->with('success', 'Jenis sampah berhasil ditambahkan.');
+        return redirect()->route('admin.jenis-sampah.index')
+                         ->with('success', 'Jenis sampah berhasil ditambahkan.');
     }
 
-    public function edit(JenisSampah $jenisSampah)
+    /**
+     * ============================================================
+     * FORM EDIT
+     * ============================================================
+     */
+    public function edit($id)
     {
+        $jenisSampah = JenisSampah::findOrFail($id);
         return view('admin.jenis-sampah.edit', compact('jenisSampah'));
     }
 
-    public function update(Request $request, JenisSampah $jenisSampah)
+    /**
+     * ============================================================
+     * UPDATE
+     * ============================================================
+     */
+    public function update(Request $request, $id)
     {
+        $jenisSampah = JenisSampah::findOrFail($id);
+
         $request->validate([
-            'nama' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('jenis_sampahs', 'nama')->ignore($jenisSampah->id), // abaikan record ini
-            ],
-            'poin_per_kg' => 'required|integer|min:0',
-            'deskripsi' => 'nullable|string',
+            'nama'         => 'required|string|max:255',
+            'poin_per_kg'  => 'required|integer|min:0',
+            'deskripsi'    => 'nullable|string',
         ]);
 
         $jenisSampah->update([
-            'nama' => $request->nama,
+            'nama'        => $request->nama,
             'poin_per_kg' => $request->poin_per_kg,
-            'deskripsi' => $request->deskripsi,
+            'deskripsi'   => $request->deskripsi,
         ]);
 
-        return redirect()
-            ->route('admin.jenis-sampah.index')
-            ->with('success', 'Jenis sampah berhasil diperbarui.');
+        return redirect()->route('admin.jenis-sampah.index')
+                         ->with('success', 'Jenis sampah berhasil diperbarui.');
     }
 
-    public function destroy(JenisSampah $jenisSampah)
+    /**
+     * ============================================================
+     * HAPUS
+     * ============================================================
+     */
+    public function destroy($id)
     {
+        $jenisSampah = JenisSampah::findOrFail($id);
         $jenisSampah->delete();
-        return redirect()
-            ->route('admin.jenis-sampah.index')
-            ->with('success', 'Jenis sampah berhasil dihapus.');
+
+        return redirect()->route('admin.jenis-sampah.index')
+                         ->with('success', 'Jenis sampah berhasil dihapus.');
     }
 }

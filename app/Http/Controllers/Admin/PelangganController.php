@@ -9,20 +9,33 @@ use Illuminate\Http\Request;
 class PelangganController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * ============================================================
+     * LIST PELANGGAN (dengan pagination)
+     * ============================================================
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil semua pelanggan + jumlah setoran (pakai withCount)
+        // Jumlah per halaman (default 10, bisa diubah via ?per_page=25)
+        $perPage = $request->get('per_page', 10);
+
+        // Batasi biar gak kegedean
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 10;
+        }
+
+        // Ambil pelanggan + jumlah setoran (pakai withCount)
         $pelanggans = Pelanggan::withCount('setorans')
                                ->orderBy('id', 'desc')
-                               ->get();
+                               ->paginate($perPage)
+                               ->withQueryString();  // ← penting: filter tetap aktif saat pindah halaman
 
-        return view('admin.pelanggan.index', compact('pelanggans'));
+        return view('admin.pelanggan.index', compact('pelanggans', 'perPage'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * ============================================================
+     * FORM TAMBAH PELANGGAN
+     * ============================================================
      */
     public function create()
     {
@@ -30,23 +43,25 @@ class PelangganController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * ============================================================
+     * SIMPAN PELANGGAN BARU
+     * ============================================================
      */
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'no_hp' => 'nullable|string|max:15',
+            'nama'   => 'required|string|max:255',
+            'no_hp'  => 'nullable|string|max:15',
             'alamat' => 'nullable|string',
-            'email' => 'nullable|email|max:255',
+            'email'  => 'nullable|email|max:255',
         ]);
 
         Pelanggan::create([
-            'nama' => $request->nama,
-            'no_hp' => $request->no_hp,
+            'nama'   => $request->nama,
+            'no_hp'  => $request->no_hp,
             'alamat' => $request->alamat,
-            'email' => $request->email,
-            'poin' => 0,
+            'email'  => $request->email,
+            'poin'   => 0,
         ]);
 
         return redirect()->route('admin.pelanggan.index')
@@ -54,21 +69,26 @@ class PelangganController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * ============================================================
+     * DETAIL PELANGGAN
+     * ============================================================
      */
-public function show($id)
-{
-    $pelanggan = Pelanggan::with(['setorans' => function ($query) {
-        $query->latest();
-    }])->findOrFail($id);
+    public function show($id)
+    {
+        $pelanggan = Pelanggan::with(['setorans' => function ($query) {
+            $query->latest();
+        }])->findOrFail($id);
 
-    // Ambil transaksi dari relasi setorans
-    $transaksis = $pelanggan->setorans;
+        // Ambil transaksi dari relasi setorans
+        $transaksis = $pelanggan->setorans;
 
-    return view('admin.pelanggan.show', compact('pelanggan', 'transaksis'));
-}
+        return view('admin.pelanggan.show', compact('pelanggan', 'transaksis'));
+    }
+
     /**
-     * Show the form for editing the specified resource.
+     * ============================================================
+     * FORM EDIT PELANGGAN
+     * ============================================================
      */
     public function edit($id)
     {
@@ -77,24 +97,26 @@ public function show($id)
     }
 
     /**
-     * Update the specified resource in storage.
+     * ============================================================
+     * UPDATE PELANGGAN
+     * ============================================================
      */
     public function update(Request $request, $id)
     {
         $pelanggan = Pelanggan::findOrFail($id);
 
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'no_hp' => 'nullable|string|max:15',
+            'nama'   => 'required|string|max:255',
+            'no_hp'  => 'nullable|string|max:15',
             'alamat' => 'nullable|string',
-            'email' => 'nullable|email|max:255',
+            'email'  => 'nullable|email|max:255',
         ]);
 
         $pelanggan->update([
-            'nama' => $request->nama,
-            'no_hp' => $request->no_hp,
+            'nama'   => $request->nama,
+            'no_hp'  => $request->no_hp,
             'alamat' => $request->alamat,
-            'email' => $request->email,
+            'email'  => $request->email,
         ]);
 
         return redirect()->route('admin.pelanggan.index')
@@ -102,7 +124,9 @@ public function show($id)
     }
 
     /**
-     * Remove the specified resource from storage.
+     * ============================================================
+     * HAPUS PELANGGAN
+     * ============================================================
      */
     public function destroy($id)
     {

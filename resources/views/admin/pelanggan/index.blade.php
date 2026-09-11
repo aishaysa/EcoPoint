@@ -1,16 +1,69 @@
 @extends('layouts.admin')
 
+@section('title', 'Data Pelanggan')
+@section('page_title', 'Data Pelanggan')
+
 @section('content')
 <div class="container mx-auto px-4 py-6 max-w-7xl">
-    {{-- Header --}}
-    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+
+    {{-- ========================================================== --}}
+    {{-- HEADER                                                     --}}
+    {{-- ========================================================== --}}
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
         <div>
             <h1 class="text-2xl font-bold text-slate-800">Data Pelanggan</h1>
             <p class="text-sm text-slate-500">Daftar semua pelanggan terdaftar beserta aktivitas setoran</p>
         </div>
     </div>
 
-    {{-- Tabel --}}
+    {{-- ========================================================== --}}
+    {{-- PAGINATION ATAS (selalu tampil)                            --}}
+    {{-- ========================================================== --}}
+    <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-slate-200">
+        <div class="text-sm text-slate-500">
+            Menampilkan <span class="font-semibold text-slate-800">{{ $pelanggans->firstItem() ?? 0 }}</span> 
+            - <span class="font-semibold text-slate-800">{{ $pelanggans->lastItem() ?? 0 }}</span> 
+            dari <span class="font-semibold text-slate-800">{{ $pelanggans->total() }}</span> data
+        </div>
+
+        <nav class="flex items-center gap-1">
+            @if ($pelanggans->onFirstPage())
+                <span class="px-3 py-1.5 border border-slate-200 rounded-md text-sm bg-slate-50 text-slate-400 cursor-not-allowed">‹ Sebelumnya</span>
+            @else
+                <a href="{{ $pelanggans->appends(request()->query())->previousPageUrl() }}" 
+                   class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">
+                    ‹ Sebelumnya
+                </a>
+            @endif
+
+            @foreach ($pelanggans->appends(request()->query())->links()->elements[0] ?? [] as $page => $url)
+                @if ($page == $pelanggans->currentPage())
+                    <span class="px-3 py-1.5 border border-emerald-600 rounded-md text-sm font-medium bg-emerald-600 text-white">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" 
+                       class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            {{-- Kalau cuma 1 halaman, tampilkan nomor 1 --}}
+            @if (!count($pelanggans->appends(request()->query())->links()->elements[0] ?? []))
+                <span class="px-3 py-1.5 border border-emerald-600 rounded-md text-sm font-medium bg-emerald-600 text-white">1</span>
+            @endif
+
+            @if ($pelanggans->hasMorePages())
+                <a href="{{ $pelanggans->appends(request()->query())->nextPageUrl() }}" 
+                   class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">
+                    Selanjutnya ›
+                </a>
+            @else
+                <span class="px-3 py-1.5 border border-slate-200 rounded-md text-sm bg-slate-50 text-slate-400 cursor-not-allowed">Selanjutnya ›</span>
+            @endif
+        </nav>
+    </div>
+
+    {{-- ========================================================== --}}
+    {{-- TABEL                                                       --}}
+    {{-- ========================================================== --}}
     <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-slate-200/60">
         <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-slate-50">
@@ -25,9 +78,10 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
-                @forelse($pelanggans as $p)
+                @forelse($pelanggans as $key => $p)
                 <tr class="hover:bg-slate-50/80 transition duration-150">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{{ $loop->iteration }}</td>
+                    {{-- ⚠️ PAKAI firstItem() + $key biar nomor nyambung antar halaman --}}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{{ $pelanggans->firstItem() + $key }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{{ $p->nama }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{{ $p->no_hp ?? '-' }}</td>
                     <td class="px-6 py-4 text-sm text-slate-600 max-w-xs truncate">{{ $p->alamat ?? '-' }}</td>
@@ -36,7 +90,6 @@
                             {{ $p->poin }}
                         </span>
                     </td>
-                    {{-- 🔥 INI PERBAIKAN: Total Setoran --}}
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
                         {{ $p->setorans_count ?? 0 }}
                     </td>
@@ -60,7 +113,7 @@
                             @method('DELETE')
                         </form>
 
-                        {{-- Tombol Hapus (trigger modal) --}}
+                        {{-- Tombol Hapus --}}
                         <button type="button" 
                                 class="delete-btn inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition text-xs font-medium"
                                 data-id="{{ $p->id }}"
@@ -87,9 +140,54 @@
             </tbody>
         </table>
     </div>
+
+    {{-- ========================================================== --}}
+    {{-- PAGINATION BAWAH (selalu tampil)                            --}}
+    {{-- ========================================================== --}}
+    <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-slate-200">
+        <div class="text-sm text-slate-500">
+            Menampilkan <span class="font-semibold text-slate-800">{{ $pelanggans->firstItem() ?? 0 }}</span> 
+            - <span class="font-semibold text-slate-800">{{ $pelanggans->lastItem() ?? 0 }}</span> 
+            dari <span class="font-semibold text-slate-800">{{ $pelanggans->total() }}</span> data
+        </div>
+
+        <nav class="flex items-center gap-1">
+            @if ($pelanggans->onFirstPage())
+                <span class="px-3 py-1.5 border border-slate-200 rounded-md text-sm bg-slate-50 text-slate-400 cursor-not-allowed">‹ Sebelumnya</span>
+            @else
+                <a href="{{ $pelanggans->appends(request()->query())->previousPageUrl() }}" 
+                   class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">
+                    ‹ Sebelumnya
+                </a>
+            @endif
+
+            @foreach ($pelanggans->appends(request()->query())->links()->elements[0] ?? [] as $page => $url)
+                @if ($page == $pelanggans->currentPage())
+                    <span class="px-3 py-1.5 border border-emerald-600 rounded-md text-sm font-medium bg-emerald-600 text-white">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" 
+                       class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            {{-- Kalau cuma 1 halaman, tampilkan nomor 1 --}}
+            @if (!count($pelanggans->appends(request()->query())->links()->elements[0] ?? []))
+                <span class="px-3 py-1.5 border border-emerald-600 rounded-md text-sm font-medium bg-emerald-600 text-white">1</span>
+            @endif
+
+            @if ($pelanggans->hasMorePages())
+                <a href="{{ $pelanggans->appends(request()->query())->nextPageUrl() }}" 
+                   class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">
+                    Selanjutnya ›
+                </a>
+            @else
+                <span class="px-3 py-1.5 border border-slate-200 rounded-md text-sm bg-slate-50 text-slate-400 cursor-not-allowed">Selanjutnya ›</span>
+            @endif
+        </nav>
+    </div>
 </div>
 
-{{-- Toast Sukses --}}
+{{-- ======================== TOAST SUKSES ======================== --}}
 @if(session('success'))
 <div id="toast" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
     <div class="bg-white rounded-2xl shadow-2xl border border-emerald-100 overflow-hidden relative">

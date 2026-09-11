@@ -6,11 +6,14 @@
 @section('content')
 <div class="container mx-auto px-4 py-6">
 
-    {{-- HEADER --}}
-    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 class="text-2xl font-bold text-gray-800">
-            Data Jenis Sampah
-        </h1>
+    {{-- ========================================================== --}}
+    {{-- HEADER                                                     --}}
+    {{-- ========================================================== --}}
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Data Jenis Sampah</h1>
+            <p class="text-sm text-gray-500">Daftar jenis sampah beserta poin per kilogram</p>
+        </div>
 
         <a href="{{ route('admin.jenis-sampah.create') }}"
            class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow transition duration-200">
@@ -32,7 +35,54 @@
         </div>
     @endif
 
-    {{-- TABEL --}}
+    {{-- ========================================================== --}}
+    {{-- PAGINATION ATAS                                            --}}
+    {{-- ========================================================== --}}
+    <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+        <div class="text-sm text-gray-500">
+            Menampilkan <span class="font-semibold text-gray-800">{{ $jenisSampahs->firstItem() ?? 0 }}</span> 
+            - <span class="font-semibold text-gray-800">{{ $jenisSampahs->lastItem() ?? 0 }}</span> 
+            dari <span class="font-semibold text-gray-800">{{ $jenisSampahs->total() }}</span> data
+        </div>
+
+        <nav class="flex items-center gap-1">
+            @if ($jenisSampahs->onFirstPage())
+                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm bg-gray-50 text-gray-400 cursor-not-allowed">‹ Sebelumnya</span>
+            @else
+                <a href="{{ $jenisSampahs->appends(request()->query())->previousPageUrl() }}" 
+                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">
+                    ‹ Sebelumnya
+                </a>
+            @endif
+
+            @foreach ($jenisSampahs->appends(request()->query())->links()->elements[0] ?? [] as $page => $url)
+                @if ($page == $jenisSampahs->currentPage())
+                    <span class="px-3 py-1.5 border border-green-600 rounded-md text-sm font-medium bg-green-600 text-white">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" 
+                       class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            {{-- Kalau cuma 1 halaman, tetap tampilkan nomor 1 --}}
+            @if (!count($jenisSampahs->appends(request()->query())->links()->elements[0] ?? []))
+                <span class="px-3 py-1.5 border border-green-600 rounded-md text-sm font-medium bg-green-600 text-white">1</span>
+            @endif
+
+            @if ($jenisSampahs->hasMorePages())
+                <a href="{{ $jenisSampahs->appends(request()->query())->nextPageUrl() }}" 
+                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">
+                    Selanjutnya ›
+                </a>
+            @else
+                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm bg-gray-50 text-gray-400 cursor-not-allowed">Selanjutnya ›</span>
+            @endif
+        </nav>
+    </div>
+
+    {{-- ========================================================== --}}
+    {{-- TABEL                                                       --}}
+    {{-- ========================================================== --}}
     <div class="overflow-x-auto bg-white rounded-lg shadow-md border border-gray-200">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -45,9 +95,10 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($jenisSampahs as $item)
+                @forelse($jenisSampahs as $key => $item)
                     <tr class="hover:bg-gray-50 transition duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $loop->iteration }}</td>
+                        {{-- Nomor urut nyambung antar halaman --}}
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $jenisSampahs->firstItem() + $key }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $item->nama }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-blue-100 text-blue-800">
@@ -58,14 +109,14 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                             {{-- EDIT --}}
                             <a href="{{ route('admin.jenis-sampah.edit', $item->id) }}"
-                               class="inline-flex items-center px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded-md transition">
+                               class="inline-flex items-center px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded-md transition text-xs font-medium">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
                                 Edit
                             </a>
 
-                            {{-- FORM HAPUS (disembunyikan) --}}
+                            {{-- FORM HAPUS --}}
                             <form action="{{ route('admin.jenis-sampah.destroy', $item->id) }}"
                                   method="POST"
                                   id="delete-form-{{ $item->id }}"
@@ -74,7 +125,7 @@
                                 @method('DELETE')
                             </form>
 
-                            {{-- TOMBOL HAPUS (trigger modal) --}}
+                            {{-- TOMBOL HAPUS --}}
                             <button type="button"
                                     class="delete-btn inline-flex items-center px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition text-xs font-medium"
                                     data-id="{{ $item->id }}"
@@ -93,7 +144,7 @@
                             <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
-                            <p class="text-lg">Belum ada jenis sampah</p>
+                            <p class="text-lg font-medium">Belum ada jenis sampah</p>
                             <p class="text-sm">Klik tombol "Tambah Jenis Sampah" untuk menambahkan data pertama.</p>
                         </td>
                     </tr>
@@ -101,9 +152,53 @@
             </tbody>
         </table>
     </div>
+
+    {{-- ========================================================== --}}
+    {{-- PAGINATION BAWAH                                            --}}
+    {{-- ========================================================== --}}
+    <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+        <div class="text-sm text-gray-500">
+            Menampilkan <span class="font-semibold text-gray-800">{{ $jenisSampahs->firstItem() ?? 0 }}</span> 
+            - <span class="font-semibold text-gray-800">{{ $jenisSampahs->lastItem() ?? 0 }}</span> 
+            dari <span class="font-semibold text-gray-800">{{ $jenisSampahs->total() }}</span> data
+        </div>
+
+        <nav class="flex items-center gap-1">
+            @if ($jenisSampahs->onFirstPage())
+                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm bg-gray-50 text-gray-400 cursor-not-allowed">‹ Sebelumnya</span>
+            @else
+                <a href="{{ $jenisSampahs->appends(request()->query())->previousPageUrl() }}" 
+                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">
+                    ‹ Sebelumnya
+                </a>
+            @endif
+
+            @foreach ($jenisSampahs->appends(request()->query())->links()->elements[0] ?? [] as $page => $url)
+                @if ($page == $jenisSampahs->currentPage())
+                    <span class="px-3 py-1.5 border border-green-600 rounded-md text-sm font-medium bg-green-600 text-white">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" 
+                       class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            @if (!count($jenisSampahs->appends(request()->query())->links()->elements[0] ?? []))
+                <span class="px-3 py-1.5 border border-green-600 rounded-md text-sm font-medium bg-green-600 text-white">1</span>
+            @endif
+
+            @if ($jenisSampahs->hasMorePages())
+                <a href="{{ $jenisSampahs->appends(request()->query())->nextPageUrl() }}" 
+                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">
+                    Selanjutnya ›
+                </a>
+            @else
+                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm bg-gray-50 text-gray-400 cursor-not-allowed">Selanjutnya ›</span>
+            @endif
+        </nav>
+    </div>
 </div>
 
-{{-- TOAST SUCCESS --}}
+{{-- ======================== TOAST SUCCESS ======================== --}}
 @if(session('success'))
 <div id="toast" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
     <div class="bg-white rounded-2xl shadow-2xl border border-green-100 overflow-hidden relative">
@@ -145,13 +240,11 @@
             Tindakan ini tidak dapat dibatalkan.
         </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
-            {{-- Tombol Batal --}}
             <button id="modalCancelBtn"
                     class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition
                            focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2">
                 Batal
             </button>
-            {{-- Tombol Ya, Hapus (teks merah, border merah, latar putih, hover merah tipis) --}}
             <button id="modalConfirmBtn"
                     class="px-6 py-2.5 bg-white border-2 border-red-600 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition
                            focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
