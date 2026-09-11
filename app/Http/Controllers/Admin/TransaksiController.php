@@ -11,58 +11,167 @@ use App\Helpers\PoinHelper;
 use GlennRaya\Xendivel\Xendivel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class TransaksiController extends Controller
 {
+    /**
+     * ============================================================
+     * HALAMAN INDEX TRANSAKSI
+     * Fix: setoran hilang (pakai Collection Merge, bukan UNION)
+     * Support: search multi-kolom, filter tanggal/bulan/tahun
+     * ============================================================
+     */
     public function index(Request $request)
     {
-        $setoran = Setoran::select(
-            'id',
-            'user_id',
-            'pelanggan_id',
-            'tanggal',
-            'metode',
-            DB::raw('berat as berat'),
-            DB::raw('0 as total'),
-            'status',
-            DB::raw("'setoran' as type"),
-            DB::raw("NULL as account_number"),
-            DB::raw("NULL as payment_method"),
-            DB::raw("0 as amount"),
-            DB::raw("NULL as admin_note")
-        );
+        // ============ AMBIL PARAMETER ============
+        $filter  = $request->get('filter', 'all');
+        $search  = trim($request->get('search', ''));
+        $tanggal = $request->get('tanggal');
+        $bulan   = $request->get('bulan');
+        $tahun   = $request->get('tahun');
 
-        $withdraw = Withdrawal::select(
-            'id',
-            'user_id',
-            DB::raw('NULL as pelanggan_id'),
-            DB::raw('created_at as tanggal'),
-            DB::raw("'withdraw' as metode"),
-            DB::raw('0 as berat'),
-            'amount as total',
-            'status',
-            DB::raw("'withdraw' as type"),
-            'account_number',
-            'payment_method',
-            'amount',
-            'admin_note'
-        );
+        // ============ DETEKSI KOLOM NAMA PELANGGAN ============
+        $pelangganTable   = Schema::hasTable('pelanggan') ? 'pelanggan' : (Schema::hasTable('pelanggans') ? 'pelanggans' : null);
+        $pelangganNameCol = 'nama';
 
-        $filter = $request->filter ?? 'all';
-        
-        if ($filter == 'setoran') {
-            $allTransactions = $setoran->orderBy('tanggal', 'desc')->paginate(20);
-        } elseif ($filter == 'withdraw') {
-            $allTransactions = $withdraw->orderBy('tanggal', 'desc')->paginate(20);
-        } else {
-            $allTransactions = $setoran->union($withdraw)
-                ->orderBy('tanggal', 'desc')
-                ->paginate(20);
+        if ($pelangganTable) {
+            $cols = Schema::getColumnListing($pelangganTable);
+            if (in_array('name', $cols) && !in_array('nama', $cols)) {
+                $pelangganNameCol = 'name';
+            }
         }
+
+        $collections = collect();
+
+        // ============================================================
+        // SETORAN
+        // ============================================================
+        if (in_array($filter, ['all', 'setoran'])) {
+            $q = Setoran::with(['user', 'pelanggan'])->latest('tanggal');
+
+            // Search
+            if ($search) {
+                $q->where(function ($sq) use ($search) {
+                    $sq->where('status', 'like', "%{$search}%")
+                       ->orWhere('metode', 'like', "%{$search}%")
+                       ->orWhere('berat', 'like', "%{$search}%")
+                       ->orWhere('id', 'like', "%{$search}%")
+                       ->orWhereRaw("'setoran' LIKE ?", ["%{$search}%"])
+                       ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"))
+                       ->orWhereHas('pelanggan', fn($p) => $p->where('nama', 'like', "%{$search}%")
+                                                              ->orWhere('name', 'like', "%{$search}%"));
+                });
+            }
+
+            // Filter tanggal/bulan/tahun
+            if ($tanggal) $q->whereDay('tanggal', $tanggal);
+            if ($bulan)   $q->whereMonth('tanggal', $bulan);
+            if ($tahun)   $q->whereYear('tanggal', $tahun);
+
+            $setoranItems = $q->get()->map(function ($item) use ($pelangganNameCol) {
+                // Prioritas: pelanggan.nama → user.name → 'Tanpa Nama'
+                $nama = $item->pelanggan->{$pelangganNameCol}
+                     ?? $item->user->name
+                     ?? 'Tanpa Nama';
+
+                return (object) [
+                    'id'             => $item->id,
+                    'user_id'        => $item->user_id,
+                    'pelanggan_id'   => $item->pelanggan_id,
+                    'user_name'      => $nama,
+                    'tanggal'        => $item->tanggal,
+                    'metode'         => $item->metode,
+                    'berat'          => $item->berat,
+                    'total'          => 0,
+                    'status'         => $item->status,
+                    'type'           => 'setoran',
+                    'account_number' => null,
+                    'payment_method' => null,
+                    'amount'         => 0,
+                    'admin_note'     => null,
+                ];
+            });
+
+            $collections = $collections->merge($setoranItems);
+        }
+
+        // ============================================================
+        // WITHDRAW
+        // ============================================================
+        if (in_array($filter, ['all', 'withdraw'])) {
+            $q = Withdrawal::with('user')->latest('created_at');
+
+            if ($search) {
+                $q->where(function ($sq) use ($search) {
+                    $sq->where('status', 'like', "%{$search}%")
+                       ->orWhere('payment_method', 'like', "%{$search}%")
+                       ->orWhere('account_number', 'like', "%{$search}%")
+                       ->orWhere('amount', 'like', "%{$search}%")
+                       ->orWhere('id', 'like', "%{$search}%")
+                       ->orWhereRaw("'withdraw' LIKE ?", ["%{$search}%"])
+                       ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"));
+                });
+            }
+
+            if ($tanggal) $q->whereDay('created_at', $tanggal);
+            if ($bulan)   $q->whereMonth('created_at', $bulan);
+            if ($tahun)   $q->whereYear('created_at', $tahun);
+
+            $withdrawItems = $q->get()->map(function ($item) {
+                return (object) [
+                    'id'             => $item->id,
+                    'user_id'        => $item->user_id,
+                    'pelanggan_id'   => null,
+                    'user_name'      => $item->user->name ?? 'Tanpa Nama',
+                    'tanggal'        => $item->created_at,
+                    'metode'         => 'withdraw',
+                    'berat'          => 0,
+                    'total'          => $item->amount,
+                    'status'         => $item->status,
+                    'type'           => 'withdraw',
+                    'account_number' => $item->account_number,
+                    'payment_method' => $item->payment_method,
+                    'amount'         => $item->amount,
+                    'admin_note'     => $item->admin_note,
+                ];
+            });
+
+            $collections = $collections->merge($withdrawItems);
+        }
+
+        // ============================================================
+        // SORT & PAGINATION MANUAL
+        // ============================================================
+        $collections = $collections->sortByDesc('tanggal')->values();
+
+        $perPage      = 20;
+        $currentPage  = Paginator::resolveCurrentPage();
+        $currentItems = $collections->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        $allTransactions = new LengthAwarePaginator(
+            $currentItems,
+            $collections->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path'  => Paginator::resolveCurrentPath(),
+                'query' => $request->query(),
+            ]
+        );
+        $allTransactions->withPath($request->url());
+        $allTransactions->appends($request->query());
 
         return view('admin.transaksi.index', compact('allTransactions', 'filter'));
     }
 
+    /**
+     * ============================================================
+     * DETAIL TRANSAKSI
+     * ============================================================
+     */
     public function show(Request $request, $id)
     {
         $type = $request->query('type', 'setoran');
@@ -76,38 +185,59 @@ class TransaksiController extends Controller
         }
     }
 
+    /**
+     * ============================================================
+     * EDIT SETORAN
+     * ============================================================
+     */
     public function edit($id)
     {
         $setoran = Setoran::with('user.pelanggan')->findOrFail($id);
         return view('admin.transaksi.edit', compact('setoran'));
     }
 
+    /**
+     * ============================================================
+     * UPDATE SETORAN
+     * ============================================================
+     */
     public function update(Request $request, $id)
     {
         $setoran = Setoran::findOrFail($id);
         $setoran->update($request->all());
-        return redirect()->route('admin.transaksi.index')->with('success', 'Setoran berhasil diupdate.');
+        return redirect()->route('admin.transaksi.index')
+                         ->with('success', 'Setoran berhasil diupdate.');
     }
 
+    /**
+     * ============================================================
+     * HAPUS SETORAN
+     * ============================================================
+     */
     public function destroy($id)
     {
         $setoran = Setoran::findOrFail($id);
         $setoran->delete();
-        return redirect()->route('admin.transaksi.index')->with('success', 'Setoran berhasil dihapus.');
+        return redirect()->route('admin.transaksi.index')
+                         ->with('success', 'Setoran berhasil dihapus.');
     }
 
+    /**
+     * ============================================================
+     * APPROVE SETORAN
+     * ============================================================
+     */
     public function approve($id, Request $request)
     {
         $setoran = Setoran::findOrFail($id);
-        $setoran->status = 'approved'; 
+        $setoran->status = 'approved';
         $setoran->save();
 
-        $beratAkhir = $request->berat_akhir ?? $setoran->berat;
-        $poinDidapat = $beratAkhir * 10; 
+        $beratAkhir  = $request->berat_akhir ?? $setoran->berat;
+        $poinDidapat = $beratAkhir * 10;
 
         $user = User::find($setoran->user_id);
         if ($user) {
-            //  Catat riwayat poin (poin bertambah)
             PoinHelper::catat(
                 $user,
                 $poinDidapat,
@@ -119,10 +249,10 @@ class TransaksiController extends Controller
 
         $pelanggan = Pelanggan::find($setoran->pelanggan_id);
         if ($pelanggan) {
-            if (in_array('points', $pelanggan->getFillable()) || \Schema::hasColumn('pelanggan', 'points')) {
+            if (in_array('points', $pelanggan->getFillable()) || Schema::hasColumn('pelanggan', 'points')) {
                 $pelanggan->increment('points', $poinDidapat);
             } else {
-                $pelanggan->increment('poin', $poinDidapat); 
+                $pelanggan->increment('poin', $poinDidapat);
             }
         }
 
@@ -135,10 +265,15 @@ class TransaksiController extends Controller
                          ->with('success', 'Transaksi berhasil disetujui.');
     }
 
+    /**
+     * ============================================================
+     * REJECT SETORAN
+     * ============================================================
+     */
     public function reject($id, Request $request)
     {
         $setoran = Setoran::findOrFail($id);
-        $setoran->status = 'rejected'; 
+        $setoran->status = 'rejected';
         $setoran->save();
 
         if ($setoran->pelanggan_id) {
@@ -150,10 +285,11 @@ class TransaksiController extends Controller
                          ->with('success', 'Transaksi berhasil ditolak.');
     }
 
-    // ============================================================
-    // WITHDRAW
-    // ============================================================
-
+    /**
+     * ============================================================
+     * WITHDRAW - APPROVE
+     * ============================================================
+     */
     public function approveWithdraw($id)
     {
         $withdrawal = Withdrawal::with('user')->findOrFail($id);
@@ -162,7 +298,6 @@ class TransaksiController extends Controller
             return redirect()->back()->with('error', 'Penarikan sudah diproses.');
         }
 
-        //  Status diubah menjadi completed (poin sudah dikurangi saat user mengajukan)
         $withdrawal->status = 'completed';
         $withdrawal->processed_at = now();
         $withdrawal->save();
@@ -170,6 +305,11 @@ class TransaksiController extends Controller
         return redirect()->back()->with('success', 'Penarikan berhasil disetujui!');
     }
 
+    /**
+     * ============================================================
+     * WITHDRAW - REJECT
+     * ============================================================
+     */
     public function rejectWithdraw(Request $request, $id)
     {
         $withdrawal = Withdrawal::findOrFail($id);
@@ -180,7 +320,6 @@ class TransaksiController extends Controller
 
         $user = $withdrawal->user;
 
-        // Catat riwayat refund (poin kembali) 
         PoinHelper::catat(
             $user,
             $withdrawal->points,
@@ -196,20 +335,25 @@ class TransaksiController extends Controller
         return redirect()->back()->with('success', 'Penarikan ditolak. Poin dikembalikan.');
     }
 
+    /**
+     * ============================================================
+     * HELPER: Kode Bank
+     * ============================================================
+     */
     private function getBankCode($bankName)
     {
         $banks = [
-            'bca' => 'BCA',
-            'bni' => 'BNI',
-            'bri' => 'BRI',
-            'mandiri' => 'MANDIRI',
-            'cimb' => 'CIMB',
-            'danamon' => 'DANAMON',
-            'permata' => 'PERMATA',
-            'btn' => 'BTN',
-            'maybank' => 'MAYBANK',
-            'bsi' => 'BSI',
-            'mega' => 'MEGA',
+            'bca'      => 'BCA',
+            'bni'      => 'BNI',
+            'bri'      => 'BRI',
+            'mandiri'  => 'MANDIRI',
+            'cimb'     => 'CIMB',
+            'danamon'  => 'DANAMON',
+            'permata'  => 'PERMATA',
+            'btn'      => 'BTN',
+            'maybank'  => 'MAYBANK',
+            'bsi'      => 'BSI',
+            'mega'     => 'MEGA',
             'sinarmas' => 'SINARMAS',
         ];
         return $banks[strtolower($bankName)] ?? strtoupper($bankName);

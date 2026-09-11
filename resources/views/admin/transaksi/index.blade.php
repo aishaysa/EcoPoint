@@ -1,33 +1,195 @@
 @extends('layouts.admin')
 
 @section('title', 'Semua Transaksi')
-@section('page_title', ' Transaksi')
+@section('page_title', 'Transaksi')
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
-    {{-- HEADER & FILTER TABS --}}
-    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 class="text-2xl font-bold text-gray-800">Semua Transaksi</h1>
-        <div class="flex flex-wrap gap-2">
-            <a href="{{ route('admin.transaksi.index') }}?filter=all" 
-               class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition duration-200 
-                      {{ $filter == 'all' ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
-                Semua
-            </a>
-            <a href="{{ route('admin.transaksi.index') }}?filter=setoran" 
-               class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition duration-200 
-                      {{ $filter == 'setoran' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200' }}">
-                Setoran
-            </a>
-            <a href="{{ route('admin.transaksi.index') }}?filter=withdraw" 
-               class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition duration-200 
-                      {{ $filter == 'withdraw' ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }}">
-                Withdraw
-            </a>
+
+    {{-- ========================================================== --}}
+    {{-- HEADER + JAM LIVE                                          --}}
+    {{-- ========================================================== --}}
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">
+                @if($filter == 'setoran')
+                    Data Setoran
+                @elseif($filter == 'withdraw')
+                    Data Withdraw
+                @else
+                    Semua Transaksi
+                @endif
+            </h1>
+            <p class="text-sm text-gray-500 mt-1">
+                Daftar transaksi
+                @if($filter == 'setoran') setoran sampah @elseif($filter == 'withdraw') penarikan saldo @endif
+                pelanggan
+            </p>
+        </div>
+
+        {{-- JAM LIVE --}}
+        <div class="flex items-center gap-3 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+            <div class="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500">Waktu Sekarang</p>
+                <p id="live-clock" class="text-lg font-bold text-gray-800 font-mono tabular-nums">--:--:-- --</p>
+                <p id="live-date" class="text-xs text-gray-500">Memuat...</p>
+            </div>
         </div>
     </div>
 
-    {{-- TABEL TRANSAKSI --}}
+    {{-- ========================================================== --}}
+    {{-- FILTER & LIVE SEARCH                                       --}}
+    {{-- ========================================================== --}}
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-4">
+        <form method="GET" action="{{ route('admin.transaksi.index') }}" id="filterForm">
+            <input type="hidden" name="filter" value="{{ $filter }}">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {{-- LIVE SEARCH --}}
+                <div class="sm:col-span-2 lg:col-span-1">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                        Cari Data
+                        <span id="search-loading" class="hidden text-green-600 ml-1">●</span>
+                    </label>
+                    <div class="relative">
+                        <input type="text" 
+                               name="search" 
+                               id="search-input"
+                               value="{{ request('search') }}"
+                               placeholder="Nama, status, jenis, metode..."
+                               autocomplete="off"
+                               class="w-full pl-9 pr-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Cari: nama, status, jenis, metode</p>
+                </div>
+
+                {{-- TANGGAL --}}
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Tanggal</label>
+                    <select name="tanggal" id="filter-tanggal"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm py-2">
+                        <option value="">Semua Tanggal</option>
+                        @for($i = 1; $i <= 31; $i++)
+                            <option value="{{ $i }}" {{ request('tanggal') == $i ? 'selected' : '' }}>{{ $i }}</option>
+                        @endfor
+                    </select>
+                </div>
+
+                {{-- BULAN --}}
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Bulan</label>
+                    <select name="bulan" id="filter-bulan"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm py-2">
+                        <option value="">Semua Bulan</option>
+                        @php
+                            $bulanList = [
+                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                            ];
+                        @endphp
+                        @foreach($bulanList as $num => $nama)
+                            <option value="{{ $num }}" {{ request('bulan') == $num ? 'selected' : '' }}>{{ $nama }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- TAHUN --}}
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Tahun</label>
+                    <select name="tahun" id="filter-tahun"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm py-2">
+                        <option value="">Semua Tahun</option>
+                        @for($y = date('Y'); $y >= date('Y') - 5; $y--)
+                            <option value="{{ $y }}" {{ request('tahun') == $y ? 'selected' : '' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
+                </div>
+            </div>
+
+            {{-- Filter Aktif + Reset --}}
+            @if(request('search') || request('tanggal') || request('bulan') || request('tahun'))
+                <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2 items-center justify-between">
+                    <div class="flex flex-wrap gap-2 items-center text-xs">
+                        <span class="text-gray-500">Filter aktif:</span>
+                        @if(request('search'))
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">"{{ request('search') }}"</span>
+                        @endif
+                        @if(request('tanggal'))
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-700">Tanggal: {{ request('tanggal') }}</span>
+                        @endif
+                        @if(request('bulan'))
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Bulan: {{ $bulanList[request('bulan')] ?? request('bulan') }}</span>
+                        @endif
+                        @if(request('tahun'))
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Tahun: {{ request('tahun') }}</span>
+                        @endif
+                    </div>
+                    <a href="{{ route('admin.transaksi.index') }}?filter={{ $filter }}" 
+                       class="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-medium">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Reset Filter
+                    </a>
+                </div>
+            @endif
+        </form>
+    </div>
+
+    {{-- ========================================================== --}}
+    {{-- PAGINATION ATAS                                            --}}
+    {{-- ========================================================== --}}
+    @if ($allTransactions->hasPages())
+    <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+        <div class="text-sm text-gray-500">
+            Menampilkan <span class="font-semibold text-gray-800">{{ $allTransactions->firstItem() ?? 0 }}</span> 
+            - <span class="font-semibold text-gray-800">{{ $allTransactions->lastItem() ?? 0 }}</span> 
+            dari <span class="font-semibold text-gray-800">{{ $allTransactions->total() }}</span> data
+        </div>
+
+        <nav class="flex items-center gap-1">
+            @if ($allTransactions->onFirstPage())
+                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm bg-gray-50 text-gray-400 cursor-not-allowed">‹ Sebelumnya</span>
+            @else
+                <a href="{{ $allTransactions->appends(request()->query())->previousPageUrl() }}" 
+                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">
+                    ‹ Sebelumnya
+                </a>
+            @endif
+
+            @foreach ($allTransactions->appends(request()->query())->links()->elements[0] ?? [] as $page => $url)
+                @if ($page == $allTransactions->currentPage())
+                    <span class="px-3 py-1.5 border border-green-600 rounded-md text-sm font-medium bg-green-600 text-white">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" 
+                       class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            @if ($allTransactions->hasMorePages())
+                <a href="{{ $allTransactions->appends(request()->query())->nextPageUrl() }}" 
+                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">
+                    Selanjutnya ›
+                </a>
+            @else
+                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm bg-gray-50 text-gray-400 cursor-not-allowed">Selanjutnya ›</span>
+            @endif
+        </nav>
+    </div>
+    @endif
+
+    {{-- ========================================================== --}}
+    {{-- TABEL TRANSAKSI                                            --}}
+    {{-- ========================================================== --}}
     <div class="overflow-x-auto bg-white rounded-lg shadow-md border border-gray-200">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -42,13 +204,14 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AKSI</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-white divide-y divide-gray-200" id="transaksi-tbody">
                 @forelse($allTransactions as $key => $trx)
                 <tr class="hover:bg-gray-50 transition duration-150">
-                    {{-- Nomor urut yang menyesuaikan halaman --}}
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $allTransactions->firstItem() + $key }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ \Carbon\Carbon::parse($trx->tanggal)->format('d M Y, H:i') }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $trx->user->name ?? '—' }}</td>
+
+                    {{-- ⚠️ FIX: pakai user_name (bukan user->name) karena query pakai DB::table --}}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $trx->user_name ?? '—' }}</td>
 
                     <td class="px-6 py-4 whitespace-nowrap">
                         @if($trx->type == 'withdraw')
@@ -97,6 +260,7 @@
                                 'rejected' => 'bg-red-100 text-red-800',
                                 'selesai' => 'bg-green-100 text-green-800',
                                 'menunggu' => 'bg-yellow-100 text-yellow-800',
+                                'completed' => 'bg-green-100 text-green-800',
                             ];
                             $color = $statusColors[$trx->status] ?? 'bg-gray-100 text-gray-800';
                         @endphp
@@ -105,7 +269,7 @@
                         </span>
                     </td>
 
-                    {{-- ====== KOLOM AKSI ====== --}}
+                    {{-- KOLOM AKSI --}}
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-1.5">
                         {{-- APPROVE SETORAN --}}
                         @if($trx->type == 'setoran' && in_array($trx->status, ['pending', 'menunggu']))
@@ -154,7 +318,7 @@
                             </form>
                         @endif
 
-                        {{-- SETORAN LAINNYA (edit, detail, hapus) --}}
+                        {{-- SETORAN LAINNYA --}}
                         @if($trx->type == 'setoran' && !in_array($trx->status, ['pending', 'menunggu']))
                             <a href="{{ route('admin.transaksi.edit', $trx->id) }}" 
                                class="inline-flex items-center px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md text-xs font-medium transition">
@@ -181,16 +345,12 @@
                                 </svg>
                                 Hapus
                             </button>
-                            <form action="{{ route('admin.transaksi.destroy', $trx->id) }}" 
-                                  method="POST" 
-                                  id="delete-form-{{ $trx->id }}" 
-                                  class="hidden">
+                            <form action="{{ route('admin.transaksi.destroy', $trx->id) }}" method="POST" id="delete-form-{{ $trx->id }}" class="hidden">
                                 @csrf
                                 @method('DELETE')
                             </form>
                         @endif
 
-                        {{-- WITHDRAW SUDAH DIPROSES --}}
                         @if($trx->type == 'withdraw' && $trx->status != 'pending')
                             <span class="text-gray-400 text-xs">—</span>
                         @endif
@@ -202,8 +362,14 @@
                         <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                         </svg>
-                        <p class="text-lg">Belum ada transaksi</p>
-                        <p class="text-sm">Belum ada transaksi yang tercatat.</p>
+                        <p class="text-lg font-medium">Belum ada transaksi</p>
+                        <p class="text-sm">
+                            @if(request('search') || request('tanggal') || request('bulan') || request('tahun'))
+                                Belum ada transaksi yang tercatat
+                            @else
+                                Belum ada transaksi yang tercatat
+                            @endif
+                        </p>
                     </td>
                 </tr>
                 @endforelse
@@ -211,64 +377,50 @@
         </table>
     </div>
 
-    {{-- ======================== CUSTOM PAGINATION ======================== --}}
+    {{-- ========================================================== --}}
+    {{-- PAGINATION BAWAH                                            --}}
+    {{-- ========================================================== --}}
     @if ($allTransactions->hasPages())
-    <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        {{-- Info Jumlah Data --}}
+    <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
         <div class="text-sm text-gray-500">
             Menampilkan <span class="font-semibold text-gray-800">{{ $allTransactions->firstItem() ?? 0 }}</span> 
             - <span class="font-semibold text-gray-800">{{ $allTransactions->lastItem() ?? 0 }}</span> 
             dari <span class="font-semibold text-gray-800">{{ $allTransactions->total() }}</span> data
         </div>
 
-        {{-- Tombol Navigasi --}}
         <nav class="flex items-center gap-1">
-            {{-- Tombol Previous --}}
             @if ($allTransactions->onFirstPage())
-                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm font-medium bg-gray-50 text-gray-400 cursor-not-allowed">
-                    Sebelumnya
-                </span>
+                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm bg-gray-50 text-gray-400 cursor-not-allowed">‹ Sebelumnya</span>
             @else
-                {{-- appends(request()->query()) BERFUNGSI AGAR FILTER TETAP AKTIF SAAT PINDAH HALAMAN --}}
                 <a href="{{ $allTransactions->appends(request()->query())->previousPageUrl() }}" 
-                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition duration-150">
-                    Sebelumnya
+                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">
+                    ‹ Sebelumnya
                 </a>
             @endif
 
-            {{-- Nomor Halaman --}}
             @foreach ($allTransactions->appends(request()->query())->links()->elements[0] ?? [] as $page => $url)
                 @if ($page == $allTransactions->currentPage())
-                    <span class="px-3 py-1.5 border border-green-600 rounded-md text-sm font-medium bg-green-600 text-white">
-                        {{ $page }}
-                    </span>
+                    <span class="px-3 py-1.5 border border-green-600 rounded-md text-sm font-medium bg-green-600 text-white">{{ $page }}</span>
                 @else
                     <a href="{{ $url }}" 
-                       class="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition duration-150">
-                        {{ $page }}
-                    </a>
+                       class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">{{ $page }}</a>
                 @endif
             @endforeach
 
-            {{-- Tombol Next --}}
             @if ($allTransactions->hasMorePages())
                 <a href="{{ $allTransactions->appends(request()->query())->nextPageUrl() }}" 
-                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition duration-150">
-                    Selanjutnya
+                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">
+                    Selanjutnya ›
                 </a>
             @else
-                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm font-medium bg-gray-50 text-gray-400 cursor-not-allowed">
-                    Selanjutnya
-                </span>
+                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm bg-gray-50 text-gray-400 cursor-not-allowed">Selanjutnya ›</span>
             @endif
         </nav>
     </div>
     @endif
 </div>
 
-{{-- ======================== TOAST NOTIFICATIONS ======================== --}}
-
-{{-- Toast Sukses --}}
+{{-- ======================== TOAST ======================== --}}
 @if(session('success'))
 <div id="toast-success" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
     <div class="bg-white rounded-2xl shadow-2xl border border-green-100 overflow-hidden relative">
@@ -283,17 +435,14 @@
                 <p class="text-sm font-semibold text-gray-800">Berhasil!</p>
                 <p class="text-sm text-gray-600 leading-relaxed">{{ session('success') }}</p>
             </div>
-            <button onclick="closeToast('toast-success')" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
+            <button onclick="closeToast('toast-success')" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
     </div>
 </div>
 @endif
 
-{{-- Toast Error --}}
 @if(session('error'))
 <div id="toast-error" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
     <div class="bg-white rounded-2xl shadow-2xl border border-red-100 overflow-hidden relative">
@@ -308,17 +457,14 @@
                 <p class="text-sm font-semibold text-gray-800">Gagal!</p>
                 <p class="text-sm text-gray-600 leading-relaxed">{{ session('error') }}</p>
             </div>
-            <button onclick="closeToast('toast-error')" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
+            <button onclick="closeToast('toast-error')" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
     </div>
 </div>
 @endif
 
-{{-- Toast Info --}}
 @if(session('info'))
 <div id="toast-info" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
     <div class="bg-white rounded-2xl shadow-2xl border border-blue-100 overflow-hidden relative">
@@ -333,17 +479,14 @@
                 <p class="text-sm font-semibold text-gray-800">Informasi</p>
                 <p class="text-sm text-gray-600 leading-relaxed">{{ session('info') }}</p>
             </div>
-            <button onclick="closeToast('toast-info')" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
+            <button onclick="closeToast('toast-info')" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
     </div>
 </div>
 @endif
 
-{{-- Toast Batal --}}
 <div id="cancelToastContainer"></div>
 
 {{-- ===== MODAL KONFIRMASI UNIVERSAL ===== --}}
@@ -357,14 +500,8 @@
         <h3 class="text-lg font-bold text-center text-gray-800 mb-2" id="confirmTitle">Konfirmasi</h3>
         <p class="text-sm text-center text-gray-600 mb-6" id="confirmMessage">Apakah Anda yakin?</p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
-            <button id="confirmCancelBtn" 
-                    class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2">
-                Batal
-            </button>
-            <button id="confirmOkBtn" 
-                    class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Ya, Lanjutkan
-            </button>
+            <button id="confirmCancelBtn" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition">Batal</button>
+            <button id="confirmOkBtn" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition">Ya, Lanjutkan</button>
         </div>
     </div>
 </div>
@@ -391,9 +528,85 @@
 
 <script>
     // ============================================================
-    // TOAST NOTIFICATIONS
+    // JAM LIVE
     // ============================================================
+    (function() {
+        const clockEl = document.getElementById('live-clock');
+        const dateEl = document.getElementById('live-date');
+        if (!clockEl || !dateEl) return;
 
+        const hariList = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        const bulanList = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const hoursStr = String(hours).padStart(2, '0');
+
+            clockEl.textContent = `${hoursStr}:${minutes}:${seconds} ${ampm}`;
+            dateEl.textContent = `${hariList[now.getDay()]}, ${now.getDate()} ${bulanList[now.getMonth()]} ${now.getFullYear()}`;
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+    })();
+
+    // ============================================================
+    // LIVE SEARCH - Debounce 400ms
+    // ============================================================
+    (function() {
+        const searchInput = document.getElementById('search-input');
+        const filterForm = document.getElementById('filterForm');
+        const loadingDot = document.getElementById('search-loading');
+        if (!searchInput || !filterForm) return;
+
+        let debounceTimer = null;
+        const originalValue = searchInput.value;
+
+        searchInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            if (loadingDot) loadingDot.classList.remove('hidden');
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                if (value !== originalValue) filterForm.submit();
+                if (loadingDot) loadingDot.classList.add('hidden');
+            }, 400);
+        });
+
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(debounceTimer);
+                filterForm.submit();
+            }
+        });
+
+        if (searchInput.value) {
+            searchInput.focus();
+            searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+        }
+    })();
+
+    // ============================================================
+    // AUTO SUBMIT DROPDOWN FILTER
+    // ============================================================
+    (function() {
+        const filterForm = document.getElementById('filterForm');
+        if (!filterForm) return;
+        ['filter-tanggal', 'filter-bulan', 'filter-tahun'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', () => filterForm.submit());
+        });
+    })();
+
+    // ============================================================
+    // TOAST
+    // ============================================================
     function closeToast(id) {
         const toast = document.getElementById(id);
         if (toast) {
@@ -405,51 +618,36 @@
 
     @if(session('success'))
     (function() {
-        let progressWidth = 100;
+        let p = 100;
         const interval = setInterval(function() {
-            progressWidth -= 0.25;
+            p -= 0.25;
             const bar = document.getElementById('toastProgress-success');
-            if (bar) {
-                bar.style.width = Math.max(progressWidth, 0) + '%';
-            }
-            if (progressWidth <= 0) {
-                clearInterval(interval);
-                closeToast('toast-success');
-            }
+            if (bar) bar.style.width = Math.max(p, 0) + '%';
+            if (p <= 0) { clearInterval(interval); closeToast('toast-success'); }
         }, 10);
     })();
     @endif
 
     @if(session('error'))
     (function() {
-        let progressWidth = 100;
+        let p = 100;
         const interval = setInterval(function() {
-            progressWidth -= 0.25;
+            p -= 0.25;
             const bar = document.getElementById('toastProgress-error');
-            if (bar) {
-                bar.style.width = Math.max(progressWidth, 0) + '%';
-            }
-            if (progressWidth <= 0) {
-                clearInterval(interval);
-                closeToast('toast-error');
-            }
+            if (bar) bar.style.width = Math.max(p, 0) + '%';
+            if (p <= 0) { clearInterval(interval); closeToast('toast-error'); }
         }, 10);
     })();
     @endif
 
     @if(session('info'))
     (function() {
-        let progressWidth = 100;
+        let p = 100;
         const interval = setInterval(function() {
-            progressWidth -= 0.25;
+            p -= 0.25;
             const bar = document.getElementById('toastProgress-info');
-            if (bar) {
-                bar.style.width = Math.max(progressWidth, 0) + '%';
-            }
-            if (progressWidth <= 0) {
-                clearInterval(interval);
-                closeToast('toast-info');
-            }
+            if (bar) bar.style.width = Math.max(p, 0) + '%';
+            if (p <= 0) { clearInterval(interval); closeToast('toast-info'); }
         }, 10);
     })();
     @endif
@@ -471,10 +669,8 @@
                         <p class="text-sm font-semibold text-gray-800">Dibatalkan</p>
                         <p class="text-sm text-gray-600 leading-relaxed">${message}</p>
                     </div>
-                    <button onclick="this.closest('.fixed').remove()" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
+                    <button onclick="this.closest('.fixed').remove()" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
             </div>
@@ -491,9 +687,8 @@
     }
 
     // ============================================================
-    // MODAL KONFIRMASI UNIVERSAL (untuk Approve, Kirim, Tolak)
+    // MODAL KONFIRMASI UNIVERSAL
     // ============================================================
-
     (function() {
         const modal = document.getElementById('confirmModal');
         const modalContent = document.getElementById('confirmModalContent');
@@ -509,19 +704,8 @@
             confirmMessage.textContent = message;
             currentFormId = formId;
 
-            // Warna ikon
-            const iconMap = {
-                green: 'bg-green-100',
-                red: 'bg-red-100',
-                yellow: 'bg-yellow-100',
-                blue: 'bg-blue-100'
-            };
-            const textMap = {
-                green: 'text-green-600',
-                red: 'text-red-600',
-                yellow: 'text-yellow-600',
-                blue: 'text-blue-600'
-            };
+            const iconMap = { green: 'bg-green-100', red: 'bg-red-100', yellow: 'bg-yellow-100', blue: 'bg-blue-100' };
+            const textMap = { green: 'text-green-600', red: 'text-red-600', yellow: 'text-yellow-600', blue: 'text-blue-600' };
             const bgMap = {
                 green: 'bg-green-600 hover:bg-green-700 focus:ring-green-500',
                 red: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
@@ -532,12 +716,10 @@
             const color = iconColor || 'blue';
             confirmIcon.className = `flex items-center justify-center w-16 h-16 mx-auto rounded-full mb-4 ${iconMap[color]}`;
             confirmIcon.querySelector('svg').className = `w-8 h-8 ${textMap[color]}`;
-            okBtn.className = `px-6 py-2.5 ${bgMap[color]} text-white rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2`;
+            okBtn.className = `px-6 py-2.5 ${bgMap[color]} text-white rounded-lg text-sm font-medium transition`;
 
-            // Ubah teks tombol OK sesuai konteks
             if (color === 'green') okBtn.textContent = 'Ya, Setujui';
             else if (color === 'red') okBtn.textContent = 'Ya, Tolak';
-            else if (color === 'yellow') okBtn.textContent = 'Ya, Lanjutkan';
             else okBtn.textContent = 'Ya, Lanjutkan';
 
             modal.classList.remove('hidden');
@@ -550,13 +732,9 @@
         function hideConfirmModal() {
             modalContent.classList.remove('scale-100', 'opacity-100');
             modalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                currentFormId = null;
-            }, 300);
+            setTimeout(() => { modal.classList.add('hidden'); currentFormId = null; }, 300);
         }
 
-        // Event listener untuk tombol dengan class confirm-btn
         document.querySelectorAll('.confirm-btn').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -579,9 +757,7 @@
         okBtn.addEventListener('click', function() {
             if (currentFormId) {
                 const form = document.getElementById(currentFormId);
-                if (form) {
-                    form.submit();
-                }
+                if (form) form.submit();
             }
             hideConfirmModal();
         });
@@ -604,7 +780,6 @@
     // ============================================================
     // MODAL KONFIRMASI HAPUS
     // ============================================================
-
     (function() {
         const modal = document.getElementById('deleteModal');
         const modalContent = document.getElementById('deleteModalContent');
@@ -674,20 +849,22 @@
     #toast-success, #toast-error, #toast-info, #cancelToastContainer .fixed {
         transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
     }
-    .translate-x-full {
-        transform: translateX(calc(100% + 2rem));
-    }
+    .translate-x-full { transform: translateX(calc(100% + 2rem)); }
     .opacity-0 { opacity: 0; }
     .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-    #toastProgress-success, #toastProgress-error, #toastProgress-info {
-        transition: width 10ms linear;
-    }
+    #toastProgress-success, #toastProgress-error, #toastProgress-info { transition: width 10ms linear; }
     #confirmModalContent, #deleteModalContent {
         transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
     }
     #confirmModal:not(.hidden), #deleteModal:not(.hidden) {
         background-color: rgba(0,0,0,0.5);
         backdrop-filter: blur(4px);
+    }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    #search-loading { animation: pulse 1s infinite; }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
     }
 </style>
 @endsection
