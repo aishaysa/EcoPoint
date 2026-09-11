@@ -5,6 +5,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
+    {{-- HEADER & FILTER TABS --}}
     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <h1 class="text-2xl font-bold text-gray-800">Semua Transaksi</h1>
         <div class="flex flex-wrap gap-2">
@@ -26,6 +27,7 @@
         </div>
     </div>
 
+    {{-- TABEL TRANSAKSI --}}
     <div class="overflow-x-auto bg-white rounded-lg shadow-md border border-gray-200">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -43,6 +45,7 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($allTransactions as $key => $trx)
                 <tr class="hover:bg-gray-50 transition duration-150">
+                    {{-- Nomor urut yang menyesuaikan halaman --}}
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $allTransactions->firstItem() + $key }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ \Carbon\Carbon::parse($trx->tanggal)->format('d M Y, H:i') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $trx->user->name ?? '—' }}</td>
@@ -208,9 +211,57 @@
         </table>
     </div>
 
-    @if(isset($allTransactions) && method_exists($allTransactions, 'links'))
-    <div class="mt-6 flex justify-center">
-        {{ $allTransactions->links() }}
+    {{-- ======================== CUSTOM PAGINATION ======================== --}}
+    @if ($allTransactions->hasPages())
+    <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        {{-- Info Jumlah Data --}}
+        <div class="text-sm text-gray-500">
+            Menampilkan <span class="font-semibold text-gray-800">{{ $allTransactions->firstItem() ?? 0 }}</span> 
+            - <span class="font-semibold text-gray-800">{{ $allTransactions->lastItem() ?? 0 }}</span> 
+            dari <span class="font-semibold text-gray-800">{{ $allTransactions->total() }}</span> data
+        </div>
+
+        {{-- Tombol Navigasi --}}
+        <nav class="flex items-center gap-1">
+            {{-- Tombol Previous --}}
+            @if ($allTransactions->onFirstPage())
+                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm font-medium bg-gray-50 text-gray-400 cursor-not-allowed">
+                    Sebelumnya
+                </span>
+            @else
+                {{-- appends(request()->query()) BERFUNGSI AGAR FILTER TETAP AKTIF SAAT PINDAH HALAMAN --}}
+                <a href="{{ $allTransactions->appends(request()->query())->previousPageUrl() }}" 
+                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition duration-150">
+                    Sebelumnya
+                </a>
+            @endif
+
+            {{-- Nomor Halaman --}}
+            @foreach ($allTransactions->appends(request()->query())->links()->elements[0] ?? [] as $page => $url)
+                @if ($page == $allTransactions->currentPage())
+                    <span class="px-3 py-1.5 border border-green-600 rounded-md text-sm font-medium bg-green-600 text-white">
+                        {{ $page }}
+                    </span>
+                @else
+                    <a href="{{ $url }}" 
+                       class="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition duration-150">
+                        {{ $page }}
+                    </a>
+                @endif
+            @endforeach
+
+            {{-- Tombol Next --}}
+            @if ($allTransactions->hasMorePages())
+                <a href="{{ $allTransactions->appends(request()->query())->nextPageUrl() }}" 
+                   class="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition duration-150">
+                    Selanjutnya
+                </a>
+            @else
+                <span class="px-3 py-1.5 border border-gray-200 rounded-md text-sm font-medium bg-gray-50 text-gray-400 cursor-not-allowed">
+                    Selanjutnya
+                </span>
+            @endif
+        </nav>
     </div>
     @endif
 </div>
