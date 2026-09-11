@@ -20,8 +20,7 @@ class TransaksiController extends Controller
     /**
      * ============================================================
      * HALAMAN INDEX TRANSAKSI
-     * Fix: setoran hilang (pakai Collection Merge, bukan UNION)
-     * Support: search multi-kolom, filter tanggal/bulan/tahun
+     * Fix: setoran hilang + error kolom 'name' tidak ada
      * ============================================================
      */
     public function index(Request $request)
@@ -33,13 +32,21 @@ class TransaksiController extends Controller
         $bulan   = $request->get('bulan');
         $tahun   = $request->get('tahun');
 
-        // ============ DETEKSI KOLOM NAMA PELANGGAN ============
-        $pelangganTable   = Schema::hasTable('pelanggan') ? 'pelanggan' : (Schema::hasTable('pelanggans') ? 'pelanggans' : null);
-        $pelangganNameCol = 'nama';
+        // ============ DETEKSI TABEL & KOLOM NAMA PELANGGAN ============
+        $pelangganTable   = null;
+        $pelangganNameCol = null;
+
+        if (Schema::hasTable('pelanggan')) {
+            $pelangganTable = 'pelanggan';
+        } elseif (Schema::hasTable('pelanggans')) {
+            $pelangganTable = 'pelanggans';
+        }
 
         if ($pelangganTable) {
             $cols = Schema::getColumnListing($pelangganTable);
-            if (in_array('name', $cols) && !in_array('nama', $cols)) {
+            if (in_array('nama', $cols)) {
+                $pelangganNameCol = 'nama';
+            } elseif (in_array('name', $cols)) {
                 $pelangganNameCol = 'name';
             }
         }
@@ -52,36 +59,49 @@ class TransaksiController extends Controller
         if (in_array($filter, ['all', 'setoran'])) {
             $q = Setoran::with(['user', 'pelanggan'])->latest('tanggal');
 
-            // Search
+            // --- SEARCH ---
             if ($search) {
-                $q->where(function ($sq) use ($search) {
+                $q->where(function ($sq) use ($search, $pelangganNameCol, $pelangganTable) {
                     $sq->where('status', 'like', "%{$search}%")
                        ->orWhere('metode', 'like', "%{$search}%")
                        ->orWhere('berat', 'like', "%{$search}%")
                        ->orWhere('id', 'like', "%{$search}%")
                        ->orWhereRaw("'setoran' LIKE ?", ["%{$search}%"])
-                       ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"))
-                       ->orWhereHas('pelanggan', fn($p) => $p->where('nama', 'like', "%{$search}%")
-                                                              ->orWhere('name', 'like', "%{$search}%"));
+                       ->orWhereHas('user', function ($u) use ($search) {
+                           $u->where('name', 'like', "%{$search}%");
+                       });
+
+                    // Cek dulu tabel + kolomnya, baru pakai whereHas
+                    if ($pelangganTable && $pelangganNameCol) {
+                        $sq->orWhereHas('pelanggan', function ($p) use ($search, $pelangganNameCol) {
+                            $p->where($pelangganNameCol, 'like', "%{$search}%");
+                        });
+                    }
                 });
             }
 
-            // Filter tanggal/bulan/tahun
+            // --- FILTER TANGGAL/BULAN/TAHUN ---
             if ($tanggal) $q->whereDay('tanggal', $tanggal);
             if ($bulan)   $q->whereMonth('tanggal', $bulan);
             if ($tahun)   $q->whereYear('tanggal', $tahun);
 
             $setoranItems = $q->get()->map(function ($item) use ($pelangganNameCol) {
                 // Prioritas: pelanggan.nama → user.name → 'Tanpa Nama'
-                $nama = $item->pelanggan->{$pelangganNameCol}
-                     ?? $item->user->name
-                     ?? 'Tanpa Nama';
+                $nama = null;
+
+                if ($item->pelanggan && $pelangganNameCol) {
+                    $nama = $item->pelanggan->{$pelangganNameCol} ?? null;
+                }
+
+                if (!$nama && $item->user) {
+                    $nama = $item->user->name;
+                }
 
                 return (object) [
                     'id'             => $item->id,
                     'user_id'        => $item->user_id,
                     'pelanggan_id'   => $item->pelanggan_id,
-                    'user_name'      => $nama,
+                    'user_name'      => $nama ?? 'Tanpa Nama',
                     'tanggal'        => $item->tanggal,
                     'metode'         => $item->metode,
                     'berat'          => $item->berat,
@@ -112,7 +132,9 @@ class TransaksiController extends Controller
                        ->orWhere('amount', 'like', "%{$search}%")
                        ->orWhere('id', 'like', "%{$search}%")
                        ->orWhereRaw("'withdraw' LIKE ?", ["%{$search}%"])
-                       ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"));
+                       ->orWhereHas('user', function ($u) use ($search) {
+                           $u->where('name', 'like', "%{$search}%");
+                       });
                 });
             }
 
