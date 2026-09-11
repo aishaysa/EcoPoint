@@ -251,7 +251,9 @@
 {{-- JAVASCRIPT                                                  --}}
 {{-- ========================================================== --}}
 <script>
-    // ---- SIDEBAR TOGGLE ----
+    // ============================================================
+    // SIDEBAR TOGGLE
+    // ============================================================
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
@@ -274,7 +276,9 @@
         }
     });
 
-    // ---- PROFILE DROPDOWN ----
+    // ============================================================
+    // PROFILE DROPDOWN
+    // ============================================================
     const profileBtn = document.getElementById('profileBtn');
     const profileDropdown = document.getElementById('profileDropdown');
 
@@ -290,8 +294,32 @@
     });
 
     // ============================================================
-    // TRANSAKSI DROPDOWN - Toggle buka/tutup
+    // TRANSAKSI DROPDOWN
+    // State disimpan di localStorage biar GAK KETUTUP OTOMATIS
     // ============================================================
+
+    // ---- RESTORE STATE SAAT PAGE LOAD ----
+    (function() {
+        const submenu = document.getElementById('transaksi-submenu');
+        const chevron = document.getElementById('transaksi-chevron');
+        if (!submenu || !chevron) return;
+
+        const savedState = localStorage.getItem('transaksi-dropdown-state');
+
+        if (savedState === 'open') {
+            // User terakhir kali biarin kebuka → tetap buka
+            submenu.classList.remove('hidden');
+            chevron.classList.add('rotate-180');
+        } else if (savedState === 'closed') {
+            // User terakhir kali tutup manual → tetap tutup
+            submenu.classList.add('hidden');
+            chevron.classList.remove('rotate-180');
+        }
+        // Kalau null (belum pernah interaksi) → ikuti default Blade
+        // ($isTransaksiActive yang sudah di-render)
+    })();
+
+    // ---- TOGGLE FUNCTION ----
     function toggleTransaksiDropdown(e) {
         if (e) {
             e.preventDefault();
@@ -304,25 +332,26 @@
         if (!submenu || !chevron) return;
         
         if (submenu.classList.contains('hidden')) {
+            // BUKA
             submenu.classList.remove('hidden');
             chevron.classList.add('rotate-180');
+            localStorage.setItem('transaksi-dropdown-state', 'open');
         } else {
+            // TUTUP
             submenu.classList.add('hidden');
             chevron.classList.remove('rotate-180');
+            localStorage.setItem('transaksi-dropdown-state', 'closed');
         }
     }
 
     // ============================================================
     // EFEK KLIK INSTAN - Biar tombol langsung berwarna saat diklik
-    // (Sebelum halaman pindah)
     // ============================================================
     document.querySelectorAll('.sidebar-menu-item').forEach(item => {
         item.addEventListener('click', function() {
-            // Hapus state aktif dari semua menu
             document.querySelectorAll('.sidebar-menu-item').forEach(el => {
                 el.classList.remove('active-menu');
             });
-            // Kasih warna ke menu yang diklik
             this.classList.add('active-menu');
         });
     });
