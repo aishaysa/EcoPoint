@@ -20,19 +20,17 @@ class TransaksiController extends Controller
     /**
      * ============================================================
      * HALAMAN INDEX TRANSAKSI
-     * Fix: setoran hilang + error kolom 'name' tidak ada
      * ============================================================
      */
     public function index(Request $request)
     {
-        // ============ AMBIL PARAMETER ============
         $filter  = $request->get('filter', 'all');
         $search  = trim($request->get('search', ''));
         $tanggal = $request->get('tanggal');
         $bulan   = $request->get('bulan');
         $tahun   = $request->get('tahun');
 
-        // ============ DETEKSI TABEL & KOLOM NAMA PELANGGAN ============
+        // Deteksi tabel & kolom nama pelanggan
         $pelangganTable   = null;
         $pelangganNameCol = null;
 
@@ -51,27 +49,47 @@ class TransaksiController extends Controller
             }
         }
 
+        // ✅ Deteksi SEMUA kolom berat yang mungkin ada
+        $setoranCols = Schema::getColumnListing('setorans');
+        $beratKandidat = [];
+        foreach (['berat_aktual', 'berat', 'total_berat'] as $k) {
+            if (in_array($k, $setoranCols)) {
+                $beratKandidat[] = $k;
+            }
+        }
+
+        // Deteksi tabel pivot jenis sampah
+        $pivotTable = null;
+        if (Schema::hasTable('setoran_jenis_sampah')) {
+            $pivotTable = 'setoran_jenis_sampah';
+        } elseif (Schema::hasTable('jenis_sampah_setoran')) {
+            $pivotTable = 'jenis_sampah_setoran';
+        }
+
         $collections = collect();
 
         // ============================================================
         // SETORAN
         // ============================================================
         if (in_array($filter, ['all', 'setoran'])) {
-            $q = Setoran::with(['user', 'pelanggan'])->latest('tanggal');
+            // ✅ Eager load pivot juga
+            $q = Setoran::with(['user', 'pelanggan', 'jenisSampahs'])->latest('tanggal');
 
-            // --- SEARCH ---
             if ($search) {
-                $q->where(function ($sq) use ($search, $pelangganNameCol, $pelangganTable) {
+                $q->where(function ($sq) use ($search, $pelangganNameCol, $pelangganTable, $beratKandidat) {
                     $sq->where('status', 'like', "%{$search}%")
                        ->orWhere('metode', 'like', "%{$search}%")
-                       ->orWhere('berat', 'like', "%{$search}%")
                        ->orWhere('id', 'like', "%{$search}%")
                        ->orWhereRaw("'setoran' LIKE ?", ["%{$search}%"])
                        ->orWhereHas('user', function ($u) use ($search) {
                            $u->where('name', 'like', "%{$search}%");
                        });
 
-                    // Cek dulu tabel + kolomnya, baru pakai whereHas
+                    // Search ke semua kolom berat
+                    foreach ($beratKandidat as $k) {
+                        $sq->orWhere($k, 'like', "%{$search}%");
+                    }
+
                     if ($pelangganTable && $pelangganNameCol) {
                         $sq->orWhereHas('pelanggan', function ($p) use ($search, $pelangganNameCol) {
                             $p->where($pelangganNameCol, 'like', "%{$search}%");
@@ -80,21 +98,34 @@ class TransaksiController extends Controller
                 });
             }
 
-            // --- FILTER TANGGAL/BULAN/TAHUN ---
             if ($tanggal) $q->whereDay('tanggal', $tanggal);
             if ($bulan)   $q->whereMonth('tanggal', $bulan);
             if ($tahun)   $q->whereYear('tanggal', $tahun);
 
-            $setoranItems = $q->get()->map(function ($item) use ($pelangganNameCol) {
-                // Prioritas: pelanggan.nama → user.name → 'Tanpa Nama'
+            $setoranItems = $q->get()->map(function ($item) use ($pelangganNameCol, $beratKandidat) {
                 $nama = null;
-
                 if ($item->pelanggan && $pelangganNameCol) {
                     $nama = $item->pelanggan->{$pelangganNameCol} ?? null;
                 }
-
                 if (!$nama && $item->user) {
                     $nama = $item->user->name;
+                }
+
+                // ✅ Cek semua kolom berat, ambil yang > 0
+                $berat = 0;
+                foreach ($beratKandidat as $k) {
+                    $val = $item->{$k} ?? 0;
+                    if ($val > 0) {
+                        $berat = $val;
+                        break;
+                    }
+                }
+
+                // ✅ Fallback: hitung dari pivot jenis sampah
+                if ($berat == 0 && $item->relationLoaded('jenisSampahs') && $item->jenisSampahs && $item->jenisSampahs->count()) {
+                    $berat = $item->jenisSampahs->sum(function ($js) {
+                        return $js->pivot->berat_aktual ?? $js->pivot->berat ?? 0;
+                    });
                 }
 
                 return (object) [
@@ -104,7 +135,7 @@ class TransaksiController extends Controller
                     'user_name'      => $nama ?? 'Tanpa Nama',
                     'tanggal'        => $item->tanggal,
                     'metode'         => $item->metode,
-                    'berat'          => $item->berat,
+                    'berat'          => $berat,
                     'total'          => 0,
                     'status'         => $item->status,
                     'type'           => 'setoran',
@@ -164,11 +195,8 @@ class TransaksiController extends Controller
             $collections = $collections->merge($withdrawItems);
         }
 
-        // ============================================================
-        // SORT & PAGINATION MANUAL
-        // ============================================================
+        // Sort & Pagination
         $collections = $collections->sortByDesc('tanggal')->values();
-
         $perPage      = 20;
         $currentPage  = Paginator::resolveCurrentPage();
         $currentItems = $collections->slice(($currentPage - 1) * $perPage, $perPage)->values();
@@ -202,9 +230,20 @@ class TransaksiController extends Controller
             $data = Withdrawal::with('user')->findOrFail($id);
             return view('admin.transaksi.show', compact('data'))->with('type', 'withdraw');
         } else {
-            $data = Setoran::with('user.pelanggan')->findOrFail($id);
+            $data = Setoran::with(['user.pelanggan', 'jenisSampahs'])->findOrFail($id);
             return view('admin.transaksi.show', compact('data'))->with('type', 'setoran');
         }
+    }
+
+    /**
+     * ============================================================
+     * DETAIL WITHDRAW
+     * ============================================================
+     */
+    public function showWithdrawDetail($id)
+    {
+        $withdrawal = Withdrawal::with('user')->findOrFail($id);
+        return view('admin.transaksi.withdraw-detail', compact('withdrawal'));
     }
 
     /**
@@ -214,7 +253,7 @@ class TransaksiController extends Controller
      */
     public function edit($id)
     {
-        $setoran = Setoran::with('user.pelanggan')->findOrFail($id);
+        $setoran = Setoran::with(['user.pelanggan', 'jenisSampahs'])->findOrFail($id);
         return view('admin.transaksi.edit', compact('setoran'));
     }
 
@@ -255,7 +294,35 @@ class TransaksiController extends Controller
         $setoran->status = 'approved';
         $setoran->save();
 
-        $beratAkhir  = $request->berat_akhir ?? $setoran->berat;
+        // ✅ Ambil berat dari semua kolom yang mungkin ada
+        $setoranCols = Schema::getColumnListing('setorans');
+        $beratKandidat = [];
+        foreach (['berat_aktual', 'berat', 'total_berat'] as $k) {
+            if (in_array($k, $setoranCols)) {
+                $beratKandidat[] = $k;
+            }
+        }
+
+        $beratAkhir = $request->berat_akhir ?? 0;
+        if ($beratAkhir == 0) {
+            foreach ($beratKandidat as $k) {
+                $val = $setoran->{$k} ?? 0;
+                if ($val > 0) {
+                    $beratAkhir = $val;
+                    break;
+                }
+            }
+        }
+        // Fallback dari pivot
+        if ($beratAkhir == 0) {
+            $setoran->load('jenisSampahs');
+            if ($setoran->jenisSampahs && $setoran->jenisSampahs->count()) {
+                $beratAkhir = $setoran->jenisSampahs->sum(function ($js) {
+                    return $js->pivot->berat_aktual ?? $js->pivot->berat ?? 0;
+                });
+            }
+        }
+
         $poinDidapat = $beratAkhir * 10;
 
         $user = User::find($setoran->user_id);

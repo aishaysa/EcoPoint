@@ -6,9 +6,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-6">
 
-    {{-- ========================================================== --}}
-    {{-- HEADER + JAM LIVE                                          --}}
-    {{-- ========================================================== --}}
+    {{-- HEADER + JAM LIVE --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">
@@ -27,7 +25,6 @@
             </p>
         </div>
 
-        {{-- JAM LIVE --}}
         <div class="flex items-center gap-3 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
             <div class="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
                 <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,15 +39,12 @@
         </div>
     </div>
 
-    {{-- ========================================================== --}}
-    {{-- FILTER & LIVE SEARCH                                       --}}
-    {{-- ========================================================== --}}
+    {{-- FILTER & LIVE SEARCH --}}
     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-4">
         <form method="GET" action="{{ route('admin.transaksi.index') }}" id="filterForm">
             <input type="hidden" name="filter" value="{{ $filter }}">
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {{-- LIVE SEARCH --}}
                 <div class="sm:col-span-2 lg:col-span-1">
                     <label class="block text-xs font-medium text-gray-600 mb-1">
                         Cari Data
@@ -68,10 +62,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                     </div>
-                    <p class="text-xs text-gray-400 mt-1">Cari: nama, status, jenis, metode</p>
                 </div>
 
-                {{-- TANGGAL --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Tanggal</label>
                     <select name="tanggal" id="filter-tanggal"
@@ -83,7 +75,6 @@
                     </select>
                 </div>
 
-                {{-- BULAN --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Bulan</label>
                     <select name="bulan" id="filter-bulan"
@@ -102,7 +93,6 @@
                     </select>
                 </div>
 
-                {{-- TAHUN --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Tahun</label>
                     <select name="tahun" id="filter-tahun"
@@ -115,7 +105,6 @@
                 </div>
             </div>
 
-            {{-- Filter Aktif + Reset --}}
             @if(request('search') || request('tanggal') || request('bulan') || request('tahun'))
                 <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2 items-center justify-between">
                     <div class="flex flex-wrap gap-2 items-center text-xs">
@@ -127,10 +116,10 @@
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-700">Tanggal: {{ request('tanggal') }}</span>
                         @endif
                         @if(request('bulan'))
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Bulan: {{ $bulanList[request('bulan')] ?? request('bulan') }}</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Bulan: {{ $bulanList[request('bulan')] ?? request('bulan') }}</span>
                         @endif
                         @if(request('tahun'))
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Tahun: {{ request('tahun') }}</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-700">Tahun: {{ request('tahun') }}</span>
                         @endif
                     </div>
                     <a href="{{ route('admin.transaksi.index') }}?filter={{ $filter }}" 
@@ -145,10 +134,7 @@
         </form>
     </div>
 
-    {{-- ========================================================== --}}
-    {{-- PAGINATION ATAS                                            --}}
-    {{-- ========================================================== --}}
-    @if ($allTransactions->hasPages())
+    {{-- PAGINATION ATAS --}}
     <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
         <div class="text-sm text-gray-500">
             Menampilkan <span class="font-semibold text-gray-800">{{ $allTransactions->firstItem() ?? 0 }}</span> 
@@ -175,6 +161,10 @@
                 @endif
             @endforeach
 
+            @if (!count($allTransactions->appends(request()->query())->links()->elements[0] ?? []))
+                <span class="px-3 py-1.5 border border-green-600 rounded-md text-sm font-medium bg-green-600 text-white">1</span>
+            @endif
+
             @if ($allTransactions->hasMorePages())
                 <a href="{{ $allTransactions->appends(request()->query())->nextPageUrl() }}" 
                    class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">
@@ -185,11 +175,8 @@
             @endif
         </nav>
     </div>
-    @endif
 
-    {{-- ========================================================== --}}
-    {{-- TABEL TRANSAKSI                                            --}}
-    {{-- ========================================================== --}}
+    {{-- TABEL --}}
     <div class="overflow-x-auto bg-white rounded-lg shadow-md border border-gray-200">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -198,19 +185,19 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TANGGAL</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PELANGGAN</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">JENIS</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BERAT (KG)</th>
+                    @if($filter != 'withdraw')
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BERAT</th>
+                    @endif
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TOTAL</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AKSI</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200" id="transaksi-tbody">
+            <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($allTransactions as $key => $trx)
                 <tr class="hover:bg-gray-50 transition duration-150">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $allTransactions->firstItem() + $key }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ \Carbon\Carbon::parse($trx->tanggal)->format('d M Y, H:i') }}</td>
-
-                    {{-- ⚠️ FIX: pakai user_name (bukan user->name) karena query pakai DB::table --}}
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $trx->user_name ?? '—' }}</td>
 
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -233,13 +220,21 @@
                         @endif
                     </td>
 
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        @if($trx->type == 'setoran')
-                            {{ number_format($trx->berat, 2) }}
-                        @else
-                            <span class="text-gray-400">—</span>
-                        @endif
-                    </td>
+                    @if($filter != 'withdraw')
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($trx->type == 'setoran')
+                                @if(($trx->berat ?? 0) > 0)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-200">
+                                        {{ number_format($trx->berat, 2) }} kg
+                                    </span>
+                                @else
+                                    <span class="text-gray-400 text-xs italic">—</span>
+                                @endif
+                            @else
+                                <span class="text-gray-300">—</span>
+                            @endif
+                        </td>
+                    @endif
 
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         @if($trx->type == 'withdraw')
@@ -269,65 +264,55 @@
                         </span>
                     </td>
 
-                    {{-- KOLOM AKSI --}}
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-1.5">
-                        {{-- APPROVE SETORAN --}}
-                        @if($trx->type == 'setoran' && in_array($trx->status, ['pending', 'menunggu']))
-                            <form action="{{ route('admin.transaksi.approve', $trx->id) }}" method="POST" id="approve-form-{{ $trx->id }}" style="display:inline-block;">
-                                @csrf
-                                <button type="button" 
-                                        class="confirm-btn inline-flex items-center px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-md text-xs font-medium transition"
-                                        data-form-id="approve-form-{{ $trx->id }}"
-                                        data-message="Setujui setoran ini? Poin akan otomatis ditambahkan."
-                                        data-title="Konfirmasi Persetujuan">
+                        @if($trx->type == 'setoran')
+                            @if(in_array($trx->status, ['pending', 'menunggu']))
+                                <form action="{{ route('admin.transaksi.approve', $trx->id) }}" method="POST" id="approve-form-{{ $trx->id }}" style="display:inline-block;">
+                                    @csrf
+                                    <button type="button" 
+                                            class="confirm-btn inline-flex items-center px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-md text-xs font-medium transition"
+                                            data-form-id="approve-form-{{ $trx->id }}"
+                                            data-message="Setujui setoran ini? Poin akan otomatis ditambahkan."
+                                            data-title="Konfirmasi Persetujuan">
+                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        Approve
+                                    </button>
+                                </form>
+                            @else
+                                <a href="{{ route('admin.transaksi.edit', $trx->id) }}" 
+                                   class="inline-flex items-center px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md text-xs font-medium transition">
                                     <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
-                                    Approve
-                                </button>
-                            </form>
-                        @endif
-
-                        {{-- WITHDRAW PENDING --}}
-                        @if($trx->type == 'withdraw' && $trx->status == 'pending')
-                            <form action="{{ route('admin.withdraw.approve', $trx->id) }}" method="POST" id="kirim-form-{{ $trx->id }}" style="display:inline-block;">
-                                @csrf
-                                <button type="button" 
-                                        class="confirm-btn inline-flex items-center px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-md text-xs font-medium transition"
-                                        data-form-id="kirim-form-{{ $trx->id }}"
-                                        data-message="Kirim uang ke e-wallet user?"
-                                        data-title="Konfirmasi Kirim">
+                                    Edit
+                                </a>
+                                <a href="{{ route('admin.transaksi.show', ['id' => $trx->id, 'type' => 'setoran']) }}" 
+                                   class="inline-flex items-center px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-md text-xs font-medium transition">
                                     <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                     </svg>
-                                    Kirim
-                                </button>
-                            </form>
-                            <form action="{{ route('admin.withdraw.reject', $trx->id) }}" method="POST" id="tolak-form-{{ $trx->id }}" style="display:inline-block;">
-                                @csrf
+                                    Detail
+                                </a>
                                 <button type="button" 
-                                        class="confirm-btn inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-xs font-medium transition"
-                                        data-form-id="tolak-form-{{ $trx->id }}"
-                                        data-message="Tolak penarikan ini?"
-                                        data-title="Konfirmasi Penolakan">
+                                        class="delete-btn inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-xs font-medium transition"
+                                        data-id="{{ $trx->id }}"
+                                        data-nama="Transaksi #{{ $trx->id }}"
+                                        data-form-id="delete-form-{{ $trx->id }}">
                                     <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
-                                    Tolak
+                                    Hapus
                                 </button>
-                            </form>
-                        @endif
-
-                        {{-- SETORAN LAINNYA --}}
-                        @if($trx->type == 'setoran' && !in_array($trx->status, ['pending', 'menunggu']))
-                            <a href="{{ route('admin.transaksi.edit', $trx->id) }}" 
-                               class="inline-flex items-center px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md text-xs font-medium transition">
-                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
-                                Edit
-                            </a>
-                            <a href="{{ route('admin.transaksi.show', ['id' => $trx->id, 'type' => 'setoran']) }}" 
+                                <form action="{{ route('admin.transaksi.destroy', $trx->id) }}" method="POST" id="delete-form-{{ $trx->id }}" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                            @endif
+                        @elseif($trx->type == 'withdraw')
+                            <a href="{{ route('admin.transaksi.show', ['id' => $trx->id, 'type' => 'withdraw']) }}" 
                                class="inline-flex items-center px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-md text-xs font-medium transition">
                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -335,37 +320,19 @@
                                 </svg>
                                 Detail
                             </a>
-                            <button type="button" 
-                                    class="delete-btn inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-xs font-medium transition"
-                                    data-id="{{ $trx->id }}"
-                                    data-nama="Transaksi #{{ $trx->id }}"
-                                    data-form-id="delete-form-{{ $trx->id }}">
-                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                                Hapus
-                            </button>
-                            <form action="{{ route('admin.transaksi.destroy', $trx->id) }}" method="POST" id="delete-form-{{ $trx->id }}" class="hidden">
-                                @csrf
-                                @method('DELETE')
-                            </form>
-                        @endif
-
-                        @if($trx->type == 'withdraw' && $trx->status != 'pending')
-                            <span class="text-gray-400 text-xs">—</span>
                         @endif
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="px-6 py-10 text-center text-gray-500">
+                    <td colspan="{{ $filter == 'withdraw' ? 7 : 8 }}" class="px-6 py-10 text-center text-gray-500">
                         <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                         </svg>
                         <p class="text-lg font-medium">Belum ada transaksi</p>
                         <p class="text-sm">
                             @if(request('search') || request('tanggal') || request('bulan') || request('tahun'))
-                                Belum ada transaksi yang tercatat
+                                Tidak ada transaksi yang cocok dengan filter
                             @else
                                 Belum ada transaksi yang tercatat
                             @endif
@@ -377,10 +344,7 @@
         </table>
     </div>
 
-    {{-- ========================================================== --}}
-    {{-- PAGINATION BAWAH                                            --}}
-    {{-- ========================================================== --}}
-    @if ($allTransactions->hasPages())
+    {{-- PAGINATION BAWAH --}}
     <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
         <div class="text-sm text-gray-500">
             Menampilkan <span class="font-semibold text-gray-800">{{ $allTransactions->firstItem() ?? 0 }}</span> 
@@ -407,6 +371,10 @@
                 @endif
             @endforeach
 
+            @if (!count($allTransactions->appends(request()->query())->links()->elements[0] ?? []))
+                <span class="px-3 py-1.5 border border-green-600 rounded-md text-sm font-medium bg-green-600 text-white">1</span>
+            @endif
+
             @if ($allTransactions->hasMorePages())
                 <a href="{{ $allTransactions->appends(request()->query())->nextPageUrl() }}" 
                    class="px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-50 transition">
@@ -417,10 +385,9 @@
             @endif
         </nav>
     </div>
-    @endif
 </div>
 
-{{-- ======================== TOAST ======================== --}}
+{{-- TOAST --}}
 @if(session('success'))
 <div id="toast-success" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
     <div class="bg-white rounded-2xl shadow-2xl border border-green-100 overflow-hidden relative">
@@ -465,31 +432,9 @@
 </div>
 @endif
 
-@if(session('info'))
-<div id="toast-info" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
-    <div class="bg-white rounded-2xl shadow-2xl border border-blue-100 overflow-hidden relative">
-        <div id="toastProgress-info" class="h-1 bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-[4000ms] ease-linear" style="width: 100%"></div>
-        <div class="p-5 flex items-start gap-4">
-            <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-            <div class="flex-1 pt-0.5">
-                <p class="text-sm font-semibold text-gray-800">Informasi</p>
-                <p class="text-sm text-gray-600 leading-relaxed">{{ session('info') }}</p>
-            </div>
-            <button onclick="closeToast('toast-info')" class="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-        </div>
-    </div>
-</div>
-@endif
-
 <div id="cancelToastContainer"></div>
 
-{{-- ===== MODAL KONFIRMASI UNIVERSAL ===== --}}
+{{-- MODAL KONFIRMASI --}}
 <div id="confirmModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
     <div id="confirmModalContent" class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0 p-6">
         <div class="flex items-center justify-center w-16 h-16 mx-auto rounded-full mb-4" id="confirmIcon">
@@ -506,7 +451,7 @@
     </div>
 </div>
 
-{{-- ===== MODAL KONFIRMASI HAPUS ===== --}}
+{{-- MODAL HAPUS --}}
 <div id="deleteModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
     <div id="deleteModalContent" class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0 p-6">
         <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
@@ -517,7 +462,6 @@
         <h3 class="text-lg font-bold text-center text-gray-800 mb-2">Hapus Transaksi?</h3>
         <p class="text-sm text-center text-gray-600 mb-6">
             Apakah Anda yakin ingin menghapus <span id="modalNama" class="font-semibold text-gray-800"></span>?
-            Tindakan ini tidak dapat dibatalkan.
         </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <button id="modalCancelBtn" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition">Batal</button>
@@ -527,17 +471,13 @@
 </div>
 
 <script>
-    // ============================================================
     // JAM LIVE
-    // ============================================================
     (function() {
         const clockEl = document.getElementById('live-clock');
         const dateEl = document.getElementById('live-date');
         if (!clockEl || !dateEl) return;
-
         const hariList = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
         const bulanList = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-
         function updateClock() {
             const now = new Date();
             let hours = now.getHours();
@@ -547,27 +487,21 @@
             hours = hours % 12;
             hours = hours ? hours : 12;
             const hoursStr = String(hours).padStart(2, '0');
-
             clockEl.textContent = `${hoursStr}:${minutes}:${seconds} ${ampm}`;
             dateEl.textContent = `${hariList[now.getDay()]}, ${now.getDate()} ${bulanList[now.getMonth()]} ${now.getFullYear()}`;
         }
-
         updateClock();
         setInterval(updateClock, 1000);
     })();
 
-    // ============================================================
-    // LIVE SEARCH - Debounce 400ms
-    // ============================================================
+    // LIVE SEARCH
     (function() {
         const searchInput = document.getElementById('search-input');
         const filterForm = document.getElementById('filterForm');
         const loadingDot = document.getElementById('search-loading');
         if (!searchInput || !filterForm) return;
-
         let debounceTimer = null;
         const originalValue = searchInput.value;
-
         searchInput.addEventListener('input', function() {
             const value = this.value.trim();
             if (loadingDot) loadingDot.classList.remove('hidden');
@@ -577,7 +511,6 @@
                 if (loadingDot) loadingDot.classList.add('hidden');
             }, 400);
         });
-
         searchInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -585,16 +518,13 @@
                 filterForm.submit();
             }
         });
-
         if (searchInput.value) {
             searchInput.focus();
             searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
         }
     })();
 
-    // ============================================================
-    // AUTO SUBMIT DROPDOWN FILTER
-    // ============================================================
+    // AUTO SUBMIT DROPDOWN
     (function() {
         const filterForm = document.getElementById('filterForm');
         if (!filterForm) return;
@@ -604,9 +534,6 @@
         });
     })();
 
-    // ============================================================
-    // TOAST
-    // ============================================================
     function closeToast(id) {
         const toast = document.getElementById(id);
         if (toast) {
@@ -636,18 +563,6 @@
             const bar = document.getElementById('toastProgress-error');
             if (bar) bar.style.width = Math.max(p, 0) + '%';
             if (p <= 0) { clearInterval(interval); closeToast('toast-error'); }
-        }, 10);
-    })();
-    @endif
-
-    @if(session('info'))
-    (function() {
-        let p = 100;
-        const interval = setInterval(function() {
-            p -= 0.25;
-            const bar = document.getElementById('toastProgress-info');
-            if (bar) bar.style.width = Math.max(p, 0) + '%';
-            if (p <= 0) { clearInterval(interval); closeToast('toast-info'); }
         }, 10);
     })();
     @endif
@@ -686,9 +601,7 @@
         }, 2500);
     }
 
-    // ============================================================
-    // MODAL KONFIRMASI UNIVERSAL
-    // ============================================================
+    // MODAL KONFIRMASI
     (function() {
         const modal = document.getElementById('confirmModal');
         const modalContent = document.getElementById('confirmModalContent');
@@ -703,25 +616,19 @@
             confirmTitle.textContent = title;
             confirmMessage.textContent = message;
             currentFormId = formId;
-
             const iconMap = { green: 'bg-green-100', red: 'bg-red-100', yellow: 'bg-yellow-100', blue: 'bg-blue-100' };
             const textMap = { green: 'text-green-600', red: 'text-red-600', yellow: 'text-yellow-600', blue: 'text-blue-600' };
             const bgMap = {
-                green: 'bg-green-600 hover:bg-green-700 focus:ring-green-500',
-                red: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
-                yellow: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
-                blue: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                green: 'bg-green-600 hover:bg-green-700',
+                red: 'bg-red-600 hover:bg-red-700',
+                yellow: 'bg-yellow-600 hover:bg-yellow-700',
+                blue: 'bg-blue-600 hover:bg-blue-700'
             };
-
             const color = iconColor || 'blue';
             confirmIcon.className = `flex items-center justify-center w-16 h-16 mx-auto rounded-full mb-4 ${iconMap[color]}`;
             confirmIcon.querySelector('svg').className = `w-8 h-8 ${textMap[color]}`;
             okBtn.className = `px-6 py-2.5 ${bgMap[color]} text-white rounded-lg text-sm font-medium transition`;
-
-            if (color === 'green') okBtn.textContent = 'Ya, Setujui';
-            else if (color === 'red') okBtn.textContent = 'Ya, Tolak';
-            else okBtn.textContent = 'Ya, Lanjutkan';
-
+            okBtn.textContent = color === 'green' ? 'Ya, Setujui' : 'Ya, Lanjutkan';
             modal.classList.remove('hidden');
             requestAnimationFrame(() => {
                 modalContent.classList.remove('scale-95', 'opacity-0');
@@ -777,9 +684,7 @@
         });
     })();
 
-    // ============================================================
-    // MODAL KONFIRMASI HAPUS
-    // ============================================================
+    // MODAL HAPUS
     (function() {
         const modal = document.getElementById('deleteModal');
         const modalContent = document.getElementById('deleteModalContent');
@@ -846,13 +751,13 @@
 </script>
 
 <style>
-    #toast-success, #toast-error, #toast-info, #cancelToastContainer .fixed {
+    #toast-success, #toast-error, #cancelToastContainer .fixed {
         transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
     }
     .translate-x-full { transform: translateX(calc(100% + 2rem)); }
     .opacity-0 { opacity: 0; }
     .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-    #toastProgress-success, #toastProgress-error, #toastProgress-info { transition: width 10ms linear; }
+    #toastProgress-success, #toastProgress-error { transition: width 10ms linear; }
     #confirmModalContent, #deleteModalContent {
         transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
     }

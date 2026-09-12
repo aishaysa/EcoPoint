@@ -42,6 +42,7 @@ class WithdrawController extends Controller
             return redirect()->back()->with('error', 'Poin tidak mencukupi');
         }
 
+        // ✅ Poin langsung kepotong
         PoinHelper::catat(
             $user,
             -$package->points,
@@ -54,6 +55,7 @@ class WithdrawController extends Controller
         $accountName   = $request->account_name ?? $user->name;
         $bankName      = $request->bank_name ?? null;
 
+        // ✅ FIX: langsung status = 'completed'
         Withdrawal::create([
             'user_id'        => $user->id,
             'package_id'     => $package->id,
@@ -63,10 +65,11 @@ class WithdrawController extends Controller
             'account_number' => $accountNumber,
             'account_name'   => $accountName,
             'bank_name'      => $bankName,
-            'status'         => 'pending',
+            'status'         => 'completed',           // ← UBAH INI
+            'processed_at'   => now(),                  // ← TAMBAH INI (kalau kolomnya ada)
         ]);
 
-return redirect()->route('user.poin')
-    ->with('success', 'Pengajuan penarikan berhasil. Tunggu proses admin.');
-        }
+        return redirect()->route('user.poin')
+            ->with('success', 'Penukaran poin berhasil! Admin akan segera mengirim ke rekening Anda.');
+    }
 }
