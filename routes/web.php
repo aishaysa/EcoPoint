@@ -130,6 +130,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             [PelangganController::class, 'updateStatus']
         )->name('Pelanggan.updateStatus');
 
+        Route::get('logout', [LoginController::class, 'logout'])->name('logout');
+
     }); // end middleware auth:admin
 }); // end prefix admin
 

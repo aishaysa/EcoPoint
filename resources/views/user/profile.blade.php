@@ -47,7 +47,6 @@
         }
         .logo i { color: #a8e6c1; }
 
-        /* Hamburger (Garis 3) */
         .hamburger {
             display: none;
             flex-direction: column;
@@ -71,7 +70,6 @@
         .hamburger.active span:nth-child(2) { opacity: 0; }
         .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
 
-        /* Menu Navigasi */
         .nav-links {
             display: flex;
             gap: 28px;
@@ -87,14 +85,12 @@
         }
         .nav-links a:hover { color: #6fcf97; }
 
-        /* Elemen Kanan (Logout) - Desktop */
         .nav-right {
             display: flex;
             align-items: center;
             gap: 20px;
             order: 3;
         }
-        /* Tombol Logout disamakan dengan link */
         .btn-logout {
             background: transparent;
             color: #cde8d6;
@@ -113,7 +109,6 @@
         }
         .btn-logout:hover { color: #6fcf97; background: rgba(255,255,255,0.05); }
 
-        /* Elemen Mobile */
         .mobile-divider, .mobile-actions { display: none; }
 
         /* ===== PAGE / PROFILE ===== */
@@ -215,7 +210,7 @@
             box-shadow: 0 0 0 4px rgba(46, 125, 90, 0.12);
         }
         .form-group .help-text { font-size: 0.7rem; color: #4d7a63; margin-top: 3px; }
-        
+
         .form-actions {
             margin-top: 28px;
             padding-top: 24px;
@@ -261,7 +256,6 @@
         .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .alert-danger ul { margin-top: 5px; padding-left: 18px; }
 
-        /* ===== FOOTER ===== */
         .footer {
             background: #071a12;
             padding: 30px 0;
@@ -274,6 +268,115 @@
         .footer .social { margin-top: 12px; display: flex; justify-content: center; gap: 20px; font-size: 22px; }
         .footer .social a { color: #8baa99; transition: 0.2s; }
         .footer .social a:hover { color: #6fcf97; }
+
+        /* ============================================================ */
+        /* MODAL KONFIRMASI LOGOUT                                       */
+        /* ============================================================ */
+        .logout-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(7, 26, 18, 0.6);
+            backdrop-filter: blur(6px);
+            padding: 20px;
+            animation: fadeIn 0.25s ease-out;
+        }
+        .logout-modal.active {
+            display: flex;
+        }
+        .logout-modal-content {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 32px 28px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            transform: scale(0.85);
+            opacity: 0;
+            animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .logout-icon-wrap {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulseIcon 1.8s ease-in-out infinite;
+        }
+        .logout-icon-wrap i {
+            font-size: 32px;
+            color: #dc2626;
+        }
+        .logout-modal-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #0d2b1f;
+            margin-bottom: 8px;
+        }
+        .logout-modal-text {
+            font-size: 0.9rem;
+            color: #4d7a63;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .logout-modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .logout-btn-cancel,
+        .logout-btn-confirm {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.25s;
+            border: none;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .logout-btn-cancel {
+            background: #f1f5f3;
+            color: #2d5a43;
+            border: 1.5px solid #d4e8db;
+        }
+        .logout-btn-cancel:hover {
+            background: #e8f0ec;
+            border-color: #b8d9c8;
+        }
+        .logout-btn-confirm {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+        }
+        .logout-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes popIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(220, 38, 38, 0); }
+        }
 
         /* ===== RESPONSIVE MOBILE ===== */
         @media (max-width: 768px) {
@@ -293,17 +396,17 @@
 
             .nav-right { display: none; }
             .mobile-divider { display: block; height: 1px; background: #1e4533; width: 100%; margin: 8px 0; }
-            
-            .mobile-actions { 
-                display: flex; 
-                flex-direction: column; 
-                width: 100%; 
-                gap: 0; 
-                align-items: stretch; 
+
+            .mobile-actions {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                gap: 0;
+                align-items: stretch;
             }
             .mobile-actions .btn-logout,
             .mobile-actions form { width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; }
-            
+
             .mobile-actions .btn-logout {
                 background: transparent;
                 color: #cde8d6;
@@ -333,6 +436,12 @@
             .btn-submit, .btn-cancel { justify-content: center; padding: 12px; }
             .profile-header { flex-direction: column; align-items: flex-start; }
             .btn-back { align-self: flex-start; width: 100%; text-align: center; justify-content: center; }
+
+            .logout-modal-content { padding: 24px 20px; border-radius: 24px; }
+            .logout-icon-wrap { width: 60px; height: 60px; margin-bottom: 16px; }
+            .logout-icon-wrap i { font-size: 26px; }
+            .logout-modal-title { font-size: 1.15rem; }
+            .logout-modal-buttons { flex-direction: column-reverse; }
         }
 
         @media (max-width: 480px) {
@@ -345,7 +454,7 @@
 </head>
 <body>
 
-<!-- NAVBAR RESPONSIVE (Logout Langsung) -->
+<!-- NAVBAR RESPONSIVE -->
 <nav class="navbar">
     <div class="container navbar-content">
         <a href="{{ route('user.dashboard') }}" class="logo"><i class="fas fa-recycle"></i> EcoPoint</a>
@@ -354,20 +463,19 @@
             <span></span><span></span><span></span>
         </button>
 
-        <!-- Menu Navigasi + Logout (Mobile) -->
         <div class="nav-links" id="navLinks">
             <a href="{{ route('user.dashboard') }}">Beranda</a>
             <a href="{{ route('user.setoran') }}">Setoran</a>
             <a href="{{ route('user.poin') }}">Poin</a>
-            
+
             <div class="mobile-divider"></div>
 
             @auth
                 <div class="mobile-actions">
-                    <!-- Logout di Mobile -->
-                    <form method="POST" action="{{ route('logout') }}">
+                    {{-- ✅ TOMBOL LOGOUT MOBILE — pakai type="button" + onclick biar muncul popup --}}
+                    <form method="POST" action="{{ route('logout') }}" id="logout-form-mobile">
                         @csrf
-                        <button type="submit" class="btn-logout">
+                        <button type="button" class="btn-logout" onclick="openLogoutModal()">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </button>
                     </form>
@@ -382,13 +490,12 @@
             @endauth
         </div>
 
-        <!-- Elemen Kanan (Logout Desktop) -->
         <div class="nav-right">
             @auth
-                <!-- Logout di Desktop (Pakai form POST agar aman) -->
-                <form method="POST" action="{{ route('logout') }}">
+                {{-- ✅ TOMBOL LOGOUT DESKTOP — pakai type="button" + onclick biar muncul popup --}}
+                <form method="POST" action="{{ route('logout') }}" id="logout-form-desktop">
                     @csrf
-                    <button type="submit" class="btn-logout">
+                    <button type="button" class="btn-logout" onclick="openLogoutModal()">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 </form>
@@ -499,9 +606,35 @@
     </div>
 </footer>
 
+{{-- ============================================================ --}}
+{{-- MODAL KONFIRMASI LOGOUT                                       --}}
+{{-- ============================================================ --}}
+<div class="logout-modal" id="logoutModal">
+    <div class="logout-modal-content">
+        <div class="logout-icon-wrap">
+            <i class="fas fa-sign-out-alt"></i>
+        </div>
+        <h3 class="logout-modal-title">Yakin Ingin Keluar?</h3>
+        <p class="logout-modal-text">
+            Anda akan keluar dari akun <strong>{{ Auth::user()->name ?? 'ini' }}</strong>. 
+            Pastikan semua pekerjaan sudah tersimpan.
+        </p>
+        <div class="logout-modal-buttons">
+            <button type="button" class="logout-btn-cancel" onclick="closeLogoutModal()">
+                <i class="fas fa-times"></i> Batal
+            </button>
+            <button type="button" class="logout-btn-confirm" onclick="confirmLogout()">
+                <i class="fas fa-sign-out-alt"></i> Ya, Keluar
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+    // ============================================================
+    // HAMBURGER MENU
+    // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
-        // Garis 3 (Hamburger) Toggle
         const hamburger = document.getElementById('hamburgerBtn');
         const navLinks = document.getElementById('navLinks');
         if (hamburger && navLinks) {
@@ -509,13 +642,53 @@
                 hamburger.classList.toggle('active');
                 navLinks.classList.toggle('open');
             });
-            // Tutup menu saat link diklik
             navLinks.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', () => {
                     hamburger.classList.remove('active');
                     navLinks.classList.remove('open');
                 });
             });
+        }
+    });
+
+    // ============================================================
+    // MODAL LOGOUT
+    // ============================================================
+    function openLogoutModal() {
+        const modal = document.getElementById('logoutModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // freeze scroll
+    }
+
+    function closeLogoutModal() {
+        const modal = document.getElementById('logoutModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function confirmLogout() {
+        // Submit form logout (prioritas desktop, fallback mobile)
+        const form = document.getElementById('logout-form-desktop') 
+                  || document.getElementById('logout-form-mobile');
+        if (form) {
+            form.submit();
+        }
+    }
+
+    // Tutup modal saat klik overlay (di luar kotak putih)
+    document.getElementById('logoutModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeLogoutModal();
+        }
+    });
+
+    // Tutup modal saat tekan ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('logoutModal');
+            if (modal && modal.classList.contains('active')) {
+                closeLogoutModal();
+            }
         }
     });
 </script>
