@@ -6,9 +6,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-6">
 
-    {{-- ========================================================== --}}
-    {{-- WELCOME HEADER                                             --}}
-    {{-- ========================================================== --}}
+    {{-- WELCOME HEADER --}}
     <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">
@@ -26,9 +24,7 @@
         </div>
     </div>
 
-    {{-- ========================================================== --}}
-    {{-- STATISTIK CARDS                                            --}}
-    {{-- ========================================================== --}}
+    {{-- STATISTIK CARDS --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 
         {{-- 1. Total Pengguna --}}
@@ -83,14 +79,16 @@
             </div>
         </a>
 
-        {{-- 4. Total Payout --}}
+        {{-- 4. Payout (Uang Keluar) --}}
         <a href="{{ route('admin.transaksi.index', ['filter' => 'withdraw']) }}" 
            class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-yellow-300 hover:-translate-y-0.5 transition-all duration-200 block group">
             <div class="flex items-center justify-between">
                 <div class="flex-1">
                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Payout</p>
                     <p class="text-2xl font-bold text-gray-800 mt-2">Rp {{ number_format($totalPayout ?? 0, 0, ',', '.') }}</p>
-                    <p class="text-xs text-yellow-600 mt-1 group-hover:underline">Lihat detail →</p>
+                    <p class="text-xs text-yellow-600 mt-1 group-hover:underline">
+                        {{ $totalPayoutPending ?? 0 }} pending • Lihat detail →
+                    </p>
                 </div>
                 <div class="p-3 bg-yellow-100 rounded-lg text-yellow-600 group-hover:bg-yellow-200 group-hover:scale-110 transition-all duration-200">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,12 +99,8 @@
         </a>
     </div>
 
-    {{-- ========================================================== --}}
-    {{-- AKTIVITAS TERBARU                                          --}}
-    {{-- ========================================================== --}}
+    {{-- AKTIVITAS TERBARU --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-
-        {{-- Header Tabel --}}
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="flex items-center justify-center w-9 h-9 bg-green-100 rounded-lg">
@@ -121,7 +115,6 @@
             </div>
         </div>
 
-        {{-- Tabel --}}
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -178,9 +171,6 @@
 </div>
 
 <script>
-    // ============================================================
-    // JAM TANGGAL LIVE
-    // ============================================================
     (function() {
         const dateEl = document.getElementById('live-date');
         if (!dateEl) return;
@@ -194,7 +184,6 @@
         }
 
         updateDate();
-        // Update tiap menit aja (biar hemat resource)
         setInterval(updateDate, 60000);
     })();
 </script>

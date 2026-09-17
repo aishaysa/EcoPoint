@@ -1,62 +1,64 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Webhook;
 
+use App\Http\Controllers\Controller;
 use App\Models\Withdrawal;
+use App\Helpers\PoinHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class XenditWebhookController extends Controller
 {
-    public function handle(Request $request)
+    public function payout(Request $request)
     {
-        // Verifikasi token webhook
+        Log::info('XENDIT WEBHOOK PAYOUT:', $request->all());
+
+        // Verifikasi callback token (opsional, tapi disarankan)
         $callbackToken = $request->header('x-callback-token');
-        $expectedToken = env('XENDIT_CALLBACK_TOKEN');
-
-        if ($callbackToken !== $expectedToken) {
-            Log::warning('Webhook token tidak cocok', ['received' => $callbackToken]);
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($callbackToken !== env('XENDIT_CALLBACK_TOKEN')) {
+            Log::warning('XENDIT WEBHOOK: Invalid callback token');
+            return response()->json(['message' => 'Invalid token'], 403);
         }
 
-        $event = $request->input('event');
-        $data  = $request->input('data');
-        $refId = $data['reference_id'] ?? null;
+        $referenceId = $request->input('reference_id');
+        $status      = $request->input('status'); // ACCEPTED, COMPLETED, FAILED, REVERSED, dll
 
-        Log::info('WEBHOOK MASUK:', ['event' => $event, 'reference_id' => $refId]);
-
-        if (!$refId) {
-            return response()->json(['message' => 'No reference_id'], 400);
-        }
-
-        $withdrawal = Withdrawal::where('reference_id', $refId)->first();
+        $withdrawal = Withdrawal::where('reference_id', $referenceId)->first();
 
         if (!$withdrawal) {
+            Log::warning('XENDIT WEBHOOK: Withdrawal not found', ['reference_id' => $referenceId]);
             return response()->json(['message' => 'Not found'], 404);
         }
 
-        if ($event === 'v3_payout.succeeded') {
-            $withdrawal->update([
-                'status'       => 'completed',
-                'processed_at' => now(),
-            ]);
-            Log::info('Payout SUKSES:', ['reference_id' => $refId]);
+        // Mapping status Xendit → status lokal
+        switch (strtoupper($status)) {
+            case 'COMPLETED':
+            case 'SUCCEEDED':
+                $withdrawal->update(['status' => 'completed']);
+                break;
 
-        } elseif (in_array($event, ['v3_payout.failed', 'v3_payout.reversed'])) {
-            $withdrawal->update(['status' => 'failed']);
+            case 'FAILED':
+            case 'REVERSED':
+            case 'CANCELLED':
+                // Refund poin kalau gagal
+                if ($withdrawal->status !== 'failed') {
+                    PoinHelper::catat(
+                        $withdrawal->user,
+                        $withdrawal->points,
+                        'refund',
+                        'Refund karena payout gagal (webhook)',
+                        $withdrawal
+                    );
+                }
+                $withdrawal->update(['status' => 'failed']);
+                break;
 
-            // Kembalikan poin ke user
-            $user = \App\Models\User::find($withdrawal->user_id);
-            if ($user) {
-                \App\Helpers\PoinHelper::catat(
-                    $user,
-                    $withdrawal->points,
-                    'refund',
-                    'Refund karena payout gagal: ' . $event,
-                    null
-                );
-            }
-            Log::info('Payout GAGAL:', ['reference_id' => $refId, 'event' => $event]);
+            case 'ACCEPTED':
+            case 'PENDING':
+            default:
+                // Biarkan tetap pending
+                break;
         }
 
         return response()->json(['message' => 'OK']);

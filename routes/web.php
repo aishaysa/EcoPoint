@@ -13,7 +13,7 @@ use App\Http\Controllers\SetoranController;
 use App\Http\Controllers\User\UserAuthController;
 use App\Http\Controllers\User\UserDashboardController;
 use App\Http\Controllers\User\WithdrawController as UserWithdrawController;
-use App\Http\Controllers\XenditWebhookController;
+use App\Http\Controllers\Webhook\XenditWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -195,6 +195,9 @@ Route::prefix('user')->name('user.')->middleware(['auth:web'])->group(function (
 Route::post('/webhook/xendit', [XenditWebhookController::class, 'handle'])
     ->withoutMiddleware(['csrf'])  // kalau perlu, tapi biasanya webhook di api.php
     ->name('xendit.webhook');
+Route::post('/webhook/xendit/payout', [XenditWebhookController::class, 'payout'])
+    ->withoutMiddleware(['auth', 'csrf'])
+    ->name('webhook.xendit.payout');
 
 Route::get('/tes', function () {
     return 'SERVER INI JALAN!';

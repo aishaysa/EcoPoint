@@ -6,22 +6,29 @@ use App\Http\Controllers\Controller;
 use App\Models\Pelanggan;
 use App\Models\TitikKumpul;
 use App\Models\Transaksi;
-use Illuminate\Support\Carbon;
+use App\Models\Withdrawal;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         // Statistik utama
-        $totalPelanggan = Pelanggan::count();
+        $totalPelanggan   = Pelanggan::count();
         $totalTitikKumpul = TitikKumpul::count();
 
-        // Ambil semua transaksi, gunakan eager loading
+        // Ambil semua transaksi
         $transaksis = Transaksi::with(['pelanggan', 'jenisSampah'])->get();
 
-        $totalTransaksi = $transaksis->count();
-        $totalPendapatan = $transaksis->sum('total_harga') ?: 0; // jika null, jadikan 0
-        $rataRating = round($transaksis->avg('rating') ?: 0, 1);
+        $totalTransaksi  = $transaksis->count();
+        $totalPendapatan = $transaksis->sum('total_harga') ?: 0;
+        $rataRating      = round($transaksis->avg('rating') ?: 0, 1);
+
+        // ===== PAYOUT (UANG KELUAR) =====
+        // Uang yang sudah benar-benar keluar (di-approve admin)
+        $totalPayout = Withdrawal::where('status', 'completed')->sum('amount') ?: 0;
+
+        // Jumlah withdraw yang masih pending (belum diproses admin)
+        $totalPayoutPending = Withdrawal::where('status', 'pending')->count();
 
         // Aktivitas terbaru (5 terakhir)
         $aktivitasTerbaru = $transaksis
@@ -29,13 +36,12 @@ class DashboardController extends Controller
             ->take(5)
             ->map(function ($transaksi) {
                 return (object) [
-                    'user' => $transaksi->pelanggan->nama ?? 'Unknown',
-                    'aksi' => 'Setoran ' . ($transaksi->jenisSampah->nama ?? 'sampah') . ' - ' . $transaksi->berat . ' kg',
+                    'user'    => $transaksi->pelanggan->nama ?? 'Unknown',
+                    'aksi'    => 'Setoran ' . ($transaksi->jenisSampah->nama ?? 'sampah') . ' - ' . $transaksi->berat . ' kg',
                     'tanggal' => optional($transaksi->created_at)->diffForHumans() ?? '-',
                 ];
             });
 
-        // Jika tidak ada transaksi, isi dengan pesan
         if ($aktivitasTerbaru->isEmpty()) {
             $aktivitasTerbaru = collect([
                 (object) ['user' => 'Belum ada aktivitas', 'aksi' => '-', 'tanggal' => '-']
@@ -48,6 +54,8 @@ class DashboardController extends Controller
             'totalPendapatan',
             'rataRating',
             'totalTitikKumpul',
+            'totalPayout',
+            'totalPayoutPending',
             'aktivitasTerbaru'
         ));
     }

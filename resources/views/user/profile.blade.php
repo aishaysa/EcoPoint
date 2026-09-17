@@ -161,13 +161,6 @@
             border-bottom: 1px solid #d4e8db;
             flex-wrap: wrap;
         }
-        .profile-avatar img {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #2e7d5a;
-        }
         .default-avatar {
             width: 90px;
             height: 90px;
@@ -194,7 +187,7 @@
             letter-spacing: 0.5px;
             margin-bottom: 4px;
         }
-        .form-group .input, .form-group .file-input {
+        .form-group .input {
             border: 1px solid #d4e8db;
             border-radius: 16px;
             background: #fafffc;
@@ -205,7 +198,7 @@
             transition: 0.2s;
             width: 100%;
         }
-        .form-group .input:focus, .form-group .file-input:focus {
+        .form-group .input:focus {
             border-color: #2e7d5a;
             box-shadow: 0 0 0 4px rgba(46, 125, 90, 0.12);
         }
@@ -284,9 +277,7 @@
             padding: 20px;
             animation: fadeIn 0.25s ease-out;
         }
-        .logout-modal.active {
-            display: flex;
-        }
+        .logout-modal.active { display: flex; }
         .logout-modal-content {
             background: #ffffff;
             border-radius: 28px;
@@ -310,28 +301,11 @@
             justify-content: center;
             animation: pulseIcon 1.8s ease-in-out infinite;
         }
-        .logout-icon-wrap i {
-            font-size: 32px;
-            color: #dc2626;
-        }
-        .logout-modal-title {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: #0d2b1f;
-            margin-bottom: 8px;
-        }
-        .logout-modal-text {
-            font-size: 0.9rem;
-            color: #4d7a63;
-            margin-bottom: 24px;
-            line-height: 1.5;
-        }
-        .logout-modal-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .logout-btn-cancel,
-        .logout-btn-confirm {
+        .logout-icon-wrap i { font-size: 32px; color: #dc2626; }
+        .logout-modal-title { font-size: 1.3rem; font-weight: 800; color: #0d2b1f; margin-bottom: 8px; }
+        .logout-modal-text { font-size: 0.9rem; color: #4d7a63; margin-bottom: 24px; line-height: 1.5; }
+        .logout-modal-buttons { display: flex; gap: 10px; }
+        .logout-btn-cancel, .logout-btn-confirm {
             flex: 1;
             padding: 12px 20px;
             border-radius: 40px;
@@ -351,28 +325,16 @@
             color: #2d5a43;
             border: 1.5px solid #d4e8db;
         }
-        .logout-btn-cancel:hover {
-            background: #e8f0ec;
-            border-color: #b8d9c8;
-        }
+        .logout-btn-cancel:hover { background: #e8f0ec; border-color: #b8d9c8; }
         .logout-btn-confirm {
             background: linear-gradient(135deg, #dc2626, #b91c1c);
             color: white;
             box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
         }
-        .logout-btn-confirm:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
-        }
+        .logout-btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4); }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes popIn {
-            from { transform: scale(0.85); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes pulseIcon {
             0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
             50% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(220, 38, 38, 0); }
@@ -428,7 +390,7 @@
             }
 
             .profile-avatar { flex-direction: column; text-align: center; gap: 16px; }
-            .profile-avatar img, .default-avatar { width: 100px; height: 100px; }
+            .default-avatar { width: 100px; height: 100px; }
             .form-grid { grid-template-columns: 1fr; gap: 16px; }
             .profile-card { padding: 20px 16px; }
             .profile-title { font-size: 1.3rem; }
@@ -472,7 +434,6 @@
 
             @auth
                 <div class="mobile-actions">
-                    {{-- ✅ TOMBOL LOGOUT MOBILE — pakai type="button" + onclick biar muncul popup --}}
                     <form method="POST" action="{{ route('logout') }}" id="logout-form-mobile">
                         @csrf
                         <button type="button" class="btn-logout" onclick="openLogoutModal()">
@@ -492,7 +453,6 @@
 
         <div class="nav-right">
             @auth
-                {{-- ✅ TOMBOL LOGOUT DESKTOP — pakai type="button" + onclick biar muncul popup --}}
                 <form method="POST" action="{{ route('logout') }}" id="logout-form-desktop">
                     @csrf
                     <button type="button" class="btn-logout" onclick="openLogoutModal()">
@@ -531,15 +491,11 @@
                 </div>
             @endif
 
-            <form action="{{ route('user.profile.update') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('user.profile.update') }}" method="POST">
                 @csrf
 
                 <div class="profile-avatar">
-                    @if(isset($user->foto) && $user->foto)
-                        <img src="{{ asset('storage/' . $user->foto) }}" alt="Foto Profil">
-                    @else
-                        <div class="default-avatar"><i class="fas fa-user"></i></div>
-                    @endif
+                    <div class="default-avatar"><i class="fas fa-user"></i></div>
                     <div>
                         <div class="profile-name">{{ $user->name }}</div>
                         <div class="profile-email">{{ $user->email }}</div>
@@ -572,16 +528,6 @@
                         <label for="password_confirmation">Konfirmasi Password</label>
                         <input type="password" name="password_confirmation" id="password_confirmation" class="input" placeholder="Ulangi password baru">
                     </div>
-                    <div class="form-group full-width">
-                        <label for="foto">Foto Profil</label>
-                        <input type="file" name="foto" id="foto" class="file-input" accept="image/*">
-                        @if(isset($user->foto) && $user->foto)
-                            <div class="foto-preview">
-                                <img src="{{ asset('storage/' . $user->foto) }}" alt="Foto saat ini">
-                                <div style="font-size:0.7rem; color:#4d7a63; margin-top:4px;">Foto saat ini</div>
-                            </div>
-                        @endif
-                    </div>
                 </div>
 
                 <div class="form-actions">
@@ -606,9 +552,7 @@
     </div>
 </footer>
 
-{{-- ============================================================ --}}
-{{-- MODAL KONFIRMASI LOGOUT                                       --}}
-{{-- ============================================================ --}}
+{{-- MODAL KONFIRMASI LOGOUT --}}
 <div class="logout-modal" id="logoutModal">
     <div class="logout-modal-content">
         <div class="logout-icon-wrap">
@@ -631,9 +575,7 @@
 </div>
 
 <script>
-    // ============================================================
     // HAMBURGER MENU
-    // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
         const hamburger = document.getElementById('hamburgerBtn');
         const navLinks = document.getElementById('navLinks');
@@ -651,13 +593,11 @@
         }
     });
 
-    // ============================================================
     // MODAL LOGOUT
-    // ============================================================
     function openLogoutModal() {
         const modal = document.getElementById('logoutModal');
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // freeze scroll
+        document.body.style.overflow = 'hidden';
     }
 
     function closeLogoutModal() {
@@ -667,28 +607,19 @@
     }
 
     function confirmLogout() {
-        // Submit form logout (prioritas desktop, fallback mobile)
         const form = document.getElementById('logout-form-desktop') 
                   || document.getElementById('logout-form-mobile');
-        if (form) {
-            form.submit();
-        }
+        if (form) form.submit();
     }
 
-    // Tutup modal saat klik overlay (di luar kotak putih)
     document.getElementById('logoutModal')?.addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeLogoutModal();
-        }
+        if (e.target === this) closeLogoutModal();
     });
 
-    // Tutup modal saat tekan ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             const modal = document.getElementById('logoutModal');
-            if (modal && modal.classList.contains('active')) {
-                closeLogoutModal();
-            }
+            if (modal && modal.classList.contains('active')) closeLogoutModal();
         }
     });
 </script>
