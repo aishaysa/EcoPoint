@@ -96,6 +96,8 @@
         }
         .nav-links a:hover { color: #6fcf97; }
         .nav-links a:hover::after { width: 100%; }
+        .nav-links a.active { color: #6fcf97; }
+        .nav-links a.active::after { width: 100%; }
 
         .nav-right {
             display: flex;
@@ -468,7 +470,6 @@
             .btn-detail { font-size: 11px; padding: 4px 12px; }
         }
 
-        /* ===== ANIMASI ===== */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
@@ -486,7 +487,7 @@
 <nav class="navbar">
     <div class="container">
         <a href="{{ route('user.dashboard') }}" class="logo">
-            EcoPoint
+            <i class="fas fa-recycle"></i> EcoPoint
         </a>
 
         <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
@@ -494,9 +495,9 @@
         </button>
 
         <div class="nav-links" id="navLinks">
-            <a href="{{ route('user.dashboard') }}">Beranda</a>
-            <a href="{{ route('user.setoran') }}">Setoran</a>
-            <a href="{{ route('user.poin') }}">Poin</a>
+            <a href="{{ route('user.dashboard') }}" class="{{ request()->routeIs('user.dashboard') ? 'active' : '' }}">Beranda</a>
+            <a href="{{ route('user.setoran') }}" class="{{ request()->routeIs('user.setoran*') ? 'active' : '' }}">Setoran</a>
+            <a href="{{ route('user.poin') }}" class="{{ request()->routeIs('user.poin*', 'user.withdraw*') ? 'active' : '' }}">Poin</a>
 
             <div class="mobile-divider"></div>
 

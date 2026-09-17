@@ -55,7 +55,7 @@
             <div class="form-group">
                 <label class="form-label" for="alamat">Alamat</label>
                 <div class="search-wrapper">
-                    <input type="text" id="alamat" name="alamat" value="{{ old('alamat') }}" class="form-control" placeholder="Cari alamat... (contoh: SMKN 4 Payakumbuh)" autocomplete="off">
+                    <input type="text" id="alamat" name="alamat" value="{{ old('alamat') }}" class="form-control" placeholder="Cari alamat... (contoh: Jakarta)" autocomplete="off">
                     <div id="searchResults" class="search-results"></div>
                 </div>
                 @error('alamat') <div class="text-danger">{{ $message }}</div> @enderror
@@ -82,7 +82,7 @@
 
             <div class="form-group">
                 <label class="form-label" for="kontak">Kontak</label>
-                <input type="text" id="kontak" name="kontak" value="{{ old('kontak') }}" class="form-control" placeholder="Contoh: 08123456789">
+                <input type="text" id="kontak" name="kontak" value="{{ old('kontak') }}" class="form-control" placeholder="Contoh: 08XXXXXXXXXX">
                 @error('kontak') <div class="text-danger">{{ $message }}</div> @enderror
             </div>
 
