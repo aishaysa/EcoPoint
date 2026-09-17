@@ -594,60 +594,6 @@
     </div>
 </section>
 
-<!-- ===== STATISTIK ===== -->
-@auth
-    @php
-        $user = Auth::user();
-        $pelangganId = optional($user->pelanggan)->id ?? 0;
-
-        // Total setoran (semua status)
-        $totalSetoran = \App\Models\Setoran::where('pelanggan_id', $pelangganId)->count();
-
-        // Total berat aktual (semua status)
-        $totalBerat = \App\Models\Setoran::where('pelanggan_id', $pelangganId)->sum('berat_aktual');
-
-        // ===== PERBAIKAN: Ambil poin dari kolom users.points =====
-        // Pastikan kolom 'points' ada di tabel users dan sudah diisi oleh admin saat ACC setoran
-        $totalPoin = $user->points ?? 0;
-
-        // === ALTERNATIF (jika tidak pakai users.points):
-        // Hitung langsung dari setoran yang sudah approved/completed (1 kg = 100 poin, sesuaikan)
-        // $totalPoin = \App\Models\Setoran::where('pelanggan_id', $pelangganId)
-        //               ->whereIn('status', ['approved', 'completed'])
-        //               ->sum('berat_aktual') * 100;
-    @endphp
-
-    <div class="stats-wrapper">
-        <div class="stat-card">
-            <div class="info">
-                <div class="number">{{ number_format($totalPoin) }}</div>
-                <div class="label">Total Poin</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="info">
-                <div class="number">{{ $totalSetoran }}</div>
-                <div class="label">Total Setoran</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="info">
-                <div class="number">{{ number_format($totalBerat, 1) }} <small>kg</small></div>
-                <div class="label">Total Berat</div>
-            </div>
-        </div>
-    </div>
-@else
-    <div class="stats-wrapper" style="margin-top: 0; padding-top: 20px;">
-        <div class="stat-card">
-            <span class="icon"><i class="fas fa-recycle"></i></span>
-            <div class="info">
-                <div class="number">Bergabunglah</div>
-                <div class="label">Dapatkan poin Anda</div>
-            </div>
-        </div>
-    </div>
-@endauth
 
 <!-- ===== FITUR ===== -->
 <section class="features">

@@ -346,10 +346,66 @@
         }
         .empty-state p { font-size: 15px; }
 
+        /* ===== PAGINATION CUSTOM ===== */
         .pagination-wrapper {
-            margin-top: 20px;
             display: flex;
             justify-content: center;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 20px;
+            border-top: 1px solid #edf3ef;
+            margin-top: 4px;
+        }
+        .pagination-wrapper .page-item {
+            display: inline-flex;
+        }
+        .pagination-wrapper .page-link,
+        .pagination-wrapper .page-dots,
+        .pagination-wrapper .page-current {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 14px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+        .pagination-wrapper .page-link {
+            background: #eef2f6;
+            color: #2d5a43;
+            border: 1px solid transparent;
+        }
+        .pagination-wrapper .page-link:hover {
+            background: #def5e6;
+            color: #2e7d5a;
+            border-color: #b8dfc6;
+            transform: translateY(-1px);
+        }
+        .pagination-wrapper .page-current {
+            background: linear-gradient(135deg, #2e7d5a, #1a4532);
+            color: white;
+            box-shadow: 0 4px 12px rgba(46,125,90,0.25);
+            cursor: default;
+        }
+        .pagination-wrapper .page-disabled {
+            background: #f5f7f9;
+            color: #b0b8c4;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .pagination-wrapper .page-dots {
+            background: transparent;
+            color: #8a9aa8;
+            cursor: default;
+            min-width: 24px;
+            padding: 0 6px;
         }
 
         /* ===== FOOTER ===== */
@@ -460,6 +516,15 @@
 
             .table-card { border-radius: 20px; padding: 12px 0 0; }
             th, td { padding: 10px 14px; font-size: 13px; }
+
+            .pagination-wrapper { padding: 16px 12px; gap: 4px; }
+            .pagination-wrapper .page-link,
+            .pagination-wrapper .page-current {
+                min-width: 36px;
+                height: 36px;
+                padding: 0 10px;
+                font-size: 13px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -468,6 +533,15 @@
             .page-hero h1 { font-size: 22px; }
             th, td { padding: 8px 10px; font-size: 12px; }
             .btn-detail { font-size: 11px; padding: 4px 12px; }
+            .pagination-wrapper .page-link,
+            .pagination-wrapper .page-current,
+            .pagination-wrapper .page-disabled {
+                min-width: 32px;
+                height: 32px;
+                padding: 0 8px;
+                font-size: 12px;
+                border-radius: 8px;
+            }
         }
 
         @keyframes fadeUp {
@@ -630,9 +704,55 @@
                     </tbody>
                 </table>
             </div>
+
+            {{-- ===== PAGINATION CUSTOM ===== --}}
             @if ($transaksis->hasPages())
                 <div class="pagination-wrapper">
-                    {{ $transaksis->links() }}
+                    {{-- Previous --}}
+                    @if ($transaksis->onFirstPage())
+                        <span class="page-item page-disabled">‹ Prev</span>
+                    @else
+                        <a href="{{ $transaksis->previousPageUrl() }}" class="page-item page-link" rel="prev">‹ Prev</a>
+                    @endif
+
+                    @php
+                        $currentPage = $transaksis->currentPage();
+                        $lastPage    = $transaksis->lastPage();
+                        $start       = max(1, $currentPage - 2);
+                        $end         = min($lastPage, $currentPage + 2);
+                    @endphp
+
+                    {{-- First page + dots --}}
+                    @if($start > 1)
+                        <a href="{{ $transaksis->url(1) }}" class="page-item page-link">1</a>
+                        @if($start > 2)
+                            <span class="page-item page-dots">…</span>
+                        @endif
+                    @endif
+
+                    {{-- Page range --}}
+                    @for($page = $start; $page <= $end; $page++)
+                        @if($page == $currentPage)
+                            <span class="page-item page-current">{{ $page }}</span>
+                        @else
+                            <a href="{{ $transaksis->url($page) }}" class="page-item page-link">{{ $page }}</a>
+                        @endif
+                    @endfor
+
+                    {{-- Last page + dots --}}
+                    @if($end < $lastPage)
+                        @if($end < $lastPage - 1)
+                            <span class="page-item page-dots">…</span>
+                        @endif
+                        <a href="{{ $transaksis->url($lastPage) }}" class="page-item page-link">{{ $lastPage }}</a>
+                    @endif
+
+                    {{-- Next --}}
+                    @if ($transaksis->hasMorePages())
+                        <a href="{{ $transaksis->nextPageUrl() }}" class="page-item page-link" rel="next">Next ›</a>
+                    @else
+                        <span class="page-item page-disabled">Next ›</span>
+                    @endif
                 </div>
             @endif
         </div>
