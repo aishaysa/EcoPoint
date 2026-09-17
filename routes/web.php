@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ExchangePackageController;
 use App\Http\Controllers\Admin\JenisSampahController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PelangganController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\TitikKumpulController;
@@ -103,6 +104,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // ============================================================
         Route::post('/withdraw/{id}/approve', [TransaksiController::class, 'approveWithdraw'])->name('withdraw.approve');
         Route::post('/withdraw/{id}/reject', [TransaksiController::class, 'rejectWithdraw'])->name('withdraw.reject');
+
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+Route::get('/notifications/count', [NotificationController::class, 'count'])->name('notifications.count');
 
         // ============================================================
         // EXCHANGE PACKAGES (PAKET PENUKARAN)

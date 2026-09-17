@@ -7,14 +7,12 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
     <style>
-        /* Smooth transition untuk semua menu */
         .sidebar-menu-item {
             transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
         }
         .sidebar-menu-item:active {
             transform: scale(0.98);
         }
-        /* Efek klik - berwarna hijau */
         .sidebar-menu-item.active-menu {
             background-color: #dcfce7 !important;
             color: #16a34a !important;
@@ -91,7 +89,6 @@
                 @endphp
 
                 <div>
-                    {{-- TOMBOL UTAMA --}}
                     <button type="button" 
                             onclick="toggleTransaksiDropdown(event)"
                             class="sidebar-menu-item w-full flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer
@@ -109,11 +106,9 @@
                         </svg>
                     </button>
 
-                    {{-- SUBMENU --}}
                     <div id="transaksi-submenu" 
                          class="mt-1 ml-4 pl-4 border-l-2 border-gray-200 space-y-1 {{ $isTransaksiActive ? '' : 'hidden' }}">
 
-                        {{-- Semua Transaksi --}}
                         @php $isSemua = request()->routeIs('admin.transaksi.index') && !request()->has('filter'); @endphp
                         <a href="{{ route('admin.transaksi.index') }}"
                            class="sidebar-menu-item flex items-center px-3 py-2 rounded-lg text-sm 
@@ -124,7 +119,6 @@
                             Semua Transaksi
                         </a>
 
-                        {{-- Setoran --}}
                         @php $isSetoran = $filterAktif == 'setoran'; @endphp
                         <a href="{{ route('admin.transaksi.index') }}?filter=setoran"
                            class="sidebar-menu-item flex items-center px-3 py-2 rounded-lg text-sm 
@@ -135,7 +129,6 @@
                             Setoran
                         </a>
 
-                        {{-- Withdraw --}}
                         @php $isWithdraw = $filterAktif == 'withdraw'; @endphp
                         <a href="{{ route('admin.transaksi.index') }}?filter=withdraw"
                            class="sidebar-menu-item flex items-center px-3 py-2 rounded-lg text-sm 
@@ -211,12 +204,46 @@
             </div>
 
             <div class="flex items-center space-x-4 ml-auto relative">
-                <button class="p-2 rounded-full text-gray-500 hover:text-green-600 hover:bg-green-50 focus:outline-none transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                    </svg>
-                </button>
 
+                {{-- ================= NOTIFIKASI ================= --}}
+                <div class="relative" id="notificationWrapper">
+                    <button id="notificationBtn"
+                            class="relative p-2 rounded-full text-gray-500 hover:text-green-600 hover:bg-green-50 focus:outline-none transition-colors"
+                            aria-label="Notifikasi">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+
+                        {{-- Badge merah --}}
+                        <span id="notificationBadge"
+                              class="hidden absolute top-0 right-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white leading-none">
+                            0
+                        </span>
+                    </button>
+
+                    {{-- Dropdown Notifikasi --}}
+                    <div id="notificationDropdown"
+                         class="hidden absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
+
+                        <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                            <h3 class="text-sm font-bold text-gray-800">Notifikasi</h3>
+                            <span id="notificationCountText" class="text-xs text-gray-500">0 baru</span>
+                        </div>
+
+                        <div id="notificationList" class="max-h-80 overflow-y-auto">
+                            <div class="p-6 text-center text-gray-400 text-sm">Memuat...</div>
+                        </div>
+
+                        <div class="px-4 py-2 border-t border-gray-100 bg-gray-50 text-center">
+                            <a href="{{ route('admin.pelanggan.index') }}"
+                               class="text-xs text-green-600 hover:text-green-700 font-medium">
+                                Lihat semua setoran →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ================= PROFIL ================= --}}
                 <div class="relative">
                     <button id="profileBtn" class="flex items-center space-x-2 focus:outline-none group">
                         <img class="h-9 w-9 rounded-full object-cover border-2 border-green-600 group-hover:border-green-700 transition-colors" 
@@ -229,8 +256,6 @@
                     </button>
 
                     <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100">
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Profil Saya</a>
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Pengaturan</a>
                         <div class="border-t border-gray-200 my-1"></div>
                         <form method="POST" action="{{ route('admin.logout') }}">
                             @csrf
@@ -295,10 +320,7 @@
 
     // ============================================================
     // TRANSAKSI DROPDOWN
-    // State disimpan di localStorage biar GAK KETUTUP OTOMATIS
     // ============================================================
-
-    // ---- RESTORE STATE SAAT PAGE LOAD ----
     (function() {
         const submenu = document.getElementById('transaksi-submenu');
         const chevron = document.getElementById('transaksi-chevron');
@@ -307,19 +329,14 @@
         const savedState = localStorage.getItem('transaksi-dropdown-state');
 
         if (savedState === 'open') {
-            // User terakhir kali biarin kebuka → tetap buka
             submenu.classList.remove('hidden');
             chevron.classList.add('rotate-180');
         } else if (savedState === 'closed') {
-            // User terakhir kali tutup manual → tetap tutup
             submenu.classList.add('hidden');
             chevron.classList.remove('rotate-180');
         }
-        // Kalau null (belum pernah interaksi) → ikuti default Blade
-        // ($isTransaksiActive yang sudah di-render)
     })();
 
-    // ---- TOGGLE FUNCTION ----
     function toggleTransaksiDropdown(e) {
         if (e) {
             e.preventDefault();
@@ -332,12 +349,10 @@
         if (!submenu || !chevron) return;
         
         if (submenu.classList.contains('hidden')) {
-            // BUKA
             submenu.classList.remove('hidden');
             chevron.classList.add('rotate-180');
             localStorage.setItem('transaksi-dropdown-state', 'open');
         } else {
-            // TUTUP
             submenu.classList.add('hidden');
             chevron.classList.remove('rotate-180');
             localStorage.setItem('transaksi-dropdown-state', 'closed');
@@ -345,7 +360,7 @@
     }
 
     // ============================================================
-    // EFEK KLIK INSTAN - Biar tombol langsung berwarna saat diklik
+    // EFEK KLIK INSTAN
     // ============================================================
     document.querySelectorAll('.sidebar-menu-item').forEach(item => {
         item.addEventListener('click', function() {
@@ -355,6 +370,126 @@
             this.classList.add('active-menu');
         });
     });
+
+    // ============================================================
+    // NOTIFIKASI BELL
+    // ============================================================
+    (function() {
+        const btn       = document.getElementById('notificationBtn');
+        const dropdown  = document.getElementById('notificationDropdown');
+        const badge     = document.getElementById('notificationBadge');
+        const list      = document.getElementById('notificationList');
+        const countText = document.getElementById('notificationCountText');
+        const wrapper   = document.getElementById('notificationWrapper');
+
+        if (!btn || !dropdown) return;
+
+        const NOTIF_URL       = "{{ route('admin.notifications.index') }}";
+        const NOTIF_COUNT_URL = "{{ route('admin.notifications.count') }}";
+
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isHidden = dropdown.classList.contains('hidden');
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                loadNotifications();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!wrapper.contains(e.target)) dropdown.classList.add('hidden');
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') dropdown.classList.add('hidden');
+        });
+
+        function loadNotifications() {
+            list.innerHTML = '<div class="p-6 text-center text-gray-400 text-sm">Memuat...</div>';
+
+            fetch(NOTIF_URL, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                credentials: 'same-origin',
+            })
+            .then(res => res.json())
+            .then(data => {
+                updateBadge(data.count);
+                renderList(data.notifications || []);
+            })
+            .catch(err => {
+                console.error('Notif error:', err);
+                list.innerHTML = '<div class="p-6 text-center text-red-400 text-sm">Gagal memuat notifikasi</div>';
+            });
+        }
+
+        function updateBadge(count) {
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.classList.remove('hidden');
+                countText.textContent = count + ' baru';
+            } else {
+                badge.classList.add('hidden');
+                countText.textContent = '0 baru';
+            }
+        }
+
+        function renderList(items) {
+            if (!items || items.length === 0) {
+                list.innerHTML = `
+                    <div class="p-8 text-center">
+                        <svg class="w-12 h-12 mx-auto text-gray-200 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+                        <p class="text-sm text-gray-400">Tidak ada notifikasi baru</p>
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = items.map(item => {
+                const colors = {
+                    blue:   { bg: 'bg-blue-100',   text: 'text-blue-600' },
+                    yellow: { bg: 'bg-yellow-100', text: 'text-yellow-600' },
+                };
+                const c = colors[item.color] || colors.blue;
+                const icons = {
+                    inbox: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>',
+                    cash:  '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>',
+                };
+                const icon = icons[item.icon] || icons.inbox;
+
+                return `
+                    <a href="${item.url}" class="block px-4 py-3 hover:bg-gray-50 transition border-b border-gray-100 last:border-b-0">
+                        <div class="flex gap-3">
+                            <div class="shrink-0 w-10 h-10 rounded-full ${c.bg} flex items-center justify-center">
+                                <svg class="w-5 h-5 ${c.text}" fill="none" stroke="currentColor" viewBox="0 0 24 24">${icon}</svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-start justify-between gap-2">
+                                    <p class="text-sm font-semibold text-gray-800">${item.title}</p>
+                                    <span class="text-[10px] text-gray-400 whitespace-nowrap">${item.time_ago}</span>
+                                </div>
+                                <p class="text-xs text-gray-600 mt-0.5 line-clamp-2">${item.message}</p>
+                            </div>
+                        </div>
+                    </a>`;
+            }).join('');
+        }
+
+        function fetchCount() {
+            fetch(NOTIF_COUNT_URL, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                credentials: 'same-origin',
+            })
+            .then(res => res.json())
+            .then(data => updateBadge(data.count))
+            .catch(() => {});
+        }
+
+        fetchCount();
+        setInterval(fetchCount, 30000);
+    })();
 </script>
 
 @stack('scripts')
