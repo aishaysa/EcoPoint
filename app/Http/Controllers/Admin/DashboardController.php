@@ -7,33 +7,29 @@ use App\Models\Pelanggan;
 use App\Models\TitikKumpul;
 use App\Models\Transaksi;
 use App\Models\Withdrawal;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Statistik utama
+        // Statistik utama - pakai SQL aggregation
         $totalPelanggan   = Pelanggan::count();
         $totalTitikKumpul = TitikKumpul::count();
+        $totalTransaksi   = Transaksi::count();
+        $totalPendapatan  = Transaksi::sum('total_harga') ?: 0;
 
-        // Ambil semua transaksi
-        $transaksis = Transaksi::with(['pelanggan', 'jenisSampah'])->get();
-
-        $totalTransaksi  = $transaksis->count();
-        $totalPendapatan = $transaksis->sum('total_harga') ?: 0;
-        $rataRating      = round($transaksis->avg('rating') ?: 0, 1);
-
-        // ===== PAYOUT (UANG KELUAR) =====
-        // Uang yang sudah benar-benar keluar (di-approve admin)
-        $totalPayout = Withdrawal::where('status', 'completed')->sum('amount') ?: 0;
-
-        // Jumlah withdraw yang masih pending (belum diproses admin)
+        // Payout
+        $totalPayout        = Withdrawal::where('status', 'completed')->sum('amount') ?: 0;
         $totalPayoutPending = Withdrawal::where('status', 'pending')->count();
 
-        // Aktivitas terbaru (5 terakhir)
-        $aktivitasTerbaru = $transaksis
-            ->sortByDesc('created_at')
+        // Aktivitas terbaru - cuma ambil 5
+        $aktivitasTerbaru = Transaksi::with(['pelanggan', 'jenisSampah'])
+            ->orderBy('created_at', 'desc')
             ->take(5)
+            ->get()
             ->map(function ($transaksi) {
                 return (object) [
                     'user'    => $transaksi->pelanggan->nama ?? 'Unknown',
@@ -42,21 +38,52 @@ class DashboardController extends Controller
                 ];
             });
 
-        if ($aktivitasTerbaru->isEmpty()) {
-            $aktivitasTerbaru = collect([
-                (object) ['user' => 'Belum ada aktivitas', 'aksi' => '-', 'tanggal' => '-']
-            ]);
-        }
-
         return view('admin.dashboard', compact(
             'totalPelanggan',
             'totalTransaksi',
             'totalPendapatan',
-            'rataRating',
             'totalTitikKumpul',
             'totalPayout',
             'totalPayoutPending',
             'aktivitasTerbaru'
         ));
+    }
+
+    /**
+     * HALAMAN PROFIL ADMIN
+     */
+    public function profile()
+    {
+        $admin = Auth::guard('admin')->user() ?? Auth::user();
+        if (!$admin) return redirect()->route('admin.login');
+
+        return view('admin.profile', compact('admin'));
+    }
+
+    /**
+     * UPDATE PROFIL ADMIN
+     */
+    public function updateProfile(Request $request)
+    {
+        $admin = Auth::guard('admin')->user() ?? Auth::user();
+        if (!$admin) return redirect()->route('admin.login');
+
+        $request->validate([
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'email', 'max:255'],
+            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+        ]);
+
+        $admin->name  = $request->name;
+        $admin->email = $request->email;
+
+        // Update password kalau diisi
+        if ($request->filled('password')) {
+            $admin->password = Hash::make($request->password);
+        }
+
+        $admin->save();
+
+        return redirect()->route('admin.profile')->with('success', 'Profil berhasil diperbarui.');
     }
 }

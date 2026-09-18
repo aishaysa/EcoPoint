@@ -129,6 +129,12 @@ Route::get('/notifications/count', [NotificationController::class, 'count'])->na
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 
+        Route::get('/profile', [\App\Http\Controllers\Admin\DashboardController::class, 'profile'])
+    ->name('profile');
+
+Route::put('/profile', [\App\Http\Controllers\Admin\DashboardController::class, 'updateProfile'])
+    ->name('profile.update');
+
         // ============================================================
         // UPDATE STATUS TRANSAKSI DARI PELANGGAN
         // ============================================================

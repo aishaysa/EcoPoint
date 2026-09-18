@@ -12,7 +12,7 @@
         .sidebar-menu-item.active-menu { background-color: #dcfce7 !important; color: #16a34a !important; font-weight: 600; }
         .sidebar-menu-item.active-menu svg { color: #16a34a; }
 
-        /* ⭐ TITIK MERAH UNREAD - TANPA ANIMASI */
+        /* TITIK MERAH UNREAD - TANPA ANIMASI */
         .notif-dot-red {
             position: absolute;
             top: 12px;
@@ -136,6 +136,12 @@
             background: #f8fafc;
             border-bottom: 1px solid #f1f5f9;
         }
+
+        /* LOGOUT MODAL ANIMATION */
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -226,9 +232,9 @@
 
                 <div class="border-t border-gray-200 my-4"></div>
 
-                <form method="POST" action="{{ route('admin.logout') }}" class="block">
+                <form method="POST" action="{{ route('admin.logout') }}" id="logoutFormSidebar" class="block">
                     @csrf
-                    <button type="submit" class="sidebar-menu-item w-full flex items-center px-4 py-3 text-red-600 rounded-lg hover:bg-red-50 font-medium">
+                    <button type="button" onclick="showLogoutModal()" class="sidebar-menu-item w-full flex items-center px-4 py-3 text-red-600 rounded-lg hover:bg-red-50 font-medium">
                         <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                         Keluar
                     </button>
@@ -253,19 +259,17 @@
 
             <div class="flex items-center space-x-4 ml-auto relative">
 
-                {{-- ================= NOTIFICATION CENTER ================= --}}
+                {{-- NOTIFICATION CENTER --}}
                 <div class="relative" id="notificationWrapper">
                     <button id="notificationBtn" class="relative p-2 rounded-full text-gray-500 hover:text-green-600 hover:bg-green-50 focus:outline-none" aria-label="Notifikasi">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                         </svg>
-                        {{-- ⭐ BADGE - INLINE STYLE 100%, pakai line-height buat centering --}}
                         <span id="notificationBadge" style="display:none;position:absolute;top:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background-color:#ef4444;color:#ffffff;font-size:11px;font-weight:700;text-align:center;line-height:20px;z-index:100;font-family:Arial,sans-serif;padding:0;margin:0;">0</span>
                     </button>
 
                     <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
 
-                        {{-- Header --}}
                         <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
                             <div class="flex items-center gap-2">
                                 <h3 class="text-sm font-bold text-gray-800">Notifikasi</h3>
@@ -274,7 +278,6 @@
                             <span id="notificationCountText" class="text-xs text-gray-500 font-medium">0 baru</span>
                         </div>
 
-                        {{-- Tabs --}}
                         <div class="flex border-b border-gray-100 bg-white">
                             <button class="notif-tab active" data-tab="all">
                                 Semua
@@ -286,34 +289,62 @@
                             </button>
                         </div>
 
-                        {{-- List --}}
                         <div id="notificationList" class="max-h-96 overflow-y-auto custom-scrollbar">
                             <div class="p-6 text-center text-gray-400 text-sm">Memuat...</div>
                         </div>
 
-                        {{-- Footer --}}
                         <div class="px-4 py-2 border-t border-gray-100 bg-gray-50 text-center">
                             <a href="{{ route('admin.pelanggan.index') }}" class="text-xs text-green-600 hover:text-green-700 font-medium">Lihat semua setoran →</a>
                         </div>
                     </div>
                 </div>
 
-                {{-- PROFIL --}}
-                <div class="relative">
-                    <button id="profileBtn" class="flex items-center space-x-2 focus:outline-none group">
+                {{-- PROFIL DROPDOWN --}}
+                <div class="relative" id="profileWrapper">
+                    <button id="profileBtn" class="flex items-center space-x-2 focus:outline-none group p-1 rounded-full hover:bg-gray-50 transition-colors">
                         <img class="h-9 w-9 rounded-full object-cover border-2 border-green-600 group-hover:border-green-700 transition-colors" src="https://ui-avatars.com/api/?name={{ Auth::user()->name ?? 'Admin' }}&background=2d6a4f&color=fff" alt="Admin Avatar">
                         <span class="hidden sm:inline-block text-sm font-medium text-gray-700 group-hover:text-green-600 transition-colors">{{ Auth::user()->name ?? 'Admin' }}</span>
-                        <svg class="hidden sm:inline-block w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg id="profileChevron" class="hidden sm:inline-block w-4 h-4 text-gray-500 group-hover:text-green-600 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </button>
 
-                    <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100">
-                        <div class="border-t border-gray-200 my-1"></div>
-                        <form method="POST" action="{{ route('admin.logout') }}">
-                            @csrf
-                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">Keluar</button>
-                        </form>
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden">
+
+                        {{-- Header: User Info --}}
+                        <div class="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
+                            <div class="flex items-center gap-3">
+                                <img class="h-11 w-11 rounded-full object-cover border-2 border-white shadow-sm" src="https://ui-avatars.com/api/?name={{ Auth::user()->name ?? 'Admin' }}&background=2d6a4f&color=fff" alt="Admin Avatar">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-gray-800 truncate">{{ Auth::user()->name ?? 'Admin' }}</p>
+                                    <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email ?? '-' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Menu List --}}
+                        <div class="py-1">
+                            <a href="{{ route('admin.profile') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                Profil Saya
+                            </a>
+                        </div>
+
+                        {{-- Divider --}}
+                        <div class="border-t border-gray-100"></div>
+
+                        {{-- Logout (dengan popup) --}}
+                        <div class="py-1">
+                            <button type="button" onclick="showLogoutModal()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors text-left">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                Keluar
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -322,6 +353,46 @@
         <main class="flex-1 overflow-y-auto p-4 bg-gray-50">
             @yield('content')
         </main>
+    </div>
+</div>
+
+{{-- ============================================================ --}}
+{{-- MODAL LOGOUT --}}
+{{-- ============================================================ --}}
+<div id="logoutModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:16px;">
+    <div id="logoutModalContent" style="background:#fff; border-radius:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); max-width:420px; width:100%; transform:scale(0.95); opacity:0; transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); padding:24px; animation:modalFadeIn 0.3s ease-out;">
+
+        {{-- Icon --}}
+        <div style="width:64px; height:64px; margin:0 auto 16px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <svg style="width:32px; height:32px; color:#dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+        </div>
+
+        {{-- Text --}}
+        <h3 style="font-size:18px; font-weight:800; color:#1f2937; text-align:center; margin:0 0 8px 0;">Keluar dari Akun?</h3>
+        <p style="font-size:14px; color:#6b7280; text-align:center; margin:0 0 24px 0; line-height:1.6;">
+            Apakah Anda yakin ingin keluar dari akun <strong style="color:#1f2937;">{{ Auth::user()->name ?? 'Admin' }}</strong>?<br>
+            Anda harus login kembali untuk mengakses dashboard.
+        </p>
+
+        {{-- Buttons --}}
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <button type="button" onclick="hideLogoutModal()"
+                    style="padding:12px 20px; background:#fff; color:#374151; border:2px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.15s;">
+                Batal
+            </button>
+            <form method="POST" action="{{ route('admin.logout') }}" style="margin:0;">
+                @csrf
+                <button type="submit"
+                        style="width:100%; padding:12px 20px; background:#dc2626; color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                    <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    Ya, Keluar
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -347,18 +418,86 @@
         }
     });
 
+    // ============================================================
     // PROFILE DROPDOWN
-    const profileBtn = document.getElementById('profileBtn');
-    const profileDropdown = document.getElementById('profileDropdown');
-    profileBtn?.addEventListener('click', function(e) {
-        e.stopPropagation();
-        profileDropdown.classList.toggle('hidden');
-    });
-    document.addEventListener('click', function(e) {
-        if (!profileBtn?.contains(e.target) && !profileDropdown?.contains(e.target)) {
-            profileDropdown?.classList.add('hidden');
-        }
-    });
+    // ============================================================
+    (function() {
+        const profileBtn = document.getElementById('profileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const profileWrapper = document.getElementById('profileWrapper');
+        const profileChevron = document.getElementById('profileChevron');
+
+        if (!profileBtn || !profileDropdown) return;
+
+        profileBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isHidden = profileDropdown.classList.contains('hidden');
+            if (isHidden) {
+                profileDropdown.classList.remove('hidden');
+                if (profileChevron) profileChevron.style.transform = 'rotate(180deg)';
+            } else {
+                profileDropdown.classList.add('hidden');
+                if (profileChevron) profileChevron.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!profileWrapper.contains(e.target)) {
+                profileDropdown.classList.add('hidden');
+                if (profileChevron) profileChevron.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !profileDropdown.classList.contains('hidden')) {
+                profileDropdown.classList.add('hidden');
+                if (profileChevron) profileChevron.style.transform = 'rotate(0deg)';
+            }
+        });
+    })();
+
+    // ============================================================
+    // LOGOUT MODAL
+    // ============================================================
+    (function() {
+        const logoutModal = document.getElementById('logoutModal');
+        const logoutModalContent = document.getElementById('logoutModalContent');
+
+        window.showLogoutModal = function() {
+            // Tutup dulu dropdown profilnya
+            const profileDropdown = document.getElementById('profileDropdown');
+            const profileChevron = document.getElementById('profileChevron');
+            if (profileDropdown) profileDropdown.classList.add('hidden');
+            if (profileChevron) profileChevron.style.transform = 'rotate(0deg)';
+
+            // Buka modal
+            logoutModal.style.display = 'flex';
+            setTimeout(() => {
+                logoutModalContent.style.transform = 'scale(1)';
+                logoutModalContent.style.opacity = '1';
+            }, 10);
+        };
+
+        window.hideLogoutModal = function() {
+            logoutModalContent.style.transform = 'scale(0.95)';
+            logoutModalContent.style.opacity = '0';
+            setTimeout(() => {
+                logoutModal.style.display = 'none';
+            }, 300);
+        };
+
+        // Klik backdrop untuk tutup
+        logoutModal.addEventListener('click', function(e) {
+            if (e.target === logoutModal) hideLogoutModal();
+        });
+
+        // Tekan ESC untuk tutup
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && logoutModal.style.display === 'flex') {
+                hideLogoutModal();
+            }
+        });
+    })();
 
     // TRANSAKSI DROPDOWN
     (function() {
@@ -496,7 +635,6 @@
             const total = notificationsData.length;
             const unread = getUnreadCount();
 
-            // ⭐ BADGE - pakai INLINE STYLE langsung, gak ada class, gak ada animasi
             if (unread > 0) {
                 badge.textContent = unread > 99 ? '99+' : unread;
                 badge.style.display = 'block';
