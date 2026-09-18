@@ -13,6 +13,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use App\Helpers\PoinHelper;
 
 class UserDashboardController extends Controller
@@ -252,17 +253,18 @@ class UserDashboardController extends Controller
     /**
      * HALAMAN POIN (RIWAYAT POIN)
      */
-public function poin()
-{
-    $user = Auth::user();
-    if (!$user) return redirect()->route('user.login');
+    public function poin()
+    {
+        $user = Auth::user();
+        if (!$user) return redirect()->route('user.login');
 
-    $riwayat = RiwayatPoin::where('user_id', $user->id)
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
+        $riwayat = RiwayatPoin::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-    return view('user.poin', compact('riwayat'));
-}
+        return view('user.poin', compact('riwayat'));
+    }
+
     public function riwayatPoin()
     {
         $user = Auth::user();
@@ -276,16 +278,16 @@ public function poin()
     }
 
     public function detailPoin($id)
-{
-    $user = Auth::user();
-    if (!$user) return redirect()->route('user.login');
+    {
+        $user = Auth::user();
+        if (!$user) return redirect()->route('user.login');
 
-    $riwayat = RiwayatPoin::where('user_id', $user->id)
-        ->where('id', $id)
-        ->firstOrFail();
+        $riwayat = RiwayatPoin::where('user_id', $user->id)
+            ->where('id', $id)
+            ->firstOrFail();
 
-    return view('user.poin-detail', compact('riwayat'));
-}
+        return view('user.poin-detail', compact('riwayat'));
+    }
 
     public function profile()
     {
@@ -301,38 +303,49 @@ public function poin()
         return view('user.profile', compact('user'));
     }
 
-public function updateProfile(Request $request)
-{
-    $user = Auth::user();
-    if (!$user) return redirect()->route('user.login');
-    
-    $request->validate([
-        'name' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'email', 'max:255'],
-        'no_hp' => ['nullable', 'string', 'max:15'],
-        'alamat' => ['nullable', 'string'],
-    ]);
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) return redirect()->route('user.login');
 
-    // Update hanya name & email di tabel users
-    $user->name = $request->name;
-    $user->email = $request->email;
-    // HAPUS baris ini:
-    // if ($request->has('no_hp')) $user->no_hp = $request->no_hp;
-    // if ($request->has('alamat')) $user->alamat = $request->alamat;
-    $user->save();
+        $request->validate([
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'email', 'max:255'],
+            'no_hp'    => ['nullable', 'string', 'max:15'],
+            'alamat'   => ['nullable', 'string'],
+            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+        ]);
 
-    // Update no_hp & alamat di tabel pelanggan
-    $pelanggan = $user->pelanggan;
-    if ($pelanggan) {
-        $pelanggan->nama = $user->name;
-        $pelanggan->email = $user->email;
-        if ($request->has('no_hp')) $pelanggan->no_hp = $request->no_hp;
-        if ($request->has('alamat')) $pelanggan->alamat = $request->alamat;
-        $pelanggan->save();
+        // Update name & email di tabel users
+        $user->name  = $request->name;
+        $user->email = $request->email;
+
+        // Update password kalau diisi
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        // Update no_hp & alamat di tabel pelanggan
+        $pelanggan = $user->pelanggan;
+        if ($pelanggan) {
+            $pelanggan->nama  = $user->name;
+            $pelanggan->email = $user->email;
+            if ($request->has('no_hp'))  $pelanggan->no_hp  = $request->no_hp;
+            if ($request->has('alamat')) $pelanggan->alamat = $request->alamat;
+
+            // Sinkronkan password juga ke tabel pelanggan
+            if ($request->filled('password')) {
+                $pelanggan->password = Hash::make($request->password);
+            }
+
+            $pelanggan->save();
+        }
+
+        return redirect()->route('user.profile')->with('success', 'Profil berhasil diperbarui.');
     }
 
-    return redirect()->route('user.profile')->with('success', 'Profil berhasil diperbarui.');
-}
     private function getOrCreatePelanggan($user, ?string $noHp = null, ?string $alamat = null)
     {
         $pelanggan = $user->pelanggan;
