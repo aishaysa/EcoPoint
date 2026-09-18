@@ -4,136 +4,199 @@
 @section('page_title', 'Data Pelanggan')
 
 @section('content')
-<div class="container mx-auto px-4 py-6 max-w-7xl">
+<div class="container mx-auto px-4 py-6">
 
-    {{-- ========================================================== --}}
-    {{-- HEADER                                                     --}}
-    {{-- ========================================================== --}}
-    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+    {{-- HEADER --}}
+    <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-bottom:24px;">
         <div>
-            <h1 class="text-2xl font-bold text-slate-800">Data Pelanggan</h1>
-            <p class="text-sm text-slate-500">Daftar semua pelanggan terdaftar beserta aktivitas setoran</p>
+            <h1 style="font-size:24px; font-weight:700; color:#1f2937; margin:0;">Data Pelanggan</h1>
+            <p style="font-size:14px; color:#6b7280; margin:4px 0 0 0;">Daftar semua pelanggan terdaftar beserta aktivitas setoran</p>
         </div>
     </div>
 
-    {{-- ========================================================== --}}
-    {{-- PAGINATION ATAS (selalu tampil)                            --}}
-    {{-- ========================================================== --}}
-    <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-slate-200">
-        <div class="text-sm text-slate-500">
-            Menampilkan <span class="font-semibold text-slate-800">{{ $pelanggans->firstItem() ?? 0 }}</span> 
-            - <span class="font-semibold text-slate-800">{{ $pelanggans->lastItem() ?? 0 }}</span> 
-            dari <span class="font-semibold text-slate-800">{{ $pelanggans->total() }}</span> data
+    {{-- SEARCH & FILTER --}}
+    <div style="background:#fff; border-radius:8px; border:2px solid #e5e7eb; overflow:hidden; margin-bottom:16px;">
+        <div style="padding:12px 20px; background:#f9fafb; border-bottom:2px solid #e5e7eb;">
+            <h3 style="font-size:13px; font-weight:700; color:#1f2937; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Pencarian</h3>
+        </div>
+        <form method="GET" action="{{ route('admin.pelanggan.index') }}" style="padding:16px 20px;">
+            <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+                <div style="flex:1 1 300px; min-width:0;">
+                    <input type="text" name="search" 
+                           value="{{ request('search') }}"
+                           placeholder="Cari nama, no HP, atau email..."
+                           autocomplete="off"
+                           class="form-input"
+                           style="width:100%; padding:12px 16px; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:500; color:#1f2937; background:#fff; outline:none; box-sizing:border-box;">
+                </div>
+                <button type="submit"
+                        style="display:inline-flex; align-items:center; padding:12px 24px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer;">
+                    <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    Cari
+                </button>
+                @if(request('search'))
+                    <a href="{{ route('admin.pelanggan.index') }}"
+                       style="display:inline-flex; align-items:center; padding:12px 24px; background:#fff; color:#dc2626; border:2px solid #fecaca; border-radius:8px; font-size:14px; font-weight:700; text-decoration:none;">
+                        <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Reset
+                    </a>
+                @endif
+            </div>
+            @if(request('search'))
+                <div style="margin-top:12px; padding-top:12px; border-top:1px solid #f1f5f9; display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:12px; color:#6b7280; font-weight:600;">Filter aktif:</span>
+                    <span style="display:inline-flex; align-items:center; padding:4px 12px; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; border-radius:20px; font-size:12px; font-weight:700;">
+                        "{{ request('search') }}"
+                    </span>
+                </div>
+            @endif
+        </form>
+    </div>
+
+    {{-- INFO PAGINATION ATAS --}}
+    <div style="margin-bottom:16px; padding:12px 16px; background:#fff; border-radius:8px; border:2px solid #e5e7eb; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px;">
+        <div style="font-size:13px; color:#6b7280;">
+            Menampilkan <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->firstItem() ?? 0 }}</span> 
+            - <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->lastItem() ?? 0 }}</span> 
+            dari <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->total() }}</span> data
         </div>
 
-        <nav class="flex items-center gap-1">
+        <nav style="display:flex; align-items:center; gap:4px;">
             @if ($pelanggans->onFirstPage())
-                <span class="px-3 py-1.5 border border-slate-200 rounded-md text-sm bg-slate-50 text-slate-400 cursor-not-allowed">‹ Sebelumnya</span>
+                <span style="padding:6px 12px; border:2px solid #e5e7eb; border-radius:6px; font-size:13px; background:#f9fafb; color:#9ca3af; cursor:not-allowed;">‹ Sebelumnya</span>
             @else
                 <a href="{{ $pelanggans->appends(request()->query())->previousPageUrl() }}" 
-                   class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">
+                   style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">
                     ‹ Sebelumnya
                 </a>
             @endif
 
             @foreach ($pelanggans->appends(request()->query())->links()->elements[0] ?? [] as $page => $url)
                 @if ($page == $pelanggans->currentPage())
-                    <span class="px-3 py-1.5 border border-emerald-600 rounded-md text-sm font-medium bg-emerald-600 text-white">{{ $page }}</span>
+                    <span style="padding:6px 12px; border:2px solid #16a34a; border-radius:6px; font-size:13px; font-weight:700; background:#16a34a; color:#fff;">{{ $page }}</span>
                 @else
                     <a href="{{ $url }}" 
-                       class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">{{ $page }}</a>
+                       style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">{{ $page }}</a>
                 @endif
             @endforeach
 
-            {{-- Kalau cuma 1 halaman, tampilkan nomor 1 --}}
             @if (!count($pelanggans->appends(request()->query())->links()->elements[0] ?? []))
-                <span class="px-3 py-1.5 border border-emerald-600 rounded-md text-sm font-medium bg-emerald-600 text-white">1</span>
+                <span style="padding:6px 12px; border:2px solid #16a34a; border-radius:6px; font-size:13px; font-weight:700; background:#16a34a; color:#fff;">1</span>
             @endif
 
             @if ($pelanggans->hasMorePages())
                 <a href="{{ $pelanggans->appends(request()->query())->nextPageUrl() }}" 
-                   class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">
+                   style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">
                     Selanjutnya ›
                 </a>
             @else
-                <span class="px-3 py-1.5 border border-slate-200 rounded-md text-sm bg-slate-50 text-slate-400 cursor-not-allowed">Selanjutnya ›</span>
+                <span style="padding:6px 12px; border:2px solid #e5e7eb; border-radius:6px; font-size:13px; background:#f9fafb; color:#9ca3af; cursor:not-allowed;">Selanjutnya ›</span>
             @endif
         </nav>
     </div>
 
-    {{-- ========================================================== --}}
-    {{-- TABEL                                                       --}}
-    {{-- ========================================================== --}}
-    <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-slate-200/60">
-        <table class="min-w-full divide-y divide-slate-200">
-            <thead class="bg-slate-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No HP</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Alamat</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Poin</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Total Setoran</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
+    {{-- TABEL --}}
+    <div style="overflow-x:auto; background:#fff; border-radius:8px; border:2px solid #e5e7eb;">
+        <table style="min-width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+                <tr style="background:#f9fafb;">
+                    <th style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid #e5e7eb;">No</th>
+                    <th style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid #e5e7eb;">Nama</th>
+                    <th style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid #e5e7eb;">No HP</th>
+                    <th style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid #e5e7eb;">Alamat</th>
+                    <th style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid #e5e7eb;">Poin</th>
+                    <th style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid #e5e7eb;">Total Setoran</th>
+                    <th style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid #e5e7eb;">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-slate-100">
+            <tbody>
                 @forelse($pelanggans as $key => $p)
-                <tr class="hover:bg-slate-50/80 transition duration-150">
-                    {{-- ⚠️ PAKAI firstItem() + $key biar nomor nyambung antar halaman --}}
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{{ $pelanggans->firstItem() + $key }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{{ $p->nama }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{{ $p->no_hp ?? '-' }}</td>
-                    <td class="px-6 py-4 text-sm text-slate-600 max-w-xs truncate">{{ $p->alamat ?? '-' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-emerald-100 text-emerald-800">
-                            {{ $p->poin }}
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:14px 16px; color:#4b5563; font-weight:600;">{{ $pelanggans->firstItem() + $key }}</td>
+                    <td style="padding:14px 16px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:36px; height:36px; border-radius:50%; background:#dcfce7; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <span style="font-size:13px; font-weight:700; color:#15803d;">{{ strtoupper(substr($p->nama, 0, 1)) }}</span>
+                            </div>
+                            <span style="font-size:13px; font-weight:700; color:#1f2937;">{{ $p->nama }}</span>
+                        </div>
+                    </td>
+                    <td style="padding:14px 16px; color:#4b5563;">
+                        @if($p->no_hp)
+                            <a href="tel:{{ $p->no_hp }}" style="color:#16a34a; text-decoration:none; font-weight:600;">{{ $p->no_hp }}</a>
+                        @else
+                            <span style="color:#9ca3af; font-style:italic;">-</span>
+                        @endif
+                    </td>
+                    <td style="padding:14px 16px; color:#4b5563; max-width:240px;">
+                        <span style="display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            {{ $p->alamat ?? '-' }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                    <td style="padding:14px 16px;">
+                        <span style="display:inline-flex; align-items:center; padding:4px 12px; background:#dcfce7; color:#15803d; border-radius:20px; font-size:12px; font-weight:700;">
+                            {{ number_format($p->poin ?? 0) }}
+                        </span>
+                    </td>
+                    <td style="padding:14px 16px; color:#4b5563; font-weight:600;">
                         {{ $p->setorans_count ?? 0 }}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        {{-- Detail --}}
-                        <a href="{{ route('admin.pelanggan.show', $p->id) }}" 
-                           class="inline-flex items-center px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-md transition text-xs font-medium">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            Detail
-                        </a>
+                    <td style="padding:14px 16px;">
+                        <div style="display:flex; gap:6px;">
+                            <a href="{{ route('admin.pelanggan.show', $p->id) }}" 
+                               style="display:inline-flex; align-items:center; padding:6px 12px; background:#dbeafe; color:#1d4ed8; border-radius:6px; text-decoration:none; font-size:12px; font-weight:700;">
+                                <svg style="width:14px; height:14px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                                Detail
+                            </a>
 
-                        {{-- Form hapus --}}
-                        <form action="{{ route('admin.pelanggan.destroy', $p->id) }}" 
-                              method="POST" 
-                              id="delete-form-{{ $p->id }}" 
-                              class="inline">
-                            @csrf
-                            @method('DELETE')
-                        </form>
+                            <form action="{{ route('admin.pelanggan.destroy', $p->id) }}" 
+                                  method="POST" 
+                                  id="delete-form-{{ $p->id }}" 
+                                  style="display:inline; margin:0;">
+                                @csrf
+                                @method('DELETE')
+                            </form>
 
-                        {{-- Tombol Hapus --}}
-                        <button type="button" 
-                                class="delete-btn inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition text-xs font-medium"
-                                data-id="{{ $p->id }}"
-                                data-nama="{{ $p->nama }}"
-                                data-form-id="delete-form-{{ $p->id }}">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                            Hapus
-                        </button>
+                            <button type="button" 
+                                    class="delete-btn"
+                                    data-nama="{{ $p->nama }}"
+                                    data-form-id="delete-form-{{ $p->id }}"
+                                    style="display:inline-flex; align-items:center; padding:6px 12px; background:#fee2e2; color:#b91c1c; border:none; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700;">
+                                <svg style="width:14px; height:14px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Hapus
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="px-6 py-12 text-center text-slate-500">
-                        <svg class="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    <td colspan="7" style="padding:60px 20px; text-align:center;">
+                        <svg style="width:56px; height:56px; margin:0 auto 12px; color:#cbd5e1;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
-                        <p class="text-lg font-medium">Belum ada pelanggan</p>
-                        <p class="text-sm">Klik tombol "Tambah Pelanggan" untuk menambahkan data pertama.</p>
+                        <p style="font-size:15px; font-weight:700; color:#6b7280; margin:0;">
+                            @if(request('search'))
+                                Tidak ada pelanggan yang cocok dengan pencarian
+                            @else
+                                Belum ada pelanggan
+                            @endif
+                        </p>
+                        <p style="font-size:13px; color:#9ca3af; margin:4px 0 0 0;">
+                            @if(request('search'))
+                                Coba kata kunci lain atau reset filter.
+                            @else
+                                Data pelanggan akan muncul di sini.
+                            @endif
+                        </p>
                     </td>
                 </tr>
                 @endforelse
@@ -141,70 +204,79 @@
         </table>
     </div>
 
-    {{-- ========================================================== --}}
-    {{-- PAGINATION BAWAH (selalu tampil)                            --}}
-    {{-- ========================================================== --}}
-    <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-slate-200">
-        <div class="text-sm text-slate-500">
-            Menampilkan <span class="font-semibold text-slate-800">{{ $pelanggans->firstItem() ?? 0 }}</span> 
-            - <span class="font-semibold text-slate-800">{{ $pelanggans->lastItem() ?? 0 }}</span> 
-            dari <span class="font-semibold text-slate-800">{{ $pelanggans->total() }}</span> data
+    {{-- INFO PAGINATION BAWAH --}}
+    <div style="margin-top:16px; padding:12px 16px; background:#fff; border-radius:8px; border:2px solid #e5e7eb; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px;">
+        <div style="font-size:13px; color:#6b7280;">
+            Menampilkan <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->firstItem() ?? 0 }}</span> 
+            - <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->lastItem() ?? 0 }}</span> 
+            dari <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->total() }}</span> data
         </div>
 
-        <nav class="flex items-center gap-1">
+        <nav style="display:flex; align-items:center; gap:4px;">
             @if ($pelanggans->onFirstPage())
-                <span class="px-3 py-1.5 border border-slate-200 rounded-md text-sm bg-slate-50 text-slate-400 cursor-not-allowed">‹ Sebelumnya</span>
+                <span style="padding:6px 12px; border:2px solid #e5e7eb; border-radius:6px; font-size:13px; background:#f9fafb; color:#9ca3af; cursor:not-allowed;">‹ Sebelumnya</span>
             @else
                 <a href="{{ $pelanggans->appends(request()->query())->previousPageUrl() }}" 
-                   class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">
+                   style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">
                     ‹ Sebelumnya
                 </a>
             @endif
 
             @foreach ($pelanggans->appends(request()->query())->links()->elements[0] ?? [] as $page => $url)
                 @if ($page == $pelanggans->currentPage())
-                    <span class="px-3 py-1.5 border border-emerald-600 rounded-md text-sm font-medium bg-emerald-600 text-white">{{ $page }}</span>
+                    <span style="padding:6px 12px; border:2px solid #16a34a; border-radius:6px; font-size:13px; font-weight:700; background:#16a34a; color:#fff;">{{ $page }}</span>
                 @else
                     <a href="{{ $url }}" 
-                       class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">{{ $page }}</a>
+                       style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">{{ $page }}</a>
                 @endif
             @endforeach
 
-            {{-- Kalau cuma 1 halaman, tampilkan nomor 1 --}}
             @if (!count($pelanggans->appends(request()->query())->links()->elements[0] ?? []))
-                <span class="px-3 py-1.5 border border-emerald-600 rounded-md text-sm font-medium bg-emerald-600 text-white">1</span>
+                <span style="padding:6px 12px; border:2px solid #16a34a; border-radius:6px; font-size:13px; font-weight:700; background:#16a34a; color:#fff;">1</span>
             @endif
 
             @if ($pelanggans->hasMorePages())
                 <a href="{{ $pelanggans->appends(request()->query())->nextPageUrl() }}" 
-                   class="px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white text-slate-700 hover:bg-slate-50 transition">
+                   style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">
                     Selanjutnya ›
                 </a>
             @else
-                <span class="px-3 py-1.5 border border-slate-200 rounded-md text-sm bg-slate-50 text-slate-400 cursor-not-allowed">Selanjutnya ›</span>
+                <span style="padding:6px 12px; border:2px solid #e5e7eb; border-radius:6px; font-size:13px; background:#f9fafb; color:#9ca3af; cursor:not-allowed;">Selanjutnya ›</span>
             @endif
         </nav>
     </div>
+
 </div>
 
-{{-- ======================== TOAST SUKSES ======================== --}}
+{{-- FOCUS STYLE --}}
+<style>
+    .form-input:focus {
+        border-color: #16a34a !important;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15) !important;
+    }
+    tbody tr:hover {
+        background: #f8fafc;
+    }
+</style>
+
+{{-- TOAST SUKSES --}}
 @if(session('success'))
-<div id="toast" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
-    <div class="bg-white rounded-2xl shadow-2xl border border-emerald-100 overflow-hidden relative">
-        <div id="toastProgress" class="h-1 bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-[4000ms] ease-linear" style="width: 100%"></div>
-        <div class="p-5 flex items-start gap-4">
-            <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+<div id="toast" style="position:fixed; top:24px; right:24px; z-index:9999; max-width:380px; width:100%; transform:translateX(0); opacity:1; transition:transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;">
+    <div style="background:#fff; border-radius:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); border:2px solid #bbf7d0; overflow:hidden; position:relative;">
+        <div id="toastProgress" style="height:4px; background:linear-gradient(to right, #4ade80, #16a34a); transition:width 10ms linear; width:100%;"></div>
+        <div style="padding:20px; display:flex; align-items:flex-start; gap:16px;">
+            <div style="flex-shrink:0; width:48px; height:48px; background:linear-gradient(135deg, #4ade80, #16a34a); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(22,163,74,0.3);">
+                <svg style="width:28px; height:28px; color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                 </svg>
             </div>
-            <div class="flex-1 pt-0.5">
-                <p class="text-sm font-semibold text-slate-800">Berhasil!</p>
-                <p class="text-sm text-slate-600 leading-relaxed">{{ session('success') }}</p>
+            <div style="flex:1; padding-top:2px;">
+                <p style="font-size:14px; font-weight:700; color:#1f2937; margin:0 0 4px 0;">Berhasil!</p>
+                <p style="font-size:14px; color:#4b5563; margin:0; line-height:1.5;">{{ session('success') }}</p>
             </div>
-            <button onclick="closeToast()" class="flex-shrink-0 mt-1 text-slate-400 hover:text-slate-600 transition-colors duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            <button onclick="closeToast()" style="flex-shrink:0; margin-top:4px; background:none; border:none; cursor:pointer; color:#9ca3af; padding:0;">
+                <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
@@ -212,29 +284,36 @@
 </div>
 @endif
 
-{{-- Toast Batal --}}
+{{-- CANCEL TOAST CONTAINER --}}
 <div id="cancelToastContainer"></div>
 
-{{-- ===== MODAL KONFIRMASI HAPUS ===== --}}
-<div id="deleteModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all duration-300">
-    <div id="deleteModalContent" class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0 p-6">
-        <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full mb-4">
-            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+{{-- MODAL KONFIRMASI HAPUS --}}
+<div id="deleteModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:16px;">
+    <div id="deleteModalContent" style="background:#fff; border-radius:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); max-width:420px; width:100%; transform:scale(0.95); opacity:0; transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); padding:24px;">
+
+        <div style="width:64px; height:64px; margin:0 auto 16px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <svg style="width:32px; height:32px; color:#dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
         </div>
-        <h3 class="text-lg font-bold text-center text-slate-800 mb-2">Hapus Pelanggan?</h3>
-        <p class="text-sm text-center text-slate-600 mb-6">
-            Apakah Anda yakin ingin menghapus pelanggan <span id="modalNama" class="font-semibold text-slate-800"></span>? 
-            Tindakan ini tidak dapat dibatalkan.
+
+        <h3 style="font-size:18px; font-weight:800; color:#1f2937; text-align:center; margin:0 0 8px 0;">Hapus Pelanggan?</h3>
+        <p style="font-size:14px; color:#6b7280; text-align:center; margin:0 0 24px 0; line-height:1.6;">
+            Apakah Anda yakin ingin menghapus pelanggan<br>
+            <strong id="modalNama" style="color:#1f2937;"></strong>?<br>
+            <span style="color:#dc2626; font-weight:600;">Tindakan ini tidak dapat dibatalkan.</span>
         </p>
-        <div class="flex flex-col sm:flex-row gap-3 justify-center">
-            <button id="modalCancelBtn" 
-                    class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <button type="button" id="modalCancelBtn"
+                    style="padding:12px 20px; background:#fff; color:#374151; border:2px solid #d1d5db; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer;">
                 Batal
             </button>
-            <button id="modalConfirmBtn" 
-                    class="px-6 py-2.5 bg-white border-2 border-red-600 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+            <button type="button" id="modalConfirmBtn"
+                    style="padding:12px 20px; background:#dc2626; color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
                 Ya, Hapus
             </button>
         </div>
@@ -242,7 +321,7 @@
 </div>
 
 <script>
-    // === Toast Sukses ===
+    // TOAST SUKSES
     @if(session('success'))
     let progressWidth = 100;
     const progressInterval = setInterval(function() {
@@ -260,11 +339,9 @@
     function closeToast() {
         const toast = document.getElementById('toast');
         if (toast) {
-            toast.classList.remove('translate-x-0', 'opacity-100');
-            toast.classList.add('translate-x-full', 'opacity-0');
-            setTimeout(function() {
-                toast.remove();
-            }, 700);
+            toast.style.transform = 'translateX(calc(100% + 2rem))';
+            toast.style.opacity = '0';
+            setTimeout(function() { toast.remove(); }, 700);
         }
         clearInterval(progressInterval);
     }
@@ -277,28 +354,28 @@
     });
     @endif
 
-    // === Toast Batal ===
+    // TOAST BATAL
     function showCancelToast(message) {
         const container = document.getElementById('cancelToastContainer');
         container.innerHTML = '';
         const toast = document.createElement('div');
         toast.id = 'cancelToast';
-        toast.className = 'fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100';
+        toast.style.cssText = 'position:fixed; top:24px; right:24px; z-index:9999; max-width:380px; width:100%; transform:translateX(0); opacity:1; transition:transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;';
         toast.innerHTML = `
-            <div class="bg-white rounded-2xl shadow-2xl border border-yellow-100 overflow-hidden relative">
-                <div class="p-5 flex items-start gap-4">
-                    <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-lg">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            <div style="background:#fff; border-radius:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); border:2px solid #fde68a; overflow:hidden;">
+                <div style="padding:20px; display:flex; align-items:flex-start; gap:16px;">
+                    <div style="flex-shrink:0; width:48px; height:48px; background:linear-gradient(135deg, #fbbf24, #d97706); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(217,119,6,0.3);">
+                        <svg style="width:28px; height:28px; color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
                     </div>
-                    <div class="flex-1 pt-0.5">
-                        <p class="text-sm font-semibold text-slate-800">Dibatalkan</p>
-                        <p class="text-sm text-slate-600 leading-relaxed">${message}</p>
+                    <div style="flex:1; padding-top:2px;">
+                        <p style="font-size:14px; font-weight:700; color:#1f2937; margin:0 0 4px 0;">Dibatalkan</p>
+                        <p style="font-size:14px; color:#4b5563; margin:0; line-height:1.5;">${message}</p>
                     </div>
-                    <button onclick="this.closest('#cancelToast').remove()" class="flex-shrink-0 mt-1 text-slate-400 hover:text-slate-600 transition-colors duration-200">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    <button onclick="this.closest('#cancelToast').remove()" style="flex-shrink:0; margin-top:4px; background:none; border:none; cursor:pointer; color:#9ca3af; padding:0;">
+                        <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     </button>
                 </div>
@@ -309,39 +386,38 @@
         setTimeout(() => {
             const el = document.getElementById('cancelToast');
             if (el) {
-                el.classList.remove('translate-x-0', 'opacity-100');
-                el.classList.add('translate-x-full', 'opacity-0');
+                el.style.transform = 'translateX(calc(100% + 2rem))';
+                el.style.opacity = '0';
                 setTimeout(() => el.remove(), 700);
             }
         }, 2500);
     }
 
-    // === MODAL KONFIRMASI HAPUS ===
+    // MODAL KONFIRMASI HAPUS
     (function() {
         const modal = document.getElementById('deleteModal');
         const modalContent = document.getElementById('deleteModalContent');
         const modalNama = document.getElementById('modalNama');
         const cancelBtn = document.getElementById('modalCancelBtn');
         const confirmBtn = document.getElementById('modalConfirmBtn');
-
         let currentFormId = null;
 
         function showModal(nama, formId) {
             modalNama.textContent = nama;
             currentFormId = formId;
-            modal.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                modalContent.classList.remove('scale-95', 'opacity-0');
-                modalContent.classList.add('scale-100', 'opacity-100');
-            });
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+            }, 10);
             setTimeout(() => cancelBtn.focus(), 150);
         }
 
         function hideModal() {
-            modalContent.classList.remove('scale-100', 'opacity-100');
-            modalContent.classList.add('scale-95', 'opacity-0');
+            modalContent.style.transform = 'scale(0.95)';
+            modalContent.style.opacity = '0';
             setTimeout(() => {
-                modal.classList.add('hidden');
+                modal.style.display = 'none';
                 currentFormId = null;
             }, 300);
         }
@@ -351,9 +427,7 @@
                 e.preventDefault();
                 const nama = this.dataset.nama;
                 const formId = this.dataset.formId;
-                if (formId) {
-                    showModal(nama, formId);
-                }
+                if (formId) showModal(nama, formId);
             });
         });
 
@@ -366,9 +440,7 @@
         confirmBtn.addEventListener('click', function() {
             if (currentFormId) {
                 const form = document.getElementById(currentFormId);
-                if (form) {
-                    form.submit();
-                }
+                if (form) form.submit();
             }
             hideModal();
         });
@@ -382,7 +454,7 @@
         });
 
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
                 const nama = modalNama.textContent;
                 hideModal();
                 showCancelToast('Penghapusan pelanggan "' + nama + '" dibatalkan');
@@ -390,32 +462,4 @@
         });
     })();
 </script>
-
-<style>
-    #toast, #cancelToast {
-        transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
-    }
-    #toast.translate-x-full, #cancelToast.translate-x-full {
-        transform: translateX(calc(100% + 2rem));
-    }
-    #toast.opacity-0, #cancelToast.opacity-0 {
-        opacity: 0;
-    }
-    .shadow-2xl {
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    }
-    #toastProgress {
-        transition: width 10ms linear;
-    }
-    #deleteModalContent {
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
-    }
-    #deleteModal:not(.hidden) {
-        background-color: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(4px);
-    }
-    button:focus-visible {
-        outline: 2px solid transparent;
-    }
-</style>
 @endsection

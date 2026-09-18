@@ -1,84 +1,153 @@
 @extends('layouts.admin')
 
+@section('title', 'Tambah Pelanggan')
+@section('page_title', 'Tambah Pelanggan')
+
 @section('content')
 <div class="container mx-auto px-4 py-6">
-    {{-- Header --}}
-    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 class="text-2xl font-bold text-slate-800">Tambah Pelanggan</h1>
+
+    {{-- HEADER --}}
+    <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-bottom:24px;">
+        <div>
+            <h1 style="font-size:24px; font-weight:700; color:#1f2937; margin:0;">Tambah Pelanggan</h1>
+            <p style="font-size:14px; color:#6b7280; margin:4px 0 0 0;">Tambahkan data pelanggan baru ke sistem</p>
+        </div>
         <a href="{{ route('admin.pelanggan.index') }}" 
-           class="inline-flex items-center px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-lg shadow-sm transition duration-200">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+           style="display:inline-flex; align-items:center; padding:8px 16px; background:#fff; color:#374151; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:600; text-decoration:none; transition:all 0.2s;">
+            <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
             Kembali
         </a>
     </div>
 
-    {{-- Error Messages --}}
+    {{-- ERROR VALIDATION --}}
     @if($errors->any())
-        <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded shadow-sm">
-            <ul class="list-disc list-inside">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+        <div style="background:#fef2f2; border:2px solid #fecaca; border-radius:8px; padding:16px; margin-bottom:16px;">
+            <div style="display:flex; gap:12px;">
+                <svg style="width:20px; height:20px; color:#dc2626; flex-shrink:0; margin-top:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <div>
+                    <p style="font-size:14px; font-weight:700; color:#991b1b; margin:0 0 4px 0;">Terdapat kesalahan:</p>
+                    <ul style="font-size:14px; color:#b91c1c; margin:0; padding-left:20px;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
         </div>
     @endif
 
-    {{-- Form --}}
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6 max-w-2xl mx-auto">
-        <form action="{{ route('admin.pelanggan.store') }}" method="POST">
-            @csrf
+    <form action="{{ route('admin.pelanggan.store') }}" method="POST">
+        @csrf
 
-            <div class="mb-4">
-                <label for="nama" class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
-                <input type="text" id="nama" name="nama" value="{{ old('nama') }}" 
-                       class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-                       required>
+        <div style="background:#fff; border-radius:8px; border:2px solid #e5e7eb; overflow:hidden;">
+
+            {{-- HEADER FORM --}}
+            <div style="padding:12px 20px; background:#f9fafb; border-bottom:2px solid #e5e7eb;">
+                <h3 style="font-size:13px; font-weight:700; color:#1f2937; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Data Pelanggan</h3>
             </div>
 
-            <div class="mb-6">
-                <label for="no_hp" class="block text-sm font-medium text-slate-700 mb-1">Nomor HP</label>
-                <input type="text" id="no_hp" name="no_hp" value="{{ old('no_hp') }}" 
-                       class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
-                       required>
+            <div style="padding:20px;">
+
+                {{-- NAMA --}}
+                <div style="margin-bottom:20px;">
+                    <label for="nama" style="display:block; font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                        Nama Lengkap <span style="color:#dc2626;">*</span>
+                    </label>
+                    <input type="text" id="nama" name="nama" 
+                           value="{{ old('nama') }}"
+                           placeholder="Contoh: Budi Santoso"
+                           required
+                           class="form-input"
+                           style="width:100%; padding:12px 16px; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:500; color:#1f2937; background:#fff; outline:none; box-sizing:border-box;">
+                </div>
+
+                {{-- NO HP --}}
+                <div style="margin-bottom:20px;">
+                    <label for="no_hp" style="display:block; font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                        Nomor HP <span style="color:#dc2626;">*</span>
+                    </label>
+                    <input type="text" id="no_hp" name="no_hp" 
+                           value="{{ old('no_hp') }}"
+                           placeholder="Contoh: 08123456789"
+                           required
+                           class="form-input"
+                           style="width:100%; padding:12px 16px; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:500; color:#1f2937; background:#fff; outline:none; box-sizing:border-box;">
+                </div>
+
+                {{-- EMAIL --}}
+                <div style="margin-bottom:20px;">
+                    <label for="email" style="display:block; font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                        Email <span style="color:#9ca3af; font-weight:500; text-transform:none;">(Opsional)</span>
+                    </label>
+                    <input type="email" id="email" name="email" 
+                           value="{{ old('email') }}"
+                           placeholder="Contoh: budi@email.com"
+                           class="form-input"
+                           style="width:100%; padding:12px 16px; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:500; color:#1f2937; background:#fff; outline:none; box-sizing:border-box;">
+                </div>
+
+                {{-- ALAMAT --}}
+                <div>
+                    <label for="alamat" style="display:block; font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                        Alamat <span style="color:#9ca3af; font-weight:500; text-transform:none;">(Opsional)</span>
+                    </label>
+                    <textarea id="alamat" name="alamat" rows="3"
+                              placeholder="Contoh: Jl. Sudirman No. 123, Jakarta"
+                              class="form-input"
+                              style="width:100%; padding:12px 16px; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:500; color:#1f2937; background:#fff; outline:none; box-sizing:border-box; resize:vertical; font-family:inherit;">{{ old('alamat') }}</textarea>
+                </div>
+
             </div>
 
-            <div class="flex items-center gap-3">
-                <button type="submit" 
-                        class="inline-flex items-center px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-sm transition duration-200">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Simpan
-                </button>
-                <a href="{{ route('admin.pelanggan.index') }}" 
-                   class="inline-flex items-center px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg transition duration-200">
+            {{-- ACTION BUTTONS --}}
+            <div style="padding:16px 20px; background:#f9fafb; border-top:2px solid #e5e7eb; display:flex; flex-wrap:wrap; gap:12px; justify-content:flex-end;">
+                <a href="{{ route('admin.pelanggan.index') }}"
+                   style="display:inline-flex; align-items:center; justify-content:center; padding:10px 24px; background:#fff; color:#374151; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:700; text-decoration:none;">
                     Batal
                 </a>
+                <button type="submit"
+                        style="display:inline-flex; align-items:center; justify-content:center; padding:10px 24px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer;">
+                    <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Simpan Pelanggan
+                </button>
             </div>
-        </form>
-    </div>
+
+        </div>
+    </form>
 </div>
 
-{{-- Toast Sukses --}}
+{{-- FOCUS STYLE --}}
+<style>
+    .form-input:focus {
+        border-color: #16a34a !important;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15) !important;
+    }
+</style>
+
+{{-- TOAST SUKSES --}}
 @if(session('success'))
-<div id="toast" class="fixed top-6 right-6 z-50 max-w-sm w-full transform transition-all duration-700 ease-out translate-x-0 opacity-100">
-    <div class="bg-white rounded-2xl shadow-2xl border border-emerald-100 overflow-hidden relative">
-        <div id="toastProgress" class="h-1 bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-[4000ms] ease-linear" style="width: 100%"></div>
-        <div class="p-5 flex items-start gap-4">
-            <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+<div id="toast" style="position:fixed; top:24px; right:24px; z-index:9999; max-width:380px; width:100%; transform:translateX(0); opacity:1; transition:transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;">
+    <div style="background:#fff; border-radius:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); border:2px solid #bbf7d0; overflow:hidden; position:relative;">
+        <div id="toastProgress" style="height:4px; background:linear-gradient(to right, #4ade80, #16a34a); transition:width 10ms linear; width:100%;"></div>
+        <div style="padding:20px; display:flex; align-items:flex-start; gap:16px;">
+            <div style="flex-shrink:0; width:48px; height:48px; background:linear-gradient(135deg, #4ade80, #16a34a); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(22,163,74,0.3);">
+                <svg style="width:28px; height:28px; color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                 </svg>
             </div>
-            <div class="flex-1 pt-0.5">
-                <p class="text-sm font-semibold text-slate-800">Berhasil!</p>
-                <p class="text-sm text-slate-600 leading-relaxed">{{ session('success') }}</p>
+            <div style="flex:1; padding-top:2px;">
+                <p style="font-size:14px; font-weight:700; color:#1f2937; margin:0 0 4px 0;">Berhasil!</p>
+                <p style="font-size:14px; color:#4b5563; margin:0; line-height:1.5;">{{ session('success') }}</p>
             </div>
-            <button onclick="closeToast()" class="flex-shrink-0 mt-1 text-slate-400 hover:text-slate-600 transition-colors duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            <button onclick="closeToast()" style="flex-shrink:0; margin-top:4px; background:none; border:none; cursor:pointer; color:#9ca3af; padding:0;">
+                <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
@@ -104,8 +173,8 @@
     function closeToast() {
         const toast = document.getElementById('toast');
         if (toast) {
-            toast.classList.remove('translate-x-0', 'opacity-100');
-            toast.classList.add('translate-x-full', 'opacity-0');
+            toast.style.transform = 'translateX(calc(100% + 2rem))';
+            toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 700);
         }
         clearInterval(progressInterval);
@@ -119,22 +188,4 @@
     });
     @endif
 </script>
-
-<style>
-    #toast {
-        transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
-    }
-    #toast.translate-x-full {
-        transform: translateX(calc(100% + 2rem));
-    }
-    #toast.opacity-0 {
-        opacity: 0;
-    }
-    .shadow-2xl {
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    }
-    #toastProgress {
-        transition: width 10ms linear;
-    }
-</style>
 @endsection

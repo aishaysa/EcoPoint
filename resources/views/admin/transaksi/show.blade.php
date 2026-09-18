@@ -5,7 +5,7 @@
 
 @section('content')
 @php
-    // ✅ Cek semua kolom berat yang mungkin ada
+    // Cek semua kolom berat yang mungkin ada
     $beratTampil = 0;
     foreach (['berat_aktual', 'berat', 'total_berat'] as $k) {
         $val = $data->{$k} ?? 0;
@@ -14,353 +14,377 @@
             break;
         }
     }
-    // ✅ Fallback: hitung dari pivot jenis sampah
+    // Fallback: hitung dari pivot jenis sampah
     if ($beratTampil == 0 && isset($data->jenisSampahs) && $data->jenisSampahs->count()) {
         $beratTampil = $data->jenisSampahs->sum(function ($js) {
             return $js->pivot->berat_aktual ?? $js->pivot->berat ?? 0;
         });
     }
+
+    // Status config
+    $statusConfig = [
+        'pending'    => ['bg' => '#fef3c7', 'color' => '#92400e', 'dot' => '#d97706', 'label' => 'Menunggu'],
+        'processing' => ['bg' => '#dcfce7', 'color' => '#15803d', 'dot' => '#16a34a', 'label' => 'Diproses'],
+        'success'    => ['bg' => '#dcfce7', 'color' => '#15803d', 'dot' => '#16a34a', 'label' => 'Berhasil'],
+        'completed'  => ['bg' => '#dcfce7', 'color' => '#15803d', 'dot' => '#16a34a', 'label' => 'Selesai'],
+        'approved'   => ['bg' => '#dcfce7', 'color' => '#15803d', 'dot' => '#16a34a', 'label' => 'Disetujui'],
+        'failed'     => ['bg' => '#fee2e2', 'color' => '#b91c1c', 'dot' => '#dc2626', 'label' => 'Gagal'],
+        'rejected'   => ['bg' => '#fee2e2', 'color' => '#b91c1c', 'dot' => '#dc2626', 'label' => 'Ditolak'],
+    ];
+    $st = $statusConfig[$data->status] ?? ['bg' => '#f1f5f9', 'color' => '#475569', 'dot' => '#64748b', 'label' => ucfirst($data->status)];
 @endphp
 
-<div class="container mx-auto px-4 py-6 max-w-5xl">
+<div class="container mx-auto px-4 py-6">
 
     {{-- HEADER --}}
-    <div class="mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div class="flex items-center gap-3">
-            <a href="{{ route('admin.transaksi.index') }}" 
-               class="flex items-center justify-center w-10 h-10 rounded-full bg-white hover:bg-green-50 border border-gray-200 text-gray-600 hover:text-green-600 transition shadow-sm">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-            </a>
-            <div>
-                <h1 class="text-xl font-bold text-gray-800">Detail Transaksi</h1>
-                <p class="text-sm text-gray-500">
-                    #{{ $data->id }} · 
-                    {{ \Carbon\Carbon::parse($data->tanggal ?? $data->created_at)->format('d M Y, H:i') }}
-                </p>
-            </div>
+    <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-bottom:24px;">
+        <div>
+            <h1 style="font-size:24px; font-weight:700; color:#1f2937; margin:0;">Detail Transaksi</h1>
+            <p style="font-size:14px; color:#6b7280; margin:4px 0 0 0;">
+                #{{ $data->id }} • {{ \Carbon\Carbon::parse($data->tanggal ?? $data->created_at)->format('d M Y, H:i') }} WIB
+            </p>
         </div>
-
-        <div class="flex items-center gap-2">
-            @php
-                $statusConfig = [
-                    'pending'    => ['bg-amber-50',   'text-amber-700',   'border-amber-200',  'bg-amber-500'],
-                    'processing' => ['bg-green-50',   'text-green-700',   'border-green-200',  'bg-green-500'],
-                    'success'    => ['bg-green-50',   'text-green-700',   'border-green-200',  'bg-green-500'],
-                    'completed'  => ['bg-green-50',   'text-green-700',   'border-green-200',  'bg-green-500'],
-                    'approved'   => ['bg-green-50',   'text-green-700',   'border-green-200',  'bg-green-500'],
-                    'failed'     => ['bg-red-50',     'text-red-700',     'border-red-200',    'bg-red-500'],
-                    'rejected'   => ['bg-red-50',     'text-red-700',     'border-red-200',    'bg-red-500'],
-                ];
-                [$bg, $text, $border, $dot] = $statusConfig[$data->status] ?? ['bg-gray-50', 'text-gray-700', 'border-gray-200', 'bg-gray-500'];
-            @endphp
-            <span class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold border {{ $bg }} {{ $text }} {{ $border }}">
-                <span class="w-2 h-2 rounded-full {{ $dot }} animate-pulse"></span>
-                {{ ucfirst($data->status) }}
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <span style="display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:20px; font-size:13px; font-weight:700; background:{{ $st['bg'] }}; color:{{ $st['color'] }}; border:2px solid {{ $st['color'] }}30;">
+                <span style="width:8px; height:8px; border-radius:50%; background:{{ $st['dot'] }};"></span>
+                {{ $st['label'] }}
             </span>
-
             @if($type == 'setoran')
                 <a href="{{ route('admin.transaksi.edit', $data->id) }}" 
-                   class="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full text-sm font-semibold transition shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                   style="display:inline-flex; align-items:center; padding:10px 20px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; text-decoration:none;">
+                    <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
                     Edit
                 </a>
             @endif
+            <a href="{{ route('admin.transaksi.index') }}" 
+               style="display:inline-flex; align-items:center; padding:10px 20px; background:#fff; color:#374151; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:700; text-decoration:none;">
+                <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Kembali
+            </a>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    {{-- LAYOUT GRID --}}
+    <div style="display:grid; grid-template-columns:1fr; gap:20px;">
 
-        {{-- KOLOM KIRI --}}
-        <div class="lg:col-span-2 space-y-5">
-
-            {{-- HERO CARD --}}
-            @if($type == 'withdraw')
-                <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 p-7 text-white shadow-lg">
-                    <div class="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -mr-16 -mt-16"></div>
-                    <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-12 -mb-12"></div>
-                    <div class="relative">
-                        <p class="text-xs uppercase tracking-widest text-green-200 font-semibold mb-2">Jumlah Penukaran</p>
-                        <p class="text-4xl font-extrabold tracking-tight mb-1">
-                            Rp {{ number_format($data->amount ?? 0, 0, ',', '.') }}
-                        </p>
-                        <div class="flex items-center gap-2 text-green-100 text-sm">
-                            <span>Ditukar dengan <strong>{{ number_format($data->points ?? 0) }} poin</strong></span>
-                        </div>
-                    </div>
+        {{-- HERO CARD --}}
+        @if($type == 'withdraw')
+            <div style="position:relative; overflow:hidden; border-radius:12px; background:linear-gradient(135deg, #16a34a, #15803d); padding:28px; color:#fff;">
+                <div style="position:absolute; top:-60px; right:-60px; width:200px; height:200px; background:rgba(255,255,255,0.08); border-radius:50%;"></div>
+                <div style="position:absolute; bottom:-60px; left:-40px; width:160px; height:160px; background:rgba(255,255,255,0.06); border-radius:50%;"></div>
+                <div style="position:relative;">
+                    <p style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#bbf7d0; font-weight:700; margin:0 0 8px 0;">Jumlah Penukaran</p>
+                    <p style="font-size:38px; font-weight:800; letter-spacing:-1px; margin:0 0 8px 0; line-height:1.1;">
+                        Rp {{ number_format($data->amount ?? 0, 0, ',', '.') }}
+                    </p>
+                    <p style="font-size:14px; color:#dcfce7; margin:0;">
+                        Ditukar dengan <strong>{{ number_format($data->points ?? 0) }} poin</strong>
+                    </p>
                 </div>
-            @else
-                <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 p-7 text-white shadow-lg">
-                    <div class="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -mr-16 -mt-16"></div>
-                    <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-12 -mb-12"></div>
-                    <div class="relative">
-                        <p class="text-xs uppercase tracking-widest text-green-200 font-semibold mb-2">Total Berat Setoran</p>
-                        <p class="text-4xl font-extrabold tracking-tight mb-1">
-                            {{ number_format($beratTampil, 2) }} <span class="text-2xl font-semibold">kg</span>
-                        </p>
-                        <div class="flex items-center gap-2 text-green-100 text-sm">
-                            <span>Status: <strong>{{ ucfirst($data->status) }}</strong></span>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            {{-- INFO PELANGGAN --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="flex items-center gap-3 p-5 border-b border-gray-100">
-                    <img class="w-12 h-12 rounded-full border-2 border-green-500 shrink-0"
-                         src="https://ui-avatars.com/api/?name={{ urlencode($data->user->name ?? 'User') }}&background=2d6a4f&color=fff&size=128"
-                         alt="Avatar">
-                    <div class="flex-1 min-w-0">
-                        <p class="text-base font-bold text-gray-800 truncate">{{ $data->user->name ?? '—' }}</p>
-                        <p class="text-sm text-gray-500 truncate">{{ $data->user->email ?? '—' }}</p>
-                    </div>
-                </div>
-                @if(isset($data->user->pelanggan) && $data->user->pelanggan)
-                    <div class="grid grid-cols-2 divide-x divide-gray-100">
-                        <div class="p-4 text-center">
-                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">No. HP</p>
-                            <p class="text-sm font-bold text-gray-800">{{ $data->user->pelanggan->no_hp ?? '—' }}</p>
-                        </div>
-                        <div class="p-4 text-center">
-                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Alamat</p>
-                            <p class="text-sm font-bold text-gray-800 truncate">{{ $data->user->pelanggan->alamat ?? '—' }}</p>
-                        </div>
-                    </div>
-                @endif
             </div>
+        @else
+            <div style="position:relative; overflow:hidden; border-radius:12px; background:linear-gradient(135deg, #16a34a, #15803d); padding:28px; color:#fff;">
+                <div style="position:absolute; top:-60px; right:-60px; width:200px; height:200px; background:rgba(255,255,255,0.08); border-radius:50%;"></div>
+                <div style="position:absolute; bottom:-60px; left:-40px; width:160px; height:160px; background:rgba(255,255,255,0.06); border-radius:50%;"></div>
+                <div style="position:relative;">
+                    <p style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#bbf7d0; font-weight:700; margin:0 0 8px 0;">Total Berat Setoran</p>
+                    <p style="font-size:38px; font-weight:800; letter-spacing:-1px; margin:0 0 8px 0; line-height:1.1;">
+                        {{ number_format($beratTampil, 2) }} <span style="font-size:20px; font-weight:600;">kg</span>
+                    </p>
+                    <p style="font-size:14px; color:#dcfce7; margin:0;">
+                        Status: <strong>{{ $st['label'] }}</strong>
+                    </p>
+                </div>
+            </div>
+        @endif
 
-            {{-- DETAIL SETORAN / WITHDRAW --}}
-            @if($type == 'setoran')
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="px-5 py-4 border-b border-gray-100">
-                        <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-                            <span class="w-1 h-4 bg-green-500 rounded-full"></span>
-                            Detail Setoran
-                        </h3>
+        {{-- LAYOUT 2 KOLOM --}}
+        <div style="display:grid; grid-template-columns:1fr; gap:20px;" class="lg:grid-cols-3">
+
+            {{-- KOLOM KIRI --}}
+            <div style="grid-column:span 1;" class="lg:col-span-2">
+
+                {{-- INFO PELANGGAN --}}
+                <div style="background:#fff; border-radius:8px; border:2px solid #e5e7eb; overflow:hidden; margin-bottom:20px;">
+                    <div style="padding:12px 20px; background:#f9fafb; border-bottom:2px solid #e5e7eb; display:flex; align-items:center; gap:10px;">
+                        <svg style="width:18px; height:18px; color:#16a34a;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <h3 style="font-size:13px; font-weight:700; color:#1f2937; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Informasi Pelanggan</h3>
                     </div>
-                    <div class="p-5 space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Metode</p>
-                                <p class="text-sm font-bold text-gray-800">{{ ucfirst($data->metode ?? '—') }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Berat</p>
-                                <p class="text-sm font-bold text-gray-800">{{ number_format($beratTampil, 2) }} kg</p>
-                            </div>
+
+                    <div style="padding:20px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+                        <div style="padding:14px 16px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb;">
+                            <p style="font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px 0;">Nama</p>
+                            <p style="font-size:15px; font-weight:700; color:#1f2937; margin:0;">{{ $data->user->name ?? '—' }}</p>
                         </div>
-
-                        @if(isset($data->alamat_jemput) && $data->alamat_jemput)
-                            <div class="pt-3 border-t border-gray-100">
-                                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Alamat Jemput</p>
-                                <p class="text-sm font-medium text-gray-800">{{ $data->alamat_jemput }}</p>
+                        <div style="padding:14px 16px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb;">
+                            <p style="font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px 0;">Email</p>
+                            <p style="font-size:14px; font-weight:600; color:#1f2937; margin:0; word-break:break-word;">{{ $data->user->email ?? '—' }}</p>
+                        </div>
+                        @if(isset($data->user->pelanggan) && $data->user->pelanggan)
+                            <div style="padding:14px 16px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb;">
+                                <p style="font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px 0;">No HP</p>
+                                @if($data->user->pelanggan->no_hp)
+                                    <a href="tel:{{ $data->user->pelanggan->no_hp }}" style="font-size:15px; font-weight:700; color:#16a34a; text-decoration:none;">{{ $data->user->pelanggan->no_hp }}</a>
+                                @else
+                                    <p style="font-size:14px; color:#9ca3af; margin:0; font-style:italic;">-</p>
+                                @endif
                             </div>
-                        @endif
-
-                        @if(isset($data->titik_kumpul) && $data->titik_kumpul)
-                            <div class="pt-3 border-t border-gray-100">
-                                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Titik Kumpul</p>
-                                <p class="text-sm font-medium text-gray-800">{{ $data->titik_kumpul->nama ?? '—' }}</p>
-                            </div>
-                        @endif
-
-                        @if(isset($data->jenisSampahs) && $data->jenisSampahs->count())
-                            <div class="pt-3 border-t border-gray-100">
-                                <p class="text-xs text-gray-500 uppercase font-semibold mb-3">Jenis Sampah</p>
-                                <div class="space-y-2">
-                                    @foreach($data->jenisSampahs as $js)
-                                        <div class="flex items-center justify-between p-3 bg-green-50 border border-green-100 rounded-xl">
-                                            <div class="flex items-center gap-2.5">
-                                                <div class="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center">
-                                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-                                                    </svg>
-                                                </div>
-                                                <span class="text-sm font-semibold text-green-900">{{ $js->nama }}</span>
-                                            </div>
-                                            <span class="text-sm font-bold text-green-700">{{ number_format($js->pivot->berat_aktual ?? $js->pivot->berat ?? 0, 2) }} kg</span>
-                                        </div>
-                                    @endforeach
-                                </div>
+                            <div style="padding:14px 16px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb;">
+                                <p style="font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px 0;">Alamat</p>
+                                <p style="font-size:14px; font-weight:500; color:#1f2937; margin:0; line-height:1.5;">{{ $data->user->pelanggan->alamat ?? '-' }}</p>
                             </div>
                         @endif
                     </div>
                 </div>
-            @else
-                {{-- REKENING --}}
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
-                        <h3 class="text-sm font-bold text-green-900 flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                            </svg>
-                            Rekening Tujuan Transfer
-                        </h3>
-                    </div>
 
-                    <div class="p-5">
-                        <div class="space-y-4">
-                            @if($data->payment_method == 'bank')
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="text-xs text-gray-500 uppercase font-semibold">Bank</span>
-                                    <span class="text-sm font-bold text-gray-800">{{ strtoupper($data->bank_name ?? '-') }}</span>
+                {{-- DETAIL SETORAN --}}
+                @if($type == 'setoran')
+                    <div style="background:#fff; border-radius:8px; border:2px solid #e5e7eb; overflow:hidden;">
+                        <div style="padding:12px 20px; background:#f9fafb; border-bottom:2px solid #e5e7eb; display:flex; align-items:center; gap:10px;">
+                            <svg style="width:18px; height:18px; color:#16a34a;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                            </svg>
+                            <h3 style="font-size:13px; font-weight:700; color:#1f2937; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Detail Setoran</h3>
+                        </div>
+
+                        <div style="padding:20px;">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                                <div style="padding:14px 16px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb;">
+                                    <p style="font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px 0;">Metode</p>
+                                    <p style="font-size:15px; font-weight:700; color:#1f2937; margin:0; text-transform:capitalize;">{{ $data->metode ?? '—' }}</p>
                                 </div>
-                                <div>
-                                    <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Nomor Rekening</p>
-                                    <div class="p-3 bg-green-50 border-2 border-dashed border-green-300 rounded-xl">
-                                        <p class="text-2xl font-mono font-extrabold text-gray-900 tracking-wider">{{ $data->account_number ?? '—' }}</p>
-                                    </div>
+                                <div style="padding:14px 16px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb;">
+                                    <p style="font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px 0;">Berat</p>
+                                    <p style="font-size:15px; font-weight:700; color:#16a34a; margin:0;">{{ number_format($beratTampil, 2) }} kg</p>
                                 </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="text-xs text-gray-500 uppercase font-semibold">Atas Nama</span>
-                                    <span class="text-sm font-semibold text-gray-800">{{ $data->account_name ?? $data->user->name ?? '—' }}</span>
-                                </div>
-                            @else
-                                <div>
-                                    <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Nomor {{ strtoupper($data->payment_method ?? '') }}</p>
-                                    <div class="p-3 bg-green-50 border-2 border-dashed border-green-300 rounded-xl">
-                                        <p class="text-2xl font-mono font-extrabold text-gray-900 tracking-wider">{{ $data->account_number ?? '—' }}</p>
-                                    </div>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="text-xs text-gray-500 uppercase font-semibold">Atas Nama</span>
-                                    <span class="text-sm font-semibold text-gray-800">{{ $data->account_name ?? $data->user->name ?? '—' }}</span>
+                            </div>
+
+                            @if(isset($data->alamat_jemput) && $data->alamat_jemput)
+                                <div style="padding:14px 16px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb; margin-bottom:16px;">
+                                    <p style="font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px 0;">Alamat Jemput</p>
+                                    <p style="font-size:14px; font-weight:500; color:#1f2937; margin:0; line-height:1.5;">{{ $data->alamat_jemput }}</p>
                                 </div>
                             @endif
 
+                            @if(isset($data->titik_kumpul) && $data->titik_kumpul)
+                                <div style="padding:14px 16px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb; margin-bottom:16px;">
+                                    <p style="font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px 0;">Titik Kumpul</p>
+                                    <p style="font-size:14px; font-weight:700; color:#1f2937; margin:0;">{{ $data->titik_kumpul->nama ?? '—' }}</p>
+                                </div>
+                            @endif
+
+                            @if(isset($data->jenisSampahs) && $data->jenisSampahs->count())
+                                <div>
+                                    <p style="font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 12px 0;">Jenis Sampah</p>
+                                    <div style="display:flex; flex-direction:column; gap:8px;">
+                                        @foreach($data->jenisSampahs as $js)
+                                            <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#f0fdf4; border:2px solid #bbf7d0; border-radius:8px;">
+                                                <div style="display:flex; align-items:center; gap:10px;">
+                                                    <div style="width:32px; height:32px; border-radius:8px; background:#16a34a; display:flex; align-items:center; justify-content:center;">
+                                                        <svg style="width:16px; height:16px; color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                                                        </svg>
+                                                    </div>
+                                                    <span style="font-size:14px; font-weight:700; color:#15803d;">{{ $js->nama }}</span>
+                                                </div>
+                                                <span style="font-size:14px; font-weight:700; color:#15803d;">
+                                                    {{ number_format($js->pivot->berat_aktual ?? $js->pivot->berat ?? 0, 2) }} kg
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @else
+                    {{-- REKENING WITHDRAW --}}
+                    <div style="background:#fff; border-radius:8px; border:2px solid #e5e7eb; overflow:hidden; margin-bottom:20px;">
+                        <div style="padding:12px 20px; background:#f9fafb; border-bottom:2px solid #e5e7eb; display:flex; align-items:center; gap:10px;">
+                            <svg style="width:18px; height:18px; color:#16a34a;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                            <h3 style="font-size:13px; font-weight:700; color:#1f2937; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Rekening Tujuan Transfer</h3>
+                        </div>
+
+                        <div style="padding:20px;">
+                            @if($data->payment_method == 'bank')
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f1f5f9;">
+                                    <span style="font-size:11px; color:#6b7280; text-transform:uppercase; font-weight:700;">Bank</span>
+                                    <span style="font-size:14px; font-weight:700; color:#1f2937;">{{ strtoupper($data->bank_name ?? '-') }}</span>
+                                </div>
+                            @endif
+
+                            <div style="margin:16px 0;">
+                                <p style="font-size:11px; color:#6b7280; text-transform:uppercase; font-weight:700; margin:0 0 8px 0;">
+                                    Nomor {{ $data->payment_method == 'bank' ? 'Rekening' : strtoupper($data->payment_method ?? '') }}
+                                </p>
+                                <div style="padding:16px; background:#f0fdf4; border:2px dashed #86efac; border-radius:8px; text-align:center;">
+                                    <p style="font-size:22px; font-family:monospace; font-weight:800; color:#1f2937; margin:0; letter-spacing:2px;">
+                                        {{ $data->account_number ?? '—' }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f1f5f9; margin-bottom:16px;">
+                                <span style="font-size:11px; color:#6b7280; text-transform:uppercase; font-weight:700;">Atas Nama</span>
+                                <span style="font-size:14px; font-weight:700; color:#1f2937;">{{ $data->account_name ?? $data->user->name ?? '—' }}</span>
+                            </div>
+
                             <button type="button" 
                                     onclick="copyAccountNumber('{{ $data->account_number }}')"
-                                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl text-sm font-bold transition shadow-md hover:shadow-lg">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer;">
+                                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                                 </svg>
                                 Copy Nomor Rekening
                             </button>
                         </div>
+
+                        <div style="padding:12px 20px; background:#f0fdf4; border-top:2px solid #bbf7d0;">
+                            <p style="font-size:12px; color:#15803d; margin:0; line-height:1.6;">
+                                <strong>💡 Info:</strong> Poin user sudah otomatis dipotong. Silakan transfer ke rekening di atas secara manual.
+                            </p>
+                        </div>
                     </div>
 
-                    <div class="px-5 py-3 bg-green-50 border-t border-green-100">
-                        <p class="text-xs text-green-800 leading-relaxed">
-                            💡 Poin user <strong>sudah otomatis dipotong</strong>. Silakan transfer ke rekening di atas secara manual.
-                        </p>
-                    </div>
-                </div>
-
-                @if($data->admin_note)
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Catatan Admin</p>
-                        <p class="text-sm text-gray-700 italic">"{{ $data->admin_note }}"</p>
-                    </div>
+                    @if($data->admin_note)
+                        <div style="background:#fff; border-radius:8px; border:2px solid #e5e7eb; padding:16px 20px;">
+                            <p style="font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 8px 0;">Catatan Admin</p>
+                            <p style="font-size:14px; color:#1f2937; margin:0; font-style:italic; line-height:1.6;">"{{ $data->admin_note }}"</p>
+                        </div>
+                    @endif
                 @endif
-            @endif
-        </div>
 
-        {{-- KOLOM KANAN --}}
-        <div class="space-y-5">
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100">
-                    <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-                        <span class="w-1 h-4 bg-green-500 rounded-full"></span>
-                        Ringkasan
-                    </h3>
-                </div>
-                <div class="divide-y divide-gray-100">
-                    <div class="flex justify-between items-center px-5 py-3">
-                        <span class="text-xs text-gray-500 uppercase font-semibold">ID</span>
-                        <span class="text-sm font-bold text-gray-800">#{{ $data->id }}</span>
-                    </div>
-                    <div class="flex justify-between items-center px-5 py-3">
-                        <span class="text-xs text-gray-500 uppercase font-semibold">Tipe</span>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold
-                            {{ $type == 'withdraw' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800' }}">
-                            {{ ucfirst($type) }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between items-center px-5 py-3">
-                        <span class="text-xs text-gray-500 uppercase font-semibold">Tanggal</span>
-                        <span class="text-sm font-semibold text-gray-800">
-                            {{ \Carbon\Carbon::parse($data->tanggal ?? $data->created_at)->format('d M Y') }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between items-center px-5 py-3">
-                        <span class="text-xs text-gray-500 uppercase font-semibold">Jam</span>
-                        <span class="text-sm font-semibold text-gray-800">
-                            {{ \Carbon\Carbon::parse($data->tanggal ?? $data->created_at)->format('H:i') }} WIB
-                        </span>
-                    </div>
-                </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100">
-                    <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-                        <span class="w-1 h-4 bg-green-500 rounded-full"></span>
-                        Timeline
-                    </h3>
-                </div>
-                <div class="p-5">
-                    <div class="relative space-y-6">
-                        <div class="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gray-200"></div>
+            {{-- KOLOM KANAN --}}
+            <div class="lg:col-span-1">
 
-                        <div class="relative flex gap-4">
-                            <div class="relative z-10 w-4 h-4 rounded-full bg-green-500 border-4 border-green-100 shrink-0 mt-0.5"></div>
+                {{-- RINGKASAN --}}
+                <div style="background:#fff; border-radius:8px; border:2px solid #e5e7eb; overflow:hidden; margin-bottom:20px;">
+                    <div style="padding:12px 20px; background:#f9fafb; border-bottom:2px solid #e5e7eb;">
+                        <h3 style="font-size:13px; font-weight:700; color:#1f2937; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Ringkasan</h3>
+                    </div>
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:1px solid #f1f5f9;">
+                            <span style="font-size:11px; color:#6b7280; text-transform:uppercase; font-weight:700;">ID Transaksi</span>
+                            <span style="font-size:14px; font-weight:700; color:#1f2937; font-family:monospace;">#{{ $data->id }}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:1px solid #f1f5f9;">
+                            <span style="font-size:11px; color:#6b7280; text-transform:uppercase; font-weight:700;">Tipe</span>
+                            <span style="display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:700; background:{{ $type == 'withdraw' ? '#fef3c7' : '#dcfce7' }}; color:{{ $type == 'withdraw' ? '#92400e' : '#15803d' }};">
+                                {{ ucfirst($type) }}
+                            </span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:1px solid #f1f5f9;">
+                            <span style="font-size:11px; color:#6b7280; text-transform:uppercase; font-weight:700;">Tanggal</span>
+                            <span style="font-size:14px; font-weight:600; color:#1f2937;">
+                                {{ \Carbon\Carbon::parse($data->tanggal ?? $data->created_at)->format('d M Y') }}
+                            </span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px;">
+                            <span style="font-size:11px; color:#6b7280; text-transform:uppercase; font-weight:700;">Jam</span>
+                            <span style="font-size:14px; font-weight:600; color:#1f2937;">
+                                {{ \Carbon\Carbon::parse($data->tanggal ?? $data->created_at)->format('H:i') }} WIB
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- TIMELINE --}}
+                <div style="background:#fff; border-radius:8px; border:2px solid #e5e7eb; overflow:hidden;">
+                    <div style="padding:12px 20px; background:#f9fafb; border-bottom:2px solid #e5e7eb;">
+                        <h3 style="font-size:13px; font-weight:700; color:#1f2937; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Timeline</h3>
+                    </div>
+                    <div style="padding:20px; position:relative;">
+
+                        <div style="position:absolute; left:29px; top:32px; bottom:32px; width:2px; background:#e5e7eb;"></div>
+
+                        {{-- Dibuat --}}
+                        <div style="display:flex; gap:16px; margin-bottom:24px; position:relative;">
+                            <div style="width:16px; height:16px; border-radius:50%; background:#16a34a; border:4px solid #dcfce7; flex-shrink:0; margin-top:4px; z-index:1;"></div>
                             <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold">Dibuat</p>
-                                <p class="text-sm font-semibold text-gray-800">
+                                <p style="font-size:11px; color:#6b7280; text-transform:uppercase; font-weight:700; margin:0 0 2px 0;">Dibuat</p>
+                                <p style="font-size:14px; font-weight:700; color:#1f2937; margin:0;">
                                     {{ \Carbon\Carbon::parse($data->created_at)->format('d M Y') }}
                                 </p>
-                                <p class="text-xs text-gray-500">
+                                <p style="font-size:12px; color:#6b7280; margin:2px 0 0 0;">
                                     {{ \Carbon\Carbon::parse($data->created_at)->format('H:i') }} WIB
                                 </p>
                             </div>
                         </div>
 
+                        {{-- Diproses --}}
                         @if(isset($data->processed_at) && $data->processed_at)
-                            <div class="relative flex gap-4">
-                                <div class="relative z-10 w-4 h-4 rounded-full bg-green-600 border-4 border-green-100 shrink-0 mt-0.5"></div>
+                            <div style="display:flex; gap:16px; margin-bottom:24px; position:relative;">
+                                <div style="width:16px; height:16px; border-radius:50%; background:#16a34a; border:4px solid #dcfce7; flex-shrink:0; margin-top:4px; z-index:1;"></div>
                                 <div>
-                                    <p class="text-xs text-gray-500 uppercase font-semibold">Diproses</p>
-                                    <p class="text-sm font-semibold text-gray-800">
+                                    <p style="font-size:11px; color:#6b7280; text-transform:uppercase; font-weight:700; margin:0 0 2px 0;">Diproses</p>
+                                    <p style="font-size:14px; font-weight:700; color:#1f2937; margin:0;">
                                         {{ \Carbon\Carbon::parse($data->processed_at)->format('d M Y') }}
                                     </p>
-                                    <p class="text-xs text-gray-500">
+                                    <p style="font-size:12px; color:#6b7280; margin:2px 0 0 0;">
                                         {{ \Carbon\Carbon::parse($data->processed_at)->format('H:i') }} WIB
                                     </p>
                                 </div>
                             </div>
                         @endif
 
-                        <div class="relative flex gap-4">
-                            <div class="relative z-10 w-4 h-4 rounded-full bg-gray-400 border-4 border-gray-100 shrink-0 mt-0.5"></div>
+                        {{-- Diperbarui --}}
+                        <div style="display:flex; gap:16px; position:relative;">
+                            <div style="width:16px; height:16px; border-radius:50%; background:#94a3b8; border:4px solid #f1f5f9; flex-shrink:0; margin-top:4px; z-index:1;"></div>
                             <div>
-                                <p class="text-xs text-gray-500 uppercase font-semibold">Diperbarui</p>
-                                <p class="text-sm font-semibold text-gray-800">
+                                <p style="font-size:11px; color:#6b7280; text-transform:uppercase; font-weight:700; margin:0 0 2px 0;">Diperbarui</p>
+                                <p style="font-size:14px; font-weight:700; color:#1f2937; margin:0;">
                                     {{ \Carbon\Carbon::parse($data->updated_at)->format('d M Y') }}
                                 </p>
-                                <p class="text-xs text-gray-500">
+                                <p style="font-size:12px; color:#6b7280; margin:2px 0 0 0;">
                                     {{ \Carbon\Carbon::parse($data->updated_at)->format('H:i') }} WIB
                                 </p>
                             </div>
                         </div>
+
                     </div>
                 </div>
+
             </div>
+
         </div>
+
+    </div>
+
+</div>
+
+{{-- COPY TOAST --}}
+<div id="copyToast" style="position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(96px); opacity:0; pointer-events:none; z-index:9999; transition:all 0.3s ease;">
+    <div style="background:#1f2937; color:#fff; padding:12px 20px; border-radius:999px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); display:flex; align-items:center; gap:8px;">
+        <svg id="copyToastIcon" style="width:16px; height:16px; color:#4ade80;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+        <span id="copyToastText" style="font-size:14px; font-weight:600;">Berhasil di-copy!</span>
     </div>
 </div>
 
-<div id="copyToast" class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-24 opacity-0 pointer-events-none z-50 transition-all duration-300">
-    <div class="bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-2">
-        <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-        </svg>
-        <span class="text-sm font-medium" id="copyToastText">Berhasil di-copy!</span>
-    </div>
-</div>
+<style>
+    @media (min-width: 1024px) {
+        .lg\:grid-cols-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+        .lg\:col-span-2 {
+            grid-column: span 2 / span 2 !important;
+        }
+        .lg\:col-span-1 {
+            grid-column: span 1 / span 1 !important;
+        }
+    }
+</style>
 
 <script>
 function copyAccountNumber(number) {
@@ -396,21 +420,21 @@ function fallbackCopy(text) {
 function showCopyToast(message, success = true) {
     const toast = document.getElementById('copyToast');
     const text = document.getElementById('copyToastText');
+    const icon = document.getElementById('copyToastIcon');
     text.textContent = message;
-    const icon = toast.querySelector('svg');
     if (success) {
-        icon.className = 'w-4 h-4 text-green-400';
+        icon.style.color = '#4ade80';
         icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>';
     } else {
-        icon.className = 'w-4 h-4 text-red-400';
+        icon.style.color = '#f87171';
         icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>';
     }
-    toast.classList.remove('translate-y-24', 'opacity-0');
-    toast.classList.add('translate-y-0', 'opacity-100');
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    toast.style.opacity = '1';
     clearTimeout(window.copyToastTimer);
     window.copyToastTimer = setTimeout(() => {
-        toast.classList.add('translate-y-24', 'opacity-0');
-        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.style.transform = 'translateX(-50%) translateY(96px)';
+        toast.style.opacity = '0';
     }, 2000);
 }
 </script>

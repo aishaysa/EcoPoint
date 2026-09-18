@@ -6,102 +6,279 @@
 @push('styles')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-    #map { height: 350px; width: 100%; border-radius: 8px; border: 1px solid #d1d9e0; margin-top: 5px; }
-    .form-group { margin-bottom: 1rem; }
-    .form-label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.25rem; }
-    .form-control { width: 100%; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.875rem; }
-    .form-control:focus { outline: none; border-color: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,0.25); }
-    .form-control:read-only { background-color: #f3f4f6; }
-    .btn { padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.15s; cursor: pointer; border: none; }
-    .btn-primary { background-color: #059669; color: white; }
-    .btn-primary:hover { background-color: #047857; }
-    .btn-secondary { background-color: #e5e7eb; color: #374151; }
-    .btn-secondary:hover { background-color: #d1d5db; }
-    .text-danger { color: #dc2626; font-size: 0.75rem; margin-top: 0.25rem; }
-    .coord-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem; }
-    .coord-label { display: block; font-size: 0.7rem; color: #6b7280; }
-    .alert-error { background-color: #fee2e2; border: 1px solid #fecaca; color: #991b1b; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
-    .card { background: white; border-radius: 0.75rem; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 1.5rem; max-width: 640px; }
-    .search-results { position: absolute; z-index: 9999; background: white; border: 1px solid #d1d5db; border-radius: 0.5rem; max-height: 200px; overflow-y: auto; width: calc(100% - 2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; }
-    .search-results .result-item { padding: 0.5rem 1rem; cursor: pointer; border-bottom: 1px solid #f3f4f6; }
-    .search-results .result-item:hover { background-color: #f0fdf4; }
-    .search-wrapper { position: relative; }
+    #map {
+        height: 350px;
+        width: 100%;
+        border-radius: 8px;
+        border: 2px solid #d1d5db;
+        margin-top: 8px;
+    }
+    .form-input:focus {
+        border-color: #16a34a !important;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15) !important;
+    }
+    .search-results {
+        position: absolute;
+        z-index: 9999;
+        background: white;
+        border: 2px solid #d1d5db;
+        border-radius: 8px;
+        max-height: 220px;
+        overflow-y: auto;
+        width: 100%;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        display: none;
+        margin-top: 4px;
+    }
+    .search-results .result-item {
+        padding: 10px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 13px;
+        color: #374151;
+        line-height: 1.4;
+    }
+    .search-results .result-item:last-child { border-bottom: none; }
+    .search-results .result-item:hover {
+        background-color: #f0fdf4;
+        color: #15803d;
+    }
+    .search-results .result-item.loading {
+        text-align: center;
+        color: #9ca3af;
+        cursor: default;
+        font-style: italic;
+    }
+    .search-results .result-item.loading:hover {
+        background: #fff;
+        color: #9ca3af;
+    }
+    .search-results .result-item.empty {
+        text-align: center;
+        color: #9ca3af;
+        cursor: default;
+        font-style: italic;
+    }
+    .search-results .result-item.empty:hover {
+        background: #fff;
+        color: #9ca3af;
+    }
 </style>
 @endpush
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
-    <div class="card mx-auto">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Tambah Titik Kumpul</h2>
-        <p class="text-sm text-gray-500 mb-6">Isi data titik kumpul baru. Cari lokasi di peta atau klik langsung.</p>
 
-        @if($errors->any())
-            <div class="alert-error">
-                @foreach($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
-
-        <form action="{{ route('admin.titik-kumpul.store') }}" method="POST">
-            @csrf
-
-            <div class="form-group">
-                <label class="form-label" for="nama">Nama <span class="text-red-500">*</span></label>
-                <input type="text" id="nama" name="nama" value="{{ old('nama') }}" required class="form-control" placeholder="Contoh: Kantor Pusat">
-                @error('nama') <div class="text-danger">{{ $message }}</div> @enderror
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="alamat">Alamat</label>
-                <div class="search-wrapper">
-                    <input type="text" id="alamat" name="alamat" value="{{ old('alamat') }}" class="form-control" placeholder="Cari alamat... (contoh: Jakarta)" autocomplete="off">
-                    <div id="searchResults" class="search-results"></div>
-                </div>
-                @error('alamat') <div class="text-danger">{{ $message }}</div> @enderror
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Lokasi di Peta</label>
-                <div id="map"></div>
-                <div class="coord-grid">
-                    <div>
-                        <label class="coord-label">Latitude</label>
-                        <input type="text" id="latitude" name="latitude" value="{{ old('latitude', '-6.2088') }}" class="form-control" readonly>
-                    </div>
-                    <div>
-                        <label class="coord-label">Longitude</label>
-                        <input type="text" id="longitude" name="longitude" value="{{ old('longitude', '106.8456') }}" class="form-control" readonly>
-                    </div>
-                </div>
-                <p class="text-xs text-gray-400 mt-1">
-                    <i class="fas fa-info-circle"></i> 
-                    Klik peta atau geser marker untuk menentukan lokasi. Cari alamat di kotak pencarian.
-                </p>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="kontak">Kontak</label>
-                <input type="text" id="kontak" name="kontak" value="{{ old('kontak') }}" class="form-control" placeholder="Contoh: 08XXXXXXXXXX">
-                @error('kontak') <div class="text-danger">{{ $message }}</div> @enderror
-            </div>
-
-            {{-- Status Aktif --}}
-            <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label class="flex items-center" style="cursor: pointer;">
-                    <input type="checkbox" name="is_active" value="1" {{ old('is_active') ? 'checked' : '' }}
-                           style="width: 1rem; height: 1rem; color: #059669; border-color: #d1d5db; border-radius: 0.25rem;">
-                    <span class="ml-2 text-sm text-gray-700">Aktif</span>
-                </label>
-            </div>
-
-            <div class="flex space-x-3">
-                <button type="submit" class="btn btn-primary">Simpan</button>
-                <a href="{{ route('admin.titik-kumpul.index') }}" class="btn btn-secondary">Batal</a>
-            </div>
-        </form>
+    {{-- HEADER --}}
+    <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-bottom:24px;">
+        <div>
+            <h1 style="font-size:24px; font-weight:700; color:#1f2937; margin:0;">Tambah Titik Kumpul</h1>
+            <p style="font-size:14px; color:#6b7280; margin:4px 0 0 0;">Isi data titik kumpul baru. Cari lokasi di peta atau klik langsung.</p>
+        </div>
+        <a href="{{ route('admin.titik-kumpul.index') }}" 
+           style="display:inline-flex; align-items:center; padding:8px 16px; background:#fff; color:#374151; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:600; text-decoration:none; transition:all 0.2s;">
+            <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Kembali
+        </a>
     </div>
+
+    {{-- ERROR VALIDATION --}}
+    @if($errors->any())
+        <div style="background:#fef2f2; border:2px solid #fecaca; border-radius:8px; padding:16px; margin-bottom:16px;">
+            <div style="display:flex; gap:12px;">
+                <svg style="width:20px; height:20px; color:#dc2626; flex-shrink:0; margin-top:2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <div>
+                    <p style="font-size:14px; font-weight:700; color:#991b1b; margin:0 0 4px 0;">Terdapat kesalahan:</p>
+                    <ul style="font-size:14px; color:#b91c1c; margin:0; padding-left:20px;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <form action="{{ route('admin.titik-kumpul.store') }}" method="POST">
+        @csrf
+
+        <div style="background:#fff; border-radius:8px; border:2px solid #e5e7eb; overflow:hidden;">
+
+            {{-- HEADER FORM --}}
+            <div style="padding:12px 20px; background:#f9fafb; border-bottom:2px solid #e5e7eb;">
+                <h3 style="font-size:13px; font-weight:700; color:#1f2937; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Detail Titik Kumpul</h3>
+            </div>
+
+            <div style="padding:20px;">
+
+                {{-- NAMA --}}
+                <div style="margin-bottom:20px;">
+                    <label for="nama" style="display:block; font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                        Nama <span style="color:#dc2626;">*</span>
+                    </label>
+                    <input type="text" id="nama" name="nama" value="{{ old('nama') }}" required
+                           placeholder="Contoh: Kantor Pusat"
+                           class="form-input"
+                           style="width:100%; padding:12px 16px; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:500; color:#1f2937; background:#fff; outline:none; box-sizing:border-box;">
+                    @error('nama')
+                        <p style="color:#dc2626; font-size:12px; margin:4px 0 0 0;">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- ALAMAT --}}
+                <div style="margin-bottom:20px;">
+                    <label for="alamat" style="display:block; font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                        Alamat
+                    </label>
+                    <div style="position:relative;">
+                        <input type="text" id="alamat" name="alamat" value="{{ old('alamat') }}"
+                               placeholder="Cari alamat... (contoh: Jakarta)"
+                               autocomplete="off"
+                               class="form-input"
+                               style="width:100%; padding:12px 16px; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:500; color:#1f2937; background:#fff; outline:none; box-sizing:border-box;">
+                        <div id="searchResults" class="search-results"></div>
+                    </div>
+                    @error('alamat')
+                        <p style="color:#dc2626; font-size:12px; margin:4px 0 0 0;">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- MAP --}}
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                        Lokasi di Peta
+                    </label>
+                    <div id="map"></div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
+                        <div>
+                            <label style="display:block; font-size:11px; color:#6b7280; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px;">
+                                Latitude
+                            </label>
+                            <input type="text" id="latitude" name="latitude"
+                                   value="{{ old('latitude', '-6.2088') }}"
+                                   readonly
+                                   style="width:100%; padding:8px 12px; border:2px solid #d1d5db; border-radius:8px; font-size:13px; font-weight:600; color:#4b5563; background:#f3f4f6; outline:none; box-sizing:border-box; cursor:not-allowed;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:11px; color:#6b7280; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px;">
+                                Longitude
+                            </label>
+                            <input type="text" id="longitude" name="longitude"
+                                   value="{{ old('longitude', '106.8456') }}"
+                                   readonly
+                                   style="width:100%; padding:8px 12px; border:2px solid #d1d5db; border-radius:8px; font-size:13px; font-weight:600; color:#4b5563; background:#f3f4f6; outline:none; box-sizing:border-box; cursor:not-allowed;">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:8px; padding:10px 12px; background:#f0fdf4; border:2px solid #bbf7d0; border-radius:8px; display:flex; align-items:flex-start; gap:8px;">
+                        <svg style="width:16px; height:16px; color:#15803d; flex-shrink:0; margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p style="font-size:12px; color:#15803d; margin:0; line-height:1.5;">
+                            <strong>Tips:</strong> Klik peta atau geser marker untuk menentukan lokasi. Cari alamat di kotak pencarian untuk auto-locate.
+                        </p>
+                    </div>
+                </div>
+
+                {{-- KONTAK --}}
+                <div style="margin-bottom:20px;">
+                    <label for="kontak" style="display:block; font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                        Kontak <span style="color:#9ca3af; font-weight:500; text-transform:none;">(Opsional)</span>
+                    </label>
+                    <input type="text" id="kontak" name="kontak" value="{{ old('kontak') }}"
+                           placeholder="Contoh: 08XXXXXXXXXX"
+                           class="form-input"
+                           style="width:100%; padding:12px 16px; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:500; color:#1f2937; background:#fff; outline:none; box-sizing:border-box;">
+                    @error('kontak')
+                        <p style="color:#dc2626; font-size:12px; margin:4px 0 0 0;">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- STATUS AKTIF --}}
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                        Status
+                    </label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <label style="cursor:pointer; display:block; position:relative;">
+                            <input type="radio" name="is_active" value="1"
+                                   {{ old('is_active', 1) == 1 ? 'checked' : '' }}
+                                   style="position:absolute; opacity:0; pointer-events:none;">
+                            <div class="status-card status-active" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; border:2px solid #d1d5db; border-radius:8px; background:#fff; font-size:14px; font-weight:700; color:#4b5563; transition:all 0.2s;">
+                                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Aktif
+                            </div>
+                        </label>
+                        <label style="cursor:pointer; display:block; position:relative;">
+                            <input type="radio" name="is_active" value="0"
+                                   {{ old('is_active') === '0' || old('is_active') === 0 ? 'checked' : '' }}
+                                   style="position:absolute; opacity:0; pointer-events:none;">
+                            <div class="status-card status-inactive" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; border:2px solid #d1d5db; border-radius:8px; background:#fff; font-size:14px; font-weight:700; color:#4b5563; transition:all 0.2s;">
+                                <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                                </svg>
+                                Nonaktif
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+
+            {{-- ACTION BUTTONS --}}
+            <div style="padding:16px 20px; background:#f9fafb; border-top:2px solid #e5e7eb; display:flex; flex-wrap:wrap; gap:12px; justify-content:flex-end;">
+                <a href="{{ route('admin.titik-kumpul.index') }}"
+                   style="display:inline-flex; align-items:center; justify-content:center; padding:10px 24px; background:#fff; color:#374151; border:2px solid #d1d5db; border-radius:8px; font-size:14px; font-weight:700; text-decoration:none;">
+                    Batal
+                </a>
+                <button type="submit"
+                        style="display:inline-flex; align-items:center; justify-content:center; padding:10px 24px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer;">
+                    <svg style="width:16px; height:16px; margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Simpan Titik Kumpul
+                </button>
+            </div>
+
+        </div>
+    </form>
 </div>
+
+{{-- STYLE UNTUK STATUS CARD --}}
+<style>
+    .status-active {
+        border-color: #d1d5db;
+        background: #fff;
+        color: #4b5563;
+    }
+    input[value="1"]:checked + .status-active {
+        border-color: #16a34a !important;
+        background: #f0fdf4 !important;
+        color: #15803d !important;
+    }
+
+    .status-inactive {
+        border-color: #d1d5db;
+        background: #fff;
+        color: #4b5563;
+    }
+    input[value="0"]:checked + .status-inactive {
+        border-color: #dc2626 !important;
+        background: #fef2f2 !important;
+        color: #b91c1c !important;
+    }
+
+    .status-card:hover {
+        border-color: #9ca3af;
+    }
+</style>
 @endsection
 
 @push('scripts')
@@ -143,13 +320,18 @@
                 resultsContainer.style.display = 'none';
                 return;
             }
+
+            // Loading state
+            resultsContainer.innerHTML = '<div class="result-item loading">Mencari lokasi...</div>';
+            resultsContainer.style.display = 'block';
+
             searchTimeout = setTimeout(function() {
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=5`)
                     .then(response => response.json())
                     .then(data => {
                         resultsContainer.innerHTML = '';
                         if (data.length === 0) {
-                            resultsContainer.style.display = 'none';
+                            resultsContainer.innerHTML = '<div class="result-item empty">Lokasi tidak ditemukan</div>';
                             return;
                         }
                         data.forEach(function(item) {
@@ -159,9 +341,9 @@
                             div.addEventListener('click', function() {
                                 const lat = parseFloat(item.lat);
                                 const lng = parseFloat(item.lon);
-                                const center = [lat, lng];
-                                map.setView(center, 15);
-                                marker.setLatLng(center);
+                                const newCenter = [lat, lng];
+                                map.setView(newCenter, 15);
+                                marker.setLatLng(newCenter);
                                 document.getElementById('latitude').value = lat.toFixed(8);
                                 document.getElementById('longitude').value = lng.toFixed(8);
                                 document.getElementById('alamat').value = item.display_name;
@@ -172,13 +354,13 @@
                         resultsContainer.style.display = 'block';
                     })
                     .catch(function() {
-                        resultsContainer.style.display = 'none';
+                        resultsContainer.innerHTML = '<div class="result-item empty">Gagal mencari lokasi</div>';
                     });
             }, 500);
         });
 
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.search-wrapper')) {
+            if (!e.target.closest('div[style*="position:relative"]')) {
                 resultsContainer.style.display = 'none';
             }
         });

@@ -26,7 +26,7 @@
         </div>
 
         <div class="flex items-center gap-3 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-            <div class="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
+            <div class="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full shrink-0">
                 <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
@@ -40,34 +40,39 @@
     </div>
 
     {{-- FILTER & LIVE SEARCH --}}
-    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-4">
-        <form method="GET" action="{{ route('admin.transaksi.index') }}" id="filterForm">
+    <div class="bg-white rounded-lg shadow-sm border-2 border-gray-200 mb-4 overflow-hidden">
+        {{-- Header Filter --}}
+        <div class="px-4 py-3 bg-gray-50 border-b-2 border-gray-200 flex items-center gap-2">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+            </svg>
+            <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wide">Filter & Pencarian</h3>
+        </div>
+
+        <form method="GET" action="{{ route('admin.transaksi.index') }}" id="filterForm" class="p-4">
             <input type="hidden" name="filter" value="{{ $filter }}">
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {{-- Cari Data - Icon dihapus --}}
                 <div class="sm:col-span-2 lg:col-span-1">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
                         Cari Data
                         <span id="search-loading" class="hidden text-green-600 ml-1">●</span>
                     </label>
-                    <div class="relative">
-                        <input type="text" 
-                               name="search" 
-                               id="search-input"
-                               value="{{ request('search') }}"
-                               placeholder="Nama, status, jenis, metode..."
-                               autocomplete="off"
-                               class="w-full pl-9 pr-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
-                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </div>
+                    <input type="text" 
+                           name="search" 
+                           id="search-input"
+                           value="{{ request('search') }}"
+                           placeholder="Nama, status, jenis, metode..."
+                           autocomplete="off"
+                           class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-300 bg-white text-sm font-medium text-gray-800 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition">
                 </div>
 
+                {{-- Tanggal --}}
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Tanggal</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Tanggal</label>
                     <select name="tanggal" id="filter-tanggal"
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm py-2">
+                            class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-300 bg-white text-sm font-medium text-gray-800 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition cursor-pointer">
                         <option value="">Semua Tanggal</option>
                         @for($i = 1; $i <= 31; $i++)
                             <option value="{{ $i }}" {{ request('tanggal') == $i ? 'selected' : '' }}>{{ $i }}</option>
@@ -75,10 +80,11 @@
                     </select>
                 </div>
 
+                {{-- Bulan --}}
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Bulan</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Bulan</label>
                     <select name="bulan" id="filter-bulan"
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm py-2">
+                            class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-300 bg-white text-sm font-medium text-gray-800 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition cursor-pointer">
                         <option value="">Semua Bulan</option>
                         @php
                             $bulanList = [
@@ -93,10 +99,11 @@
                     </select>
                 </div>
 
+                {{-- Tahun --}}
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Tahun</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Tahun</label>
                     <select name="tahun" id="filter-tahun"
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm py-2">
+                            class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-300 bg-white text-sm font-medium text-gray-800 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none transition cursor-pointer">
                         <option value="">Semua Tahun</option>
                         @for($y = date('Y'); $y >= date('Y') - 5; $y--)
                             <option value="{{ $y }}" {{ request('tahun') == $y ? 'selected' : '' }}>{{ $y }}</option>
@@ -105,32 +112,55 @@
                 </div>
             </div>
 
-            @if(request('search') || request('tanggal') || request('bulan') || request('tahun'))
-                <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2 items-center justify-between">
-                    <div class="flex flex-wrap gap-2 items-center text-xs">
-                        <span class="text-gray-500">Filter aktif:</span>
+            {{-- Tombol Aksi --}}
+            <div class="mt-4 pt-4 border-t-2 border-gray-100 flex flex-wrap gap-2 items-center justify-between">
+                <div class="flex flex-wrap gap-2 items-center">
+                    <button type="submit" 
+                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold shadow-sm transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                        </svg>
+                        Terapkan Filter
+                    </button>
+
+                    @if(request('search') || request('tanggal') || request('bulan') || request('tahun'))
+                        <a href="{{ route('admin.transaksi.index') }}?filter={{ $filter }}" 
+                           class="inline-flex items-center gap-1.5 px-4 py-2 bg-white border-2 border-red-300 hover:bg-red-50 text-red-600 rounded-lg text-sm font-bold transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Reset Filter
+                        </a>
+                    @endif
+                </div>
+
+                {{-- Filter Aktif Badges --}}
+                @if(request('search') || request('tanggal') || request('bulan') || request('tahun'))
+                    <div class="flex flex-wrap gap-1.5 items-center text-xs">
+                        <span class="text-gray-500 font-medium">Filter aktif:</span>
                         @if(request('search'))
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">"{{ request('search') }}"</span>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                                "{{ request('search') }}"
+                            </span>
                         @endif
                         @if(request('tanggal'))
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-700">Tanggal: {{ request('tanggal') }}</span>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-100 text-green-800 font-semibold border border-green-200">
+                                Tgl: {{ request('tanggal') }}
+                            </span>
                         @endif
                         @if(request('bulan'))
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Bulan: {{ $bulanList[request('bulan')] ?? request('bulan') }}</span>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                                {{ $bulanList[request('bulan')] ?? request('bulan') }}
+                            </span>
                         @endif
                         @if(request('tahun'))
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-700">Tahun: {{ request('tahun') }}</span>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-100 text-green-800 font-semibold border border-green-200">
+                                {{ request('tahun') }}
+                            </span>
                         @endif
                     </div>
-                    <a href="{{ route('admin.transaksi.index') }}?filter={{ $filter }}" 
-                       class="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-medium">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                        Reset Filter
-                    </a>
-                </div>
-            @endif
+                @endif
+            </div>
         </form>
     </div>
 

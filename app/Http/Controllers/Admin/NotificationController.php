@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
-    /**
-     * Status yang dianggap "menunggu diproses"
-     */
     private function pendingSetoranStatuses(): array
     {
         return ['pending', 'menunggu', 'waiting', 'baru', 'new', 'process', 'processing', 'review'];
@@ -23,6 +20,30 @@ class NotificationController extends Controller
     }
 
     /**
+     * Helper: Ambil foreign key user/pelanggan dari model secara aman
+     */
+    private function getPelangganId($model): ?int
+    {
+        if (!$model) return null;
+        return $model->pelanggan_id ?? $model->user_id ?? null;
+    }
+
+    /**
+     * Helper: Buat URL redirect ke detail pelanggan
+     */
+    private function buildPelangganUrl($model): string
+    {
+        $pelangganId = $this->getPelangganId($model);
+
+        if ($pelangganId && \App\Models\Pelanggan::where('id', $pelangganId)->exists()) {
+            return route('admin.pelanggan.show', $pelangganId);
+        }
+
+        // Fallback kalau pelanggan gak ketemu
+        return route('admin.pelanggan.index');
+    }
+
+    /**
      * GET /admin/notifications
      */
     public function index()
@@ -31,6 +52,7 @@ class NotificationController extends Controller
             $setoranStatuses  = $this->pendingSetoranStatuses();
             $withdrawStatuses = $this->pendingWithdrawStatuses();
 
+            // === SETORAN PENDING ===
             $setoranPending = Setoran::with('user')
                 ->whereIn('status', $setoranStatuses)
                 ->orderBy('created_at', 'desc')
@@ -38,13 +60,16 @@ class NotificationController extends Controller
                 ->get()
                 ->map(function ($s) {
                     $berat = $s->berat_aktual > 0 ? $s->berat_aktual : $s->berat;
+
                     return [
                         'id'         => 'setoran-' . $s->id,
                         'type'       => 'setoran',
                         'title'      => 'Setoran Baru #' . $s->id,
-                        'message'    => ($s->user->name ?? 'User') . ' mengajukan setoran ' .
-                                        number_format($berat ?? 0, 2) . ' kg — Status: ' . ucfirst($s->status),
-                        'url'        => route('admin.transaksi.index', ['filter' => 'setoran']),
+                        'message'    => ($s->user->nama ?? $s->user->name ?? 'User') .
+                                        ' mengajukan setoran ' .
+                                        number_format($berat ?? 0, 2) . ' kg — Status: ' .
+                                        ucfirst($s->status),
+                        'url'        => $this->buildPelangganUrl($s),
                         'icon'       => 'inbox',
                         'color'      => 'blue',
                         'created_at' => $s->created_at->toIso8601String(),
@@ -52,6 +77,7 @@ class NotificationController extends Controller
                     ];
                 });
 
+            // === WITHDRAW PENDING ===
             $withdrawPending = Withdrawal::with('user')
                 ->whereIn('status', $withdrawStatuses)
                 ->orderBy('created_at', 'desc')
@@ -62,9 +88,11 @@ class NotificationController extends Controller
                         'id'         => 'withdraw-' . $w->id,
                         'type'       => 'withdraw',
                         'title'      => 'Penarikan Baru #' . $w->id,
-                        'message'    => ($w->user->name ?? 'User') . ' mengajukan penarikan Rp ' .
-                                        number_format($w->amount, 0, ',', '.') . ' — Status: ' . ucfirst($w->status),
-                        'url'        => route('admin.transaksi.index', ['filter' => 'withdraw']),
+                        'message'    => ($w->user->nama ?? $w->user->name ?? 'User') .
+                                        ' mengajukan penarikan Rp ' .
+                                        number_format($w->amount, 0, ',', '.') .
+                                        ' — Status: ' . ucfirst($w->status),
+                        'url'        => $this->buildPelangganUrl($w),
                         'icon'       => 'cash',
                         'color'      => 'yellow',
                         'created_at' => $w->created_at->toIso8601String(),
