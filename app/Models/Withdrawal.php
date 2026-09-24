@@ -35,8 +35,8 @@ class Withdrawal extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function package()
-    {
-        return $this->belongsTo(WithdrawPackage::class);
-    }
+public function package()
+{
+    return $this->belongsTo(ExchangePackage::class, 'package_id');
+}
 }
