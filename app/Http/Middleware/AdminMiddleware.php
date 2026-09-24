@@ -1,31 +1,30 @@
 <?php
 
-use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Foundation\Configuration\Middleware;
+namespace App\Http\Middleware;
+
+use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
-return Application::configure(basePath: dirname(__DIR__))
-    ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        commands: __DIR__.'/../routes/console.php',
-        health: '/up',
-    )
-    ->withMiddleware(function (Middleware $middleware) {
+class AdminMiddleware
+{
+    /**
+     * Handle an incoming request.
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        // Pastikan user sudah login via guard admin dan memiliki role admin
+        if (!Auth::guard('admin')->check()) {
+            return redirect()->route('admin.login')->with('error', 'Silakan login sebagai admin terlebih dahulu.');
+        }
 
-        $middleware->redirectGuestsTo(function (Request $request) {
+        $user = Auth::guard('admin')->user();
+        if ($user->role_id != 1 && $user->role !== 'admin') {
+            Auth::guard('admin')->logout();
+            return redirect()->route('admin.login')->with('error', 'Akses ditolak. Anda bukan admin.');
+        }
 
-            // Kalau akses halaman admin
-            if ($request->is('admin/*')) {
-                return route('admin.login');
-            }
-
-            // Kalau akses halaman user
-            return route('login');
-        });
-
-    })
-    ->withExceptions(function (Exceptions $exceptions) {
-        //
-    })
-    ->create();
+        return $next($request);
+    }
+}
