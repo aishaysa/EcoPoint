@@ -9,7 +9,6 @@ use App\Http\Controllers\Admin\PelangganController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\TitikKumpulController;
 use App\Http\Controllers\Admin\TransaksiController;
-use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\SetoranController;
 use App\Http\Controllers\User\UserAuthController;
 use App\Http\Controllers\User\UserDashboardController;
@@ -55,25 +54,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // PELANGGAN
         // ============================================================
         Route::resource('pelanggan', PelangganController::class);
-        Route::get('pelanggan/index', [PelangganController::class, 'index'])->name('pelanggan.index');
-        Route::get('pelanggan/create', [PelangganController::class, 'create'])->name('pelanggan.create');
-        Route::post('pelanggan/store', [PelangganController::class, 'store'])->name('pelanggan.store');
-        Route::get('pelanggan/{id}/edit', [PelangganController::class, 'edit'])->name('pelanggan.edit');
-        Route::put('pelanggan/{id}', [PelangganController::class, 'update'])->name('pelanggan.setoran.update');
-        Route::delete('pelanggan/{id}', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
-        Route::get('pelanggan/{id}', [PelangganController::class, 'show'])->name('pelanggan.show');
 
         // ============================================================
         // JENIS SAMPAH
         // ============================================================
         Route::resource('jenis-sampah', JenisSampahController::class);
-        Route::get('jenis-sampah/index', [JenisSampahController::class, 'index'])->name('jenis-sampah.index');
-        Route::get('jenis-sampah/create', [JenisSampahController::class, 'create'])->name('jenis-sampah.create');
-        Route::post('jenis-sampah/store', [JenisSampahController::class, 'store'])->name('jenis-sampah.store');
-        Route::get('jenis-sampah/{id}/edit', [JenisSampahController::class, 'edit'])->name('jenis-sampah.edit');
-        Route::put('jenis-sampah/{id}', [JenisSampahController::class, 'update'])->name('jenis-sampah.update');
-        Route::delete('jenis-sampah/{id}', [JenisSampahController::class, 'destroy'])->name('jenis-sampah.destroy');
-        Route::get('jenis-sampah/{id}', [JenisSampahController::class, 'show'])->name('jenis-sampah.show');
 
         // ============================================================
         // SETORAN (khusus selesaikan dari pelanggan)
@@ -85,14 +70,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // TRANSAKSI (SETORAN + WITHDRAW) - GABUNGAN
         // ============================================================
         Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
+        Route::get('/transaksi/create', [TransaksiController::class, 'create'])->name('transaksi.create');
+        Route::post('/transaksi/store', [TransaksiController::class, 'store'])->name('transaksi.store');
         Route::get('/transaksi/{id}', [TransaksiController::class, 'show'])->name('transaksi.show');
         Route::get('/transaksi/{id}/edit', [TransaksiController::class, 'edit'])->name('transaksi.edit');
         Route::put('/transaksi/{id}', [TransaksiController::class, 'update'])->name('transaksi.update');
         Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
-        Route::get('transaksi/index', [TransaksiController::class, 'index'])->name('transaksi.index');
-        Route::get('transaksi/create', [TransaksiController::class, 'create'])->name('transaksi.create');
-        Route::post('transaksi/store', [TransaksiController::class, 'store'])->name('transaksi.store');
-
         // ============================================================
         // APPROVE / REJECT SETORAN (PATCH)
         // ============================================================
@@ -126,8 +109,8 @@ Route::get('/notifications/count', [NotificationController::class, 'count'])->na
         // ============================================================
         // PENGATURAN POIN
         // ============================================================
-        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 
         Route::get('/profile', [\App\Http\Controllers\Admin\DashboardController::class, 'profile'])
     ->name('profile');
@@ -141,8 +124,6 @@ Route::put('/profile', [\App\Http\Controllers\Admin\DashboardController::class, 
         Route::post('pelanggan/{pelangganId}/transaksi/{transaksiId}/{action}',
             [PelangganController::class, 'updateStatus']
         )->name('Pelanggan.updateStatus');
-
-        Route::get('logout', [LoginController::class, 'logout'])->name('logout');
 
     }); // end middleware auth:admin
 }); // end prefix admin
@@ -202,13 +183,7 @@ Route::prefix('user')->name('user.')->middleware(['auth:web'])->group(function (
 |--------------------------------------------------------------------------
 */
 
-Route::post('/webhook/xendit', [XenditWebhookController::class, 'handle'])
-    ->withoutMiddleware(['csrf'])  // kalau perlu, tapi biasanya webhook di api.php
+Route::post('/webhook/xendit', [XenditWebhookController::class, 'payout'])
+    ->withoutMiddleware(['csrf'])
     ->name('xendit.webhook');
-Route::post('/webhook/xendit/payout', [XenditWebhookController::class, 'payout'])
-    ->withoutMiddleware(['auth', 'csrf'])
-    ->name('webhook.xendit.payout');
 
-Route::get('/tes', function () {
-    return 'SERVER INI JALAN!';
-});
