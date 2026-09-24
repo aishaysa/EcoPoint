@@ -10,7 +10,7 @@ class PelangganController extends Controller
 {
     /**
      * ============================================================
-     * LIST PELANGGAN (dengan pagination)
+     * LIST PELANGGAN (dengan pagination + search + pending count)
      * ============================================================
      */
     public function index(Request $request)
@@ -23,11 +23,42 @@ class PelangganController extends Controller
             $perPage = 10;
         }
 
-        // Ambil pelanggan + jumlah setoran (pakai withCount)
-        $pelanggans = Pelanggan::withCount('setorans')
-                               ->orderBy('id', 'desc')
-                               ->paginate($perPage)
-                               ->withQueryString();  // ← penting: filter tetap aktif saat pindah halaman
+        // ============================================================
+        // AMBIL DATA PELANGGAN
+        // - withCount('setorans')                    → total setoran
+        // - withCount('setorans_pending_count')      → setoran yang belum di-acc
+        // - when(request('search'))                  → filter pencarian
+        // ============================================================
+        $pelanggans = Pelanggan::query()
+            ->withCount([
+                'setorans',
+                'setorans as setorans_pending_count' => function ($query) {
+                    // ⚠️ SESUAIKAN BARIS INI DENGAN STRUKTUR DB KAMU
+                    // Contoh kalau pakai kolom "status" dengan value 'pending':
+                    $query->where('status', 'pending');
+
+                    // Kalau pakai boolean:
+                    // $query->where('is_approved', false);
+
+                    // Kalau pakai timestamp acc (NULL = belum di-acc):
+                    // $query->whereNull('acc_at');
+
+                    // Kalau value-nya 'menunggu':
+                    // $query->where('status', 'menunggu');
+                },
+            ])
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                      ->orWhere('no_hp', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('alamat', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('id', 'desc')
+            ->paginate($perPage)
+            ->withQueryString(); // ← filter tetap aktif saat pindah halaman
 
         return view('admin.pelanggan.index', compact('pelanggans', 'perPage'));
     }
@@ -123,11 +154,6 @@ class PelangganController extends Controller
                          ->with('success', 'Pelanggan berhasil diperbarui.');
     }
 
-    /**
-     * ============================================================
-     * HAPUS PELANGGAN
-     * ============================================================
-     */
     public function destroy($id)
     {
         $pelanggan = Pelanggan::findOrFail($id);

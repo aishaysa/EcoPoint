@@ -22,7 +22,7 @@
         <form method="GET" action="{{ route('admin.pelanggan.index') }}" style="padding:16px 20px;">
             <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
                 <div style="flex:1 1 300px; min-width:0;">
-                    <input type="text" name="search" 
+                    <input type="text" name="search"
                            value="{{ request('search') }}"
                            placeholder="Cari nama, no HP, atau email..."
                            autocomplete="off"
@@ -60,8 +60,8 @@
     {{-- INFO PAGINATION ATAS --}}
     <div style="margin-bottom:16px; padding:12px 16px; background:#fff; border-radius:8px; border:2px solid #e5e7eb; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px;">
         <div style="font-size:13px; color:#6b7280;">
-            Menampilkan <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->firstItem() ?? 0 }}</span> 
-            - <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->lastItem() ?? 0 }}</span> 
+            Menampilkan <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->firstItem() ?? 0 }}</span>
+            - <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->lastItem() ?? 0 }}</span>
             dari <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->total() }}</span> data
         </div>
 
@@ -69,7 +69,7 @@
             @if ($pelanggans->onFirstPage())
                 <span style="padding:6px 12px; border:2px solid #e5e7eb; border-radius:6px; font-size:13px; background:#f9fafb; color:#9ca3af; cursor:not-allowed;">‹ Sebelumnya</span>
             @else
-                <a href="{{ $pelanggans->appends(request()->query())->previousPageUrl() }}" 
+                <a href="{{ $pelanggans->appends(request()->query())->previousPageUrl() }}"
                    style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">
                     ‹ Sebelumnya
                 </a>
@@ -79,7 +79,7 @@
                 @if ($page == $pelanggans->currentPage())
                     <span style="padding:6px 12px; border:2px solid #16a34a; border-radius:6px; font-size:13px; font-weight:700; background:#16a34a; color:#fff;">{{ $page }}</span>
                 @else
-                    <a href="{{ $url }}" 
+                    <a href="{{ $url }}"
                        style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">{{ $page }}</a>
                 @endif
             @endforeach
@@ -89,7 +89,7 @@
             @endif
 
             @if ($pelanggans->hasMorePages())
-                <a href="{{ $pelanggans->appends(request()->query())->nextPageUrl() }}" 
+                <a href="{{ $pelanggans->appends(request()->query())->nextPageUrl() }}"
                    style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">
                     Selanjutnya ›
                 </a>
@@ -115,6 +115,11 @@
             </thead>
             <tbody>
                 @forelse($pelanggans as $key => $p)
+                @php
+                    $totalSetoran  = $p->setorans_count ?? 0;
+                    $pendingCount  = $p->setorans_pending_count ?? 0;
+                    $semuaPending  = ($totalSetoran > 0 && $totalSetoran === $pendingCount);
+                @endphp
                 <tr style="border-bottom:1px solid #f1f5f9;">
                     <td style="padding:14px 16px; color:#4b5563; font-weight:600;">{{ $pelanggans->firstItem() + $key }}</td>
                     <td style="padding:14px 16px;">
@@ -142,12 +147,44 @@
                             {{ number_format($p->poin ?? 0) }}
                         </span>
                     </td>
-                    <td style="padding:14px 16px; color:#4b5563; font-weight:600;">
-                        {{ $p->setorans_count ?? 0 }}
+                    <td style="padding:14px 16px;">
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+
+                            {{-- ANGKA TOTAL --}}
+                            @if($totalSetoran === 0)
+                                <span style="display:inline-flex; align-items:center; padding:4px 12px; background:#f3f4f6; color:#6b7280; border-radius:20px; font-size:12px; font-weight:700;">
+                                    0
+                                </span>
+                            @elseif($semuaPending)
+                                {{-- SEMUA BELUM DI-ACC --}}
+                                <span style="display:inline-flex; align-items:center; padding:4px 12px; background:#fee2e2; color:#b91c1c; border-radius:20px; font-size:12px; font-weight:700;">
+                                    {{ $totalSetoran }}
+                                </span>
+                                <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px; background:#fee2e2; color:#b91c1c; border-radius:20px; font-size:11px; font-weight:700;">
+                                    <span style="width:6px; height:6px; border-radius:50%; background:#dc2626; animation:pulseDot 1.5s infinite;"></span>
+                                    belum di-acc
+                                </span>
+                            @elseif($pendingCount > 0)
+                                {{-- SEBAGIAN PENDING --}}
+                                <span style="display:inline-flex; align-items:center; padding:4px 12px; background:#fef3c7; color:#b45309; border-radius:20px; font-size:12px; font-weight:700;">
+                                    {{ $totalSetoran }}
+                                </span>
+                                <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px; background:#fef3c7; color:#b45309; border-radius:20px; font-size:11px; font-weight:700;">
+                                    <span style="width:6px; height:6px; border-radius:50%; background:#f59e0b; animation:pulseDot 1.5s infinite;"></span>
+                                    {{ $pendingCount }} pending
+                                </span>
+                            @else
+                                {{-- SEMUA SUDAH DI-ACC --}}
+                                <span style="display:inline-flex; align-items:center; padding:4px 12px; background:#dcfce7; color:#15803d; border-radius:20px; font-size:12px; font-weight:700;">
+                                    {{ $totalSetoran }}
+                                </span>
+                            @endif
+
+                        </div>
                     </td>
                     <td style="padding:14px 16px;">
                         <div style="display:flex; gap:6px;">
-                            <a href="{{ route('admin.pelanggan.show', $p->id) }}" 
+                            <a href="{{ route('admin.pelanggan.show', $p->id) }}"
                                style="display:inline-flex; align-items:center; padding:6px 12px; background:#dbeafe; color:#1d4ed8; border-radius:6px; text-decoration:none; font-size:12px; font-weight:700;">
                                 <svg style="width:14px; height:14px; margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -156,15 +193,15 @@
                                 Detail
                             </a>
 
-                            <form action="{{ route('admin.pelanggan.destroy', $p->id) }}" 
-                                  method="POST" 
-                                  id="delete-form-{{ $p->id }}" 
+                            <form action="{{ route('admin.pelanggan.destroy', $p->id) }}"
+                                  method="POST"
+                                  id="delete-form-{{ $p->id }}"
                                   style="display:inline; margin:0;">
                                 @csrf
                                 @method('DELETE')
                             </form>
 
-                            <button type="button" 
+                            <button type="button"
                                     class="delete-btn"
                                     data-nama="{{ $p->nama }}"
                                     data-form-id="delete-form-{{ $p->id }}"
@@ -207,8 +244,8 @@
     {{-- INFO PAGINATION BAWAH --}}
     <div style="margin-top:16px; padding:12px 16px; background:#fff; border-radius:8px; border:2px solid #e5e7eb; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px;">
         <div style="font-size:13px; color:#6b7280;">
-            Menampilkan <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->firstItem() ?? 0 }}</span> 
-            - <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->lastItem() ?? 0 }}</span> 
+            Menampilkan <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->firstItem() ?? 0 }}</span>
+            - <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->lastItem() ?? 0 }}</span>
             dari <span style="font-weight:700; color:#1f2937;">{{ $pelanggans->total() }}</span> data
         </div>
 
@@ -216,7 +253,7 @@
             @if ($pelanggans->onFirstPage())
                 <span style="padding:6px 12px; border:2px solid #e5e7eb; border-radius:6px; font-size:13px; background:#f9fafb; color:#9ca3af; cursor:not-allowed;">‹ Sebelumnya</span>
             @else
-                <a href="{{ $pelanggans->appends(request()->query())->previousPageUrl() }}" 
+                <a href="{{ $pelanggans->appends(request()->query())->previousPageUrl() }}"
                    style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">
                     ‹ Sebelumnya
                 </a>
@@ -226,7 +263,7 @@
                 @if ($page == $pelanggans->currentPage())
                     <span style="padding:6px 12px; border:2px solid #16a34a; border-radius:6px; font-size:13px; font-weight:700; background:#16a34a; color:#fff;">{{ $page }}</span>
                 @else
-                    <a href="{{ $url }}" 
+                    <a href="{{ $url }}"
                        style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">{{ $page }}</a>
                 @endif
             @endforeach
@@ -236,7 +273,7 @@
             @endif
 
             @if ($pelanggans->hasMorePages())
-                <a href="{{ $pelanggans->appends(request()->query())->nextPageUrl() }}" 
+                <a href="{{ $pelanggans->appends(request()->query())->nextPageUrl() }}"
                    style="padding:6px 12px; border:2px solid #d1d5db; border-radius:6px; font-size:13px; background:#fff; color:#374151; text-decoration:none; font-weight:600;">
                     Selanjutnya ›
                 </a>
@@ -248,7 +285,7 @@
 
 </div>
 
-{{-- FOCUS STYLE --}}
+{{-- FOCUS STYLE + PULSE ANIMATION --}}
 <style>
     .form-input:focus {
         border-color: #16a34a !important;
@@ -256,6 +293,10 @@
     }
     tbody tr:hover {
         background: #f8fafc;
+    }
+    @keyframes pulseDot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.85); }
     }
 </style>
 

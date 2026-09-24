@@ -82,7 +82,6 @@ class TitikKumpulController extends Controller
                          ->with('success', 'Titik kumpul berhasil dihapus.');
     }
 
-    // 🔁 Toggle status langsung dari tabel
     public function toggleStatus($id)
     {
         $titikKumpul = TitikKumpul::findOrFail($id);
