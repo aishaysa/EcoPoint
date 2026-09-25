@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\PoinHelper;
 use App\Models\Setoran;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\Withdrawal;
 use Illuminate\Http\Request;
@@ -69,7 +70,8 @@ public function approve($id, Request $request)
     $setoran->save();
 
     $beratAkhir = $request->berat_akhir ?? $setoran->berat;
-    $poinDidapat = $beratAkhir * 10; 
+$poinPerKg = (int) Setting::get('poin_per_kg', 100);
+$poinDidapat = (int) round($beratAkhir * $poinPerKg);
 
     $user = User::find($setoran->user_id);
     if ($user) {

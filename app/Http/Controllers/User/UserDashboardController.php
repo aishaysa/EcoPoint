@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Helpers\PoinHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Cabang;
 use App\Models\JenisSampah;
 use App\Models\Pelanggan;
 use App\Models\RiwayatPoin;
+use App\Models\Setting;
 use App\Models\TitikKumpul;
 use App\Models\Transaksi;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -14,7 +16,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use App\Helpers\PoinHelper;
 
 class UserDashboardController extends Controller
 {
@@ -58,8 +59,8 @@ class UserDashboardController extends Controller
         foreach ($allTransaksi as $transaksi) {
             if (!in_array($transaksi->status, ['completed', 'approved'])) continue;
             $beratPoin = ($transaksi->berat_aktual > 0) ? $transaksi->berat_aktual : $transaksi->berat;
-            $totalPoin += floor((float) $beratPoin * 10);
-        }
+$poinPerKg = (int) Setting::get('poin_per_kg', 100);
+$totalPoin += floor((float) $beratPoin * $poinPerKg);        }
 
         return view('user.setoran.index', compact('transaksis', 'totalSetoran', 'totalBerat', 'totalPoin'));
     }
@@ -274,8 +275,7 @@ class UserDashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return view('user.riwayat-poin', compact('riwayat'));
-    }
+return view('user.riwayat-poin-struk', compact('riwayat'));    }
 
     public function detailPoin($id)
     {

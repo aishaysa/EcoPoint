@@ -100,7 +100,7 @@ class WithdrawController extends Controller
         try {
             if ($isBank) {
                 // ===== BANK: PAKAI DISBURSEMENT API =====
-                $response = Http::withBasicAuth(env('XENDIT_SECRET_KEY'), '')
+Http::withBasicAuth(config('services.xendit.secret_key'), '')
                     ->withHeaders([
                         'Idempotency-key' => $referenceId,
                     ])
@@ -131,7 +131,7 @@ class WithdrawController extends Controller
                 $routingValue = $channelMap[$request->payment_method]
                     ?? 'ID_' . strtoupper($request->payment_method);
 
-                $response = Http::withBasicAuth(env('XENDIT_SECRET_KEY'), '')
+                $response = Http::withBasicAuth(config('services.xendit.secret_key'), '')
                     ->withHeaders([
                         'api-version'     => '2025-09-01',
                         'Idempotency-key' => $referenceId,

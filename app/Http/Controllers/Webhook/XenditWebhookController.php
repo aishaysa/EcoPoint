@@ -16,8 +16,8 @@ class XenditWebhookController extends Controller
 
         // Verifikasi callback token (opsional, tapi disarankan)
         $callbackToken = $request->header('x-callback-token');
-        if ($callbackToken !== env('XENDIT_CALLBACK_TOKEN')) {
-            Log::warning('XENDIT WEBHOOK: Invalid callback token');
+if ($callbackToken !== config('services.xendit.callback_token')) {
+                Log::warning('XENDIT WEBHOOK: Invalid callback token');
             return response()->json(['message' => 'Invalid token'], 403);
         }
 

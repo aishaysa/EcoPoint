@@ -1,0 +1,1 @@
+@include('user.setoran.detail', ['transaksi' => $transaksi])

@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\Setoran;
-use App\Models\Withdrawal;
-use App\Models\User;
-use App\Models\Pelanggan;
 use App\Helpers\PoinHelper;
+use App\Http\Controllers\Controller;
+use App\Models\Pelanggan;
+use App\Models\Setoran;
+use App\Models\Setting;
+use App\Models\User;
+use App\Models\Withdrawal;
 use GlennRaya\Xendivel\Xendivel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class TransaksiController extends Controller
 {
@@ -323,7 +324,8 @@ class TransaksiController extends Controller
             }
         }
 
-        $poinDidapat = $beratAkhir * 10;
+$poinPerKg = (int) Setting::get('poin_per_kg', 100);
+$poinDidapat = (int) round($beratAkhir * $poinPerKg);
 
         $user = User::find($setoran->user_id);
         if ($user) {
